@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snitch — Security Reports</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    @keyframes slideInRight { from{transform:translateX(100px);opacity:0} to{transform:translateX(0);opacity:1} }
+    @keyframes slideOutRight { from{transform:translateX(0);opacity:1} to{transform:translateX(100px);opacity:0} }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    @keyframes fadeInUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    @keyframes glow { 0%,100%{box-shadow:0 0 20px rgba(0,212,255,0.3)} 50%{box-shadow:0 0 40px rgba(0,212,255,0.6)} }
+    .nav-link:hover { background:rgba(255,255,255,0.05) !important; color:#e2e8f0 !important; }
+    .card-hover:hover { border-color:rgba(0,212,255,0.3) !important; transform:translateY(-2px); transition:all 0.3s; }
+    .btn-primary { background:linear-gradient(135deg,#00d4ff,#6366f1);color:white;border:none;padding:10px 20px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:8px; }
+    .btn-primary:hover { transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,212,255,0.4); }
+    .btn-secondary { background:rgba(255,255,255,0.05);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);padding:10px 20px;border-radius:10px;font-weight:500;font-size:14px;cursor:pointer;transition:all 0.2s; }
+    .btn-secondary:hover { background:rgba(255,255,255,0.1);color:#f1f5f9; }
+    .table-row:hover { background:rgba(255,255,255,0.03) !important; }
+    .card { background:rgba(13,17,23,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:16px;backdrop-filter:blur(20px); }
+    .range-btn { padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#94a3b8;transition:all 0.2s; }
+    .range-btn:hover { background:rgba(255,255,255,0.08);color:#f1f5f9; }
+    .range-btn.active { background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.2));color:#00d4ff;border-color:rgba(0,212,255,0.3); }
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:rgba(255,255,255,0.02); }
+    ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1);border-radius:3px; }
+  </style>
+</head>
+<body style="font-family:'Inter',sans-serif;background:#0a0e1a;color:#f1f5f9;margin:0;padding:0;min-height:100vh;">
+
+  <!-- Sidebar -->
+  <aside id="sidebar" style="width:260px;min-height:100vh;background:#080c18;border-right:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;">
+    <div style="padding:24px 20px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;background:linear-gradient(135deg,#00d4ff22,#6366f122);border:1px solid #00d4ff44;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+        <i data-lucide="shield-alert" style="width:20px;height:20px;color:#00d4ff;"></i>
+      </div>
+      <div>
+        <div style="font-size:20px;font-weight:800;color:#f1f5f9;letter-spacing:-0.5px;">Snitch</div>
+        <div style="font-size:11px;color:#00d4ff;font-weight:500;letter-spacing:1px;text-transform:uppercase;">AppSec Platform</div>
+      </div>
+    </div>
+    <nav style="flex:1;padding:16px 12px;">
+      <div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:8px 8px 4px;">Main Menu</div>
+      <a href="/" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="layout-dashboard" style="width:18px;height:18px;"></i> Dashboard
+      </a>
+      <a href="/applications.html" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="layers" style="width:18px;height:18px;"></i> Applications
+      </a>
+      <a href="/reports.html" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(99,102,241,0.15));color:#00d4ff;border:1px solid rgba(0,212,255,0.2);">
+        <i data-lucide="bar-chart-3" style="width:18px;height:18px;"></i> Reports
+      </a>
+      <div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:16px 8px 4px;">Developer</div>
+      <a href="/docs" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="code-2" style="width:18px;height:18px;"></i> API Docs
+        <i data-lucide="external-link" style="width:12px;height:12px;margin-left:auto;"></i>
+      </a>
+    </nav>
+    <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,0.08);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:8px;height:8px;background:#10b981;border-radius:50%;box-shadow:0 0 8px #10b981;"></div>
+        <span style="font-size:12px;color:#475569;">All systems operational</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div style="margin-left:260px;min-height:100vh;">
+    <header style="background:rgba(8,12,24,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
+      <div>
+        <h1 style="font-size:22px;font-weight:700;color:#f1f5f9;margin:0;">Security Reports</h1>
+        <p style="font-size:13px;color:#475569;margin:2px 0 0;">Analytics and insights across your application portfolio</p>
+      </div>
+      <!-- Date Range Buttons -->
+      <div style="display:flex;gap:4px;background:rgba(0,0,0,0.3);padding:4px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);">
+        <button class="range-btn" id="range-7" onclick="setRange(7)">7d</button>
+        <button class="range-btn" id="range-30" onclick="setRange(30)">30d</button>
+        <button class="range-btn" id="range-60" onclick="setRange(60)">60d</button>
+        <button class="range-btn active" id="range-90" onclick="setRange(90)">90d</button>
+      </div>
+    </header>
+
+    <main style="padding:32px;">
+      <!-- Stats Row -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:28px;" id="stats-row">
+        <div class="card" style="padding:24px;animation:pulse 1.5s infinite;"><div style="height:16px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:12px;width:60%;"></div><div style="height:32px;background:rgba(255,255,255,0.05);border-radius:6px;width:70%;"></div></div>
+        <div class="card" style="padding:24px;animation:pulse 1.5s infinite;"><div style="height:16px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:12px;width:60%;"></div><div style="height:32px;background:rgba(255,255,255,0.05);border-radius:6px;width:70%;"></div></div>
+        <div class="card" style="padding:24px;animation:pulse 1.5s infinite;"><div style="height:16px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:12px;width:60%;"></div><div style="height:32px;background:rgba(255,255,255,0.05);border-radius:6px;width:70%;"></div></div>
+        <div class="card" style="padding:24px;animation:pulse 1.5s infinite;"><div style="height:16px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:12px;width:60%;"></div><div style="height:32px;background:rgba(255,255,255,0.05);border-radius:6px;width:70%;"></div></div>
+      </div>
+
+      <!-- Trend Chart -->
+      <div class="card" style="padding:28px;margin-bottom:28px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <div>
+            <div style="font-size:16px;font-weight:600;color:#f1f5f9;">Vulnerability Trend</div>
+            <div style="font-size:12px;color:#475569;margin-top:2px;">Findings over time by severity</div>
+          </div>
+          <div id="trend-loading" style="display:none;"><div style="animation:spin 1s linear infinite;width:20px;height:20px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00d4ff;border-radius:50%;"></div></div>
+        </div>
+        <div style="height:320px;">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Two Column Section -->
+      <div style="display:grid;grid-template-columns:55% 45%;gap:20px;margin-bottom:28px;">
+        <!-- Team Leaderboard -->
+        <div class="card" style="padding:24px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+            <div style="width:36px;height:36px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+              <i data-lucide="trophy" style="width:18px;height:18px;color:#f59e0b;"></i>
+            </div>
+            <div>
+              <div style="font-size:16px;font-weight:600;color:#f1f5f9;">Team Leaderboard</div>
+              <div style="font-size:12px;color:#475569;">Security posture by team</div>
+            </div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;" id="leaderboard-table">
+              <thead>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                  <th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Rank</th>
+                  <th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Team</th>
+                  <th style="text-align:center;padding:8px 10px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Apps</th>
+                  <th style="text-align:center;padding:8px 10px;font-size:11px;font-weight:600;color:#ef4444;text-transform:uppercase;letter-spacing:0.8px;">C</th>
+                  <th style="text-align:center;padding:8px 10px;font-size:11px;font-weight:600;color:#f59e0b;text-transform:uppercase;letter-spacing:0.8px;">H</th>
+                  <th style="text-align:center;padding:8px 10px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Avg Risk</th>
+                  <th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Level</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboard-tbody">
+                <tr><td colspan="7" style="padding:32px;text-align:center;"><div style="animation:spin 1s linear infinite;display:inline-block;width:20px;height:20px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00d4ff;border-radius:50%;"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pull Requests -->
+        <div class="card" style="padding:24px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:36px;height:36px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                <i data-lucide="git-pull-request" style="width:18px;height:18px;color:#6366f1;"></i>
+              </div>
+              <div>
+                <div style="font-size:16px;font-weight:600;color:#f1f5f9;">Remediation PRs</div>
+                <div style="font-size:12px;color:#475569;">Auto-generated pull requests</div>
+              </div>
+            </div>
+            <span id="pr-count-badge" style="background:rgba(99,102,241,0.15);color:#6366f1;border:1px solid rgba(99,102,241,0.3);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;">—</span>
+          </div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;" id="pr-table">
+              <thead>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                  <th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">App</th>
+                  <th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Title</th>
+                  <th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Status</th>
+                  <th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Link</th>
+                </tr>
+              </thead>
+              <tbody id="pr-tbody">
+                <tr><td colspan="4" style="padding:32px;text-align:center;"><div style="animation:spin 1s linear infinite;display:inline-block;width:20px;height:20px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00d4ff;border-radius:50%;"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Vulnerabilities -->
+      <div class="card" style="padding:24px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+          <div style="width:36px;height:36px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+            <i data-lucide="bug" style="width:18px;height:18px;color:#ef4444;"></i>
+          </div>
+          <div>
+            <div style="font-size:16px;font-weight:600;color:#f1f5f9;">Top Vulnerabilities Across All Applications</div>
+            <div style="font-size:12px;color:#475569;">Most impactful issues by occurrence</div>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;" id="vuln-table">
+            <thead>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                <th style="text-align:center;padding:8px 12px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;width:40px;">#</th>
+                <th style="text-align:left;padding:8px 12px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">CVE / Rule</th>
+                <th style="text-align:left;padding:8px 12px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Title</th>
+                <th style="text-align:left;padding:8px 12px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Type</th>
+                <th style="text-align:left;padding:8px 12px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Severity</th>
+                <th style="text-align:center;padding:8px 12px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Affected Apps</th>
+                <th style="text-align:left;padding:8px 12px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Occurrences</th>
+                <th style="text-align:center;padding:8px 12px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Trend</th>
+              </tr>
+            </thead>
+            <tbody id="vuln-tbody">
+              <tr><td colspan="8" style="padding:40px;text-align:center;"><div style="animation:spin 1s linear infinite;display:inline-block;width:24px;height:24px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00d4ff;border-radius:50%;"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script>
+let activeDays = 90;
+let trendChartInst = null;
+
+// ── Utilities ──────────────────────────────────────────────────────────────────
+function animateCounter(el, target, duration=1200, prefix='', suffix='') {
+  const startTime = performance.now();
+  function update(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const val = Math.floor(target * eased);
+    el.textContent = prefix + val.toLocaleString() + suffix;
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+function getRiskLevel(s){
+  if(s>=75)return{label:'Critical',color:'#ef4444',bg:'rgba(239,68,68,0.15)'};
+  if(s>=50)return{label:'High',color:'#f59e0b',bg:'rgba(245,158,11,0.15)'};
+  if(s>=25)return{label:'Medium',color:'#f97316',bg:'rgba(249,115,22,0.15)'};
+  return{label:'Low',color:'#10b981',bg:'rgba(16,185,129,0.15)'};
+}
+
+function severityBadge(sev){
+  const map={critical:{color:'#ef4444',bg:'rgba(239,68,68,0.15)',label:'Critical'},high:{color:'#f59e0b',bg:'rgba(245,158,11,0.15)',label:'High'},medium:{color:'#f97316',bg:'rgba(249,115,22,0.15)',label:'Medium'},low:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)',label:'Low'},info:{color:'#94a3b8',bg:'rgba(148,163,184,0.15)',label:'Info'}};
+  const s=map[sev?.toLowerCase()]||map.info;
+  return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}44;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">${s.label}</span>`;
+}
+
+function timeAgo(dateStr){
+  if(!dateStr)return'—';
+  const diff=Math.floor((Date.now()-new Date(dateStr))/1000);
+  if(diff<60)return`${diff}s ago`;if(diff<3600)return`${Math.floor(diff/60)}m ago`;
+  if(diff<86400)return`${Math.floor(diff/3600)}h ago`;return`${Math.floor(diff/86400)}d ago`;
+}
+
+function showToast(message, type='success'){
+  const colors={success:'#10b981',error:'#ef4444',warning:'#f59e0b',info:'#00d4ff'};
+  const icons={success:'check-circle',error:'alert-circle',warning:'alert-triangle',info:'info'};
+  const toast=document.createElement('div');
+  toast.style.cssText=`position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(13,17,23,0.95);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:#f1f5f9;font-size:14px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:slideInRight 0.3s ease;`;
+  toast.innerHTML=`<i data-lucide="${icons[type]}" style="width:18px;height:18px;color:${colors[type]};flex-shrink:0;"></i>${message}`;
+  document.body.appendChild(toast);
+  lucide.createIcons();
+  setTimeout(()=>{toast.style.animation='slideOutRight 0.3s ease forwards';setTimeout(()=>toast.remove(),300);},3500);
+}
+
+// ── Date Range ─────────────────────────────────────────────────────────────────
+function setRange(days){
+  activeDays = days;
+  [7,30,60,90].forEach(d=>{
+    const btn=document.getElementById(`range-${d}`);
+    if(btn)btn.className=`range-btn${d===days?' active':''}`;
+  });
+  loadTrendChart();
+}
+
+// ── Stats ──────────────────────────────────────────────────────────────────────
+function renderStats(d){
+  const stats=[
+    {label:'Total Applications',value:d.total_applications||0,icon:'layers',color:'#00d4ff',gradient:'rgba(0,212,255,0.15)',border:'rgba(0,212,255,0.3)',suffix:''},
+    {label:'Total Findings',value:d.open_findings||(d.total_findings||0),icon:'bug',color:'#ef4444',gradient:'rgba(239,68,68,0.15)',border:'rgba(239,68,68,0.3)',suffix:''},
+    {label:'Avg MTTR',value:Math.round(d.avg_mttr_days||d.avg_mttr||0),icon:'clock',color:'#f97316',gradient:'rgba(249,115,22,0.15)',border:'rgba(249,115,22,0.3)',suffix:' days'},
+    {label:'Avg Risk Score',value:Math.round(d.avg_risk_score||0),icon:'activity',color:'#6366f1',gradient:'rgba(99,102,241,0.15)',border:'rgba(99,102,241,0.3)',suffix:'/100'},
+  ];
+  document.getElementById('stats-row').innerHTML=stats.map((s,i)=>`
+    <div class="card card-hover" style="padding:24px;animation:fadeInUp 0.5s ease both;animation-delay:${i*0.08}s;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+        <div style="width:44px;height:44px;background:${s.gradient};border:1px solid ${s.border};border-radius:12px;display:flex;align-items:center;justify-content:center;">
+          <i data-lucide="${s.icon}" style="width:22px;height:22px;color:${s.color};"></i>
+        </div>
+      </div>
+      <div style="font-size:32px;font-weight:800;color:#f1f5f9;letter-spacing:-0.5px;line-height:1;" id="stat-counter-${i}">0${s.suffix}</div>
+      <div style="font-size:13px;color:#94a3b8;font-weight:500;margin-top:6px;">${s.label}</div>
+    </div>
+  `).join('');
+  lucide.createIcons();
+  stats.forEach((s,i)=>{
+    const el=document.getElementById(`stat-counter-${i}`);
+    animateCounter(el,s.value,1200,'',s.suffix);
+  });
+}
+
+// ── Trend Chart ────────────────────────────────────────────────────────────────
+async function loadTrendChart(){
+  document.getElementById('trend-loading').style.display='flex';
+  try{
+    const res=await fetch(`/api/v1/reports/trend?days=${activeDays}`);
+    if(!res.ok)throw new Error('Failed to load trend data');
+    const data=await res.json();
+    renderTrendChart(data);
+  }catch(e){
+    renderTrendChart(null);
+    console.warn('Trend chart error:',e.message);
+  } finally {
+    document.getElementById('trend-loading').style.display='none';
+  }
+}
+
+function renderTrendChart(data){
+  if(trendChartInst)trendChartInst.destroy();
+  const ctx=document.getElementById('trendChart').getContext('2d');
+
+  let labels=[], critical=[], high=[], medium=[], low=[];
+  if(data && (data.dates||data.labels)){
+    labels=data.dates||data.labels||[];
+    critical=data.critical||[];
+    high=data.high||[];
+    medium=data.medium||[];
+    low=data.low||[];
+  } else if(data && Array.isArray(data)){
+    labels=data.map(d=>d.date||d.label||'');
+    critical=data.map(d=>d.critical||0);
+    high=data.map(d=>d.high||0);
+    medium=data.map(d=>d.medium||0);
+    low=data.map(d=>d.low||0);
+  } else {
+    // Empty state
+    labels=[];critical=[];high=[];medium=[];low=[];
+  }
+
+  trendChartInst=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {label:'Critical',data:critical,borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,0.08)',fill:true,tension:0.4,borderWidth:2,pointRadius:3,pointHoverRadius:5},
+        {label:'High',data:high,borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.08)',fill:true,tension:0.4,borderWidth:2,pointRadius:3,pointHoverRadius:5},
+        {label:'Medium',data:medium,borderColor:'#f97316',backgroundColor:'rgba(249,115,22,0.08)',fill:true,tension:0.4,borderWidth:2,pointRadius:3,pointHoverRadius:5},
+        {label:'Low',data:low,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.08)',fill:true,tension:0.4,borderWidth:2,pointRadius:3,pointHoverRadius:5},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true,position:'top',labels:{color:'rgba(255,255,255,0.7)',usePointStyle:true,pointStyle:'circle',padding:20,font:{size:12}}},
+        tooltip:{mode:'index',intersect:false,backgroundColor:'rgba(13,17,23,0.95)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#f1f5f9',bodyColor:'#94a3b8',padding:12}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'rgba(255,255,255,0.5)',font:{size:11}}},
+        y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'rgba(255,255,255,0.5)',font:{size:11}},beginAtZero:true}
+      },
+      interaction:{mode:'nearest',axis:'x',intersect:false},
+      animation:{duration:800}
+    }
+  });
+}
+
+// ── Leaderboard ────────────────────────────────────────────────────────────────
+function rankDisplay(n){
+  if(n===1)return'<span style="font-size:18px;">🏆</span>';
+  if(n===2)return'<span style="font-size:18px;">🥈</span>';
+  if(n===3)return'<span style="font-size:18px;">🥉</span>';
+  return`<span style="font-size:13px;color:#475569;font-weight:600;">${n}</span>`;
+}
+
+function renderLeaderboard(teams){
+  const tbody=document.getElementById('leaderboard-tbody');
+  if(!teams||teams.length===0){
+    tbody.innerHTML=`<tr><td colspan="7" style="padding:32px;text-align:center;color:#475569;font-size:13px;"><i data-lucide="users" style="width:28px;height:28px;display:block;margin:0 auto 8px;opacity:0.3;"></i>No team data available</td></tr>`;
+    lucide.createIcons();return;
+  }
+  tbody.innerHTML=teams.map((t,i)=>{
+    const rank=i+1;
+    const risk=getRiskLevel(t.avg_risk_score||0);
+    const isTop=rank<=3;
+    const goldStyle=rank===1?'border-left:2px solid rgba(245,158,11,0.4);':'';
+    return `
+      <tr class="table-row" style="border-bottom:1px solid rgba(255,255,255,0.04);${goldStyle}">
+        <td style="padding:12px 10px;text-align:center;">${rankDisplay(rank)}</td>
+        <td style="padding:12px 10px;">
+          <div style="font-size:14px;font-weight:${isTop?'700':'500'};color:${rank===1?'#f59e0b':rank===2?'#94a3b8':rank===3?'#a78bfa':'#f1f5f9'};">${t.team_name||t.name||'—'}</div>
+        </td>
+        <td style="padding:12px 10px;text-align:center;font-size:13px;color:#94a3b8;">${t.app_count||t.applications||0}</td>
+        <td style="padding:12px 10px;text-align:center;font-size:13px;font-weight:600;color:${(t.critical_findings||0)>0?'#ef4444':'#475569'};">${t.critical_findings||0}</td>
+        <td style="padding:12px 10px;text-align:center;font-size:13px;font-weight:600;color:${(t.high_findings||0)>0?'#f59e0b':'#475569'};">${t.high_findings||0}</td>
+        <td style="padding:12px 10px;text-align:center;">
+          <span style="font-size:13px;font-weight:700;color:${risk.color};">${Math.round(t.avg_risk_score||0)}</span>
+        </td>
+        <td style="padding:12px 10px;">
+          <span style="background:${risk.bg};color:${risk.color};border:1px solid ${risk.color}44;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;">${risk.label}</span>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ── Pull Requests ──────────────────────────────────────────────────────────────
+function prStatusBadge(status){
+  const m={open:{color:'#10b981',bg:'rgba(16,185,129,0.1)',label:'Open'},merged:{color:'#6366f1',bg:'rgba(99,102,241,0.1)',label:'Merged'},closed:{color:'#94a3b8',bg:'rgba(148,163,184,0.1)',label:'Closed'}};
+  const s=m[status?.toLowerCase()]||m.closed;
+  return`<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}44;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;">${s.label}</span>`;
+}
+
+function renderPRs(items){
+  const tbody=document.getElementById('pr-tbody');
+  const openCount=(items||[]).filter(p=>(p.status||'').toLowerCase()==='open').length;
+  document.getElementById('pr-count-badge').textContent=`${openCount} open`;
+
+  if(!items||items.length===0){
+    tbody.innerHTML=`<tr><td colspan="4" style="padding:32px;text-align:center;color:#475569;font-size:13px;"><i data-lucide="git-pull-request" style="width:28px;height:28px;display:block;margin:0 auto 8px;opacity:0.3;"></i>No pull requests yet</td></tr>`;
+    lucide.createIcons();return;
+  }
+  tbody.innerHTML=items.map(p=>`
+    <tr class="table-row" style="border-bottom:1px solid rgba(255,255,255,0.04);">
+      <td style="padding:10px 10px;max-width:100px;">
+        <div style="font-size:12px;color:#e2e8f0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.application_name||p.app_name||'—'}</div>
+        <div style="font-size:11px;color:#475569;">${p.team_name||''}</div>
+      </td>
+      <td style="padding:10px 10px;max-width:160px;">
+        <div style="font-size:12px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${p.title||''}">${(p.title||'—').slice(0,40)}${(p.title||'').length>40?'…':''}</div>
+        <div style="font-size:11px;color:#475569;margin-top:2px;">${timeAgo(p.created_at)}</div>
+      </td>
+      <td style="padding:10px 10px;">${prStatusBadge(p.status)}</td>
+      <td style="padding:10px 10px;">
+        ${p.pr_url||p.url?`<a href="${p.pr_url||p.url}" target="_blank" rel="noopener noreferrer" style="color:#00d4ff;display:inline-flex;align-items:center;gap:4px;text-decoration:none;font-size:12px;font-weight:500;"><i data-lucide="external-link" style="width:13px;height:13px;"></i>View</a>`:'<span style="color:#475569;font-size:12px;">—</span>'}
+      </td>
+    </tr>
+  `).join('');
+  lucide.createIcons();
+}
+
+// ── Top Vulnerabilities ────────────────────────────────────────────────────────
+function typeBadge(type){
+  const m={SAST:{color:'#a78bfa',bg:'rgba(167,139,250,0.15)'},SCA:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)'},Container:{color:'#00d4ff',bg:'rgba(0,212,255,0.15)'},Secret:{color:'#ef4444',bg:'rgba(239,68,68,0.15)'}};
+  const k=Object.keys(m).find(k=>k.toLowerCase()===(type||'').toLowerCase());
+  const s=k?m[k]:{color:'#94a3b8',bg:'rgba(148,163,184,0.15)'};
+  return`<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}33;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600;text-transform:uppercase;">${type||'—'}</span>`;
+}
+
+function trendIndicator(trend){
+  if(!trend||trend==='stable'||trend==='same')return`<span style="color:#475569;font-size:16px;">—</span>`;
+  if(trend==='up'||trend>0)return`<span style="color:#ef4444;font-size:14px;font-weight:700;">↑</span>`;
+  if(trend==='down'||trend<0)return`<span style="color:#10b981;font-size:14px;font-weight:700;">↓</span>`;
+  return`<span style="color:#475569;font-size:16px;">—</span>`;
+}
+
+function occurrenceBar(count, max){
+  const pct=max>0?Math.round((count/max)*100):0;
+  return`
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:13px;font-weight:600;color:#f1f5f9;min-width:28px;">${count}</span>
+      <div style="flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;min-width:60px;">
+        <div style="height:100%;width:${pct}%;background:linear-gradient(135deg,#00d4ff,#6366f1);border-radius:3px;transition:width 0.5s;"></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderTopVulns(items){
+  const tbody=document.getElementById('vuln-tbody');
+  if(!items||items.length===0){
+    tbody.innerHTML=`<tr><td colspan="8" style="padding:40px;text-align:center;color:#475569;font-size:14px;"><i data-lucide="shield-check" style="width:36px;height:36px;display:block;margin:0 auto 12px;opacity:0.3;"></i>No vulnerability data available</td></tr>`;
+    lucide.createIcons();return;
+  }
+  const maxOcc=Math.max(...items.map(v=>v.occurrences||v.count||0),1);
+  tbody.innerHTML=items.map((v,i)=>`
+    <tr class="table-row" style="border-bottom:1px solid rgba(255,255,255,0.04);">
+      <td style="padding:12px;text-align:center;font-size:13px;font-weight:600;color:#475569;">${i+1}</td>
+      <td style="padding:12px;">
+        <div style="font-size:12px;font-family:monospace;color:#00d4ff;font-weight:500;">${v.cve_id||v.rule_id||'—'}</div>
+      </td>
+      <td style="padding:12px;max-width:220px;">
+        <div style="font-size:13px;color:#e2e8f0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${v.title||''}">${(v.title||'Unknown vulnerability').slice(0,50)}${(v.title||'').length>50?'…':''}</div>
+      </td>
+      <td style="padding:12px;">${typeBadge(v.scanner_type||v.type)}</td>
+      <td style="padding:12px;">${severityBadge(v.severity)}</td>
+      <td style="padding:12px;text-align:center;">
+        <span style="background:rgba(0,212,255,0.1);color:#00d4ff;border:1px solid rgba(0,212,255,0.2);padding:2px 10px;border-radius:6px;font-size:12px;font-weight:600;">${v.affected_apps||v.app_count||0}</span>
+      </td>
+      <td style="padding:12px;min-width:120px;">${occurrenceBar(v.occurrences||v.count||0,maxOcc)}</td>
+      <td style="padding:12px;text-align:center;">${trendIndicator(v.trend)}</td>
+    </tr>
+  `).join('');
+}
+
+// ── Load All ───────────────────────────────────────────────────────────────────
+async function loadAll(){
+  const [overviewRes,leaderboardRes,prRes,vulnRes]=await Promise.allSettled([
+    fetch('/api/v1/reports/overview'),
+    fetch('/api/v1/reports/leaderboard'),
+    fetch('/api/v1/reports/pull-requests'),
+    fetch('/api/v1/reports/top-vulnerabilities'),
+  ]);
+
+  // Stats
+  if(overviewRes.status==='fulfilled'&&overviewRes.value.ok){
+    const d=await overviewRes.value.json();
+    renderStats(d);
+  }else{renderStats({});}
+
+  // Leaderboard
+  if(leaderboardRes.status==='fulfilled'&&leaderboardRes.value.ok){
+    const d=await leaderboardRes.value.json();
+    renderLeaderboard(d.items||d||[]);
+  }else{renderLeaderboard([]);}
+
+  // PRs
+  if(prRes.status==='fulfilled'&&prRes.value.ok){
+    const d=await prRes.value.json();
+    renderPRs(d.items||d||[]);
+  }else{renderPRs([]);}
+
+  // Top Vulns
+  if(vulnRes.status==='fulfilled'&&vulnRes.value.ok){
+    const d=await vulnRes.value.json();
+    renderTopVulns(d.items||d||[]);
+  }else{renderTopVulns([]);}
+
+  // Trend chart
+  loadTrendChart();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  lucide.createIcons();
+  loadAll();
+});
+</script>
+</body>
+</html>
