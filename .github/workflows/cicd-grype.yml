@@ -1,0 +1,56 @@
+name: Grype Container Scan → Snitch
+
+# Template workflow for consumer repos.
+# Copy this file into your repo's .github/workflows/ and configure the secrets below.
+#
+# Required repository secrets:
+#   SNITCH_AWS_ACCESS_KEY_ID     — IAM key with s3:PutObject on the Snitch bucket
+#   SNITCH_AWS_SECRET_ACCESS_KEY
+#   SNITCH_S3_BUCKET             — e.g. snitch-cicd-scans
+#   SNITCH_AWS_REGION            — e.g. us-east-1 (optional, defaults below)
+#
+# Required repository variables (or replace inline):
+#   CONTAINER_IMAGE  — image to scan, e.g. myrepo/myapp:latest
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  grype-scan:
+    name: Grype container vulnerability scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Grype
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Run Grype
+        env:
+          CONTAINER_IMAGE: ${{ vars.CONTAINER_IMAGE || github.repository }}
+        run: |
+          grype "${CONTAINER_IMAGE}" -o json > grype.json || true
+
+      - name: Upload to Snitch S3
+        if: always()
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.SNITCH_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SNITCH_AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.SNITCH_AWS_REGION || 'us-east-1' }}
+          S3_BUCKET: ${{ secrets.SNITCH_S3_BUCKET }}
+          GITHUB_ORG: ${{ github.repository_owner }}
+          GITHUB_REPO: ${{ github.event.repository.name }}
+        run: |
+          DATE=$(date +%y%m%d)
+          S3_KEY="${GITHUB_ORG}/${GITHUB_REPO}/grype/${DATE}-${{ github.run_id }}.json"
+          aws s3 cp grype.json "s3://${S3_BUCKET}/${S3_KEY}" \
+            --metadata "commit-sha=${{ github.sha }},branch=${{ github.ref_name }},workflow-run-id=${{ github.run_id }},ci-provider=github-actions"
+          echo "Uploaded scan result to s3://${S3_BUCKET}/${S3_KEY}"

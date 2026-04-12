@@ -17,5 +17,6 @@ semgrep==1.100.0
 setuptools>=60.0.0,<80.0.0  # pkg_resources was removed in setuptools 80; required by semgrep's opentelemetry dependency
 celery[redis]==5.4.0
 redis==5.2.1
+boto3==1.35.99
 pytest==8.3.4
 pytest-asyncio==0.24.0

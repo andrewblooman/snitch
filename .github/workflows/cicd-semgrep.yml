@@ -1,0 +1,59 @@
+name: Semgrep SAST → Snitch
+
+# Template workflow for consumer repos.
+# Copy this file into your repo's .github/workflows/ and configure the secrets below.
+#
+# Required repository secrets:
+#   SNITCH_AWS_ACCESS_KEY_ID     — IAM key with s3:PutObject on the Snitch bucket
+#   SNITCH_AWS_SECRET_ACCESS_KEY
+#   SNITCH_S3_BUCKET             — e.g. snitch-cicd-scans
+#   SNITCH_AWS_REGION            — e.g. us-east-1 (optional, defaults below)
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  semgrep-scan:
+    name: Semgrep SAST scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: auto
+          generateSarif: false
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+        # Output raw JSON for Snitch — Semgrep action writes to semgrep.json
+        # If the action above doesn't produce semgrep.json, use the CLI step below instead.
+
+      - name: Run Semgrep (CLI fallback)
+        if: always()
+        run: |
+          pip install semgrep --quiet
+          semgrep --json --config=auto --output=semgrep.json . || true
+
+      - name: Upload to Snitch S3
+        if: always()
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.SNITCH_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SNITCH_AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.SNITCH_AWS_REGION || 'us-east-1' }}
+          S3_BUCKET: ${{ secrets.SNITCH_S3_BUCKET }}
+          GITHUB_ORG: ${{ github.repository_owner }}
+          GITHUB_REPO: ${{ github.event.repository.name }}
+        run: |
+          DATE=$(date +%y%m%d)
+          S3_KEY="${GITHUB_ORG}/${GITHUB_REPO}/semgrep/${DATE}-${{ github.run_id }}.json"
+          aws s3 cp semgrep.json "s3://${S3_BUCKET}/${S3_KEY}" \
+            --metadata "commit-sha=${{ github.sha }},branch=${{ github.ref_name }},workflow-run-id=${{ github.run_id }},ci-provider=github-actions"
+          echo "Uploaded scan result to s3://${S3_BUCKET}/${S3_KEY}"
