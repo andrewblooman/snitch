@@ -139,6 +139,10 @@ async def execute_remediation(
 
     app_result = await db.execute(select(Application).where(Application.id == rem.application_id))
     app = app_result.scalar_one_or_none()
+    if not app:
+        rem.status = "failed"
+        await db.flush()
+        raise HTTPException(status_code=404, detail="Associated application not found")
 
     if not settings.GITHUB_TOKEN:
         raise HTTPException(status_code=400, detail="GITHUB_TOKEN not configured")
@@ -194,6 +198,8 @@ async def check_pr_status(
                 select(Application).where(Application.id == rem.application_id)
             )
             app = app_result.scalar_one_or_none()
+            if not app:
+                raise HTTPException(status_code=404, detail="Associated application not found")
             g = Github(settings.GITHUB_TOKEN)
             repo = g.get_repo(f"{app.github_org}/{app.github_repo}")
             pr = repo.get_pull(rem.pr_number)
