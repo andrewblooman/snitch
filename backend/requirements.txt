@@ -9,7 +9,7 @@ python-dotenv==1.0.1
 anthropic==0.40.0
 PyGithub==2.5.0
 httpx==0.28.1
-python-multipart==0.0.20
+python-multipart==0.0.22
 aiofiles==24.1.0
 pytest==8.3.4
 pytest-asyncio==0.24.0
