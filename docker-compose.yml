@@ -13,12 +13,21 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   migrate:
     build: ./backend
     command: alembic upgrade head
     environment:
       DATABASE_URL: postgresql+asyncpg://snitch:snitch@db:5432/snitch
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      REDIS_URL: redis://redis:6379/0
     depends_on:
       db:
         condition: service_healthy
@@ -33,6 +42,7 @@ services:
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      REDIS_URL: redis://redis:6379/0
       CORS_ORIGINS: '["http://localhost:3000","http://localhost:8000","*"]'
     volumes:
       - ./backend:/app
@@ -40,9 +50,48 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  worker:
+    build: ./backend
+    command: celery -A app.worker.celery_app worker --loglevel=info --concurrency=2
+    environment:
+      DATABASE_URL: postgresql+psycopg2://snitch:snitch@db:5432/snitch
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./backend:/app
+      - trivy-cache:/root/.cache/trivy
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  beat:
+    build: ./backend
+    command: celery -A app.worker.celery_app beat --loglevel=info
+    environment:
+      DATABASE_URL: postgresql+psycopg2://snitch:snitch@db:5432/snitch
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./backend:/app
+    depends_on:
+      redis:
+        condition: service_healthy
       migrate:
         condition: service_completed_successfully
     restart: unless-stopped
 
 volumes:
   postgres_data:
+  trivy-cache:

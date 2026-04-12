@@ -22,7 +22,6 @@ from app.schemas.application import (
 )
 from app.schemas.finding import PaginatedFindings
 from app.schemas.scan import PaginatedScans, ScanResponse
-from app.services import scanner as scanner_module
 from app.services.scoring import calculate_risk_score
 
 router = APIRouter(prefix="/applications", tags=["applications"])
@@ -180,7 +179,7 @@ async def delete_application(app_id: uuid.UUID, db: AsyncSession = Depends(get_d
 @router.post("/{app_id}/scan", response_model=ScanResponse)
 async def trigger_scan(
     app_id: uuid.UUID,
-    scan_type: Literal["semgrep", "grype", "trivy", "all"] = Query("all"),
+    scan_type: Literal["semgrep", "trivy", "all"] = Query("all"),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(select(Application).where(Application.id == app_id))
@@ -191,64 +190,18 @@ async def trigger_scan(
     scan = Scan(
         application_id=app_id,
         scan_type=scan_type,
-        status="running",
+        status="queued",
         trigger="manual",
         started_at=datetime.now(timezone.utc),
     )
     db.add(scan)
     await db.flush()
-
-    try:
-        svc = scanner_module.scanner_service
-        if scan_type == "semgrep":
-            raw_findings = svc.run_semgrep_scan(app)
-        elif scan_type == "grype":
-            raw_findings = svc.run_grype_scan(app)
-        elif scan_type == "trivy":
-            raw_findings = svc.run_trivy_scan(app)
-        else:
-            raw_findings = svc.run_all_scans(app)
-
-        new_findings = []
-        for raw in raw_findings:
-            raw.pop("id", None)
-            raw.pop("first_seen_at", None)
-            raw.pop("last_seen_at", None)
-            finding = Finding(
-                application_id=app_id,
-                scan_id=scan.id,
-                **raw,
-            )
-            db.add(finding)
-            new_findings.append(finding)
-
-        await db.flush()
-
-        scan.findings_count = len(new_findings)
-        scan.critical_count = sum(1 for f in new_findings if f.severity == "critical")
-        scan.high_count = sum(1 for f in new_findings if f.severity == "high")
-        scan.medium_count = sum(1 for f in new_findings if f.severity == "medium")
-        scan.low_count = sum(1 for f in new_findings if f.severity == "low")
-        scan.status = "completed"
-        scan.completed_at = datetime.now(timezone.utc)
-
-        # Recalculate risk score from all findings (new ones are already flushed above)
-        all_findings_result = await db.execute(
-            select(Finding).where(Finding.application_id == app_id)
-        )
-        all_findings = all_findings_result.scalars().all()
-        risk_score, risk_level = calculate_risk_score(list(all_findings))
-        app.risk_score = risk_score
-        app.risk_level = risk_level
-        app.last_scan_at = datetime.now(timezone.utc)
-
-    except Exception as exc:
-        scan.status = "failed"
-        scan.error_message = str(exc)
-        scan.completed_at = datetime.now(timezone.utc)
-
-    await db.flush()
     await db.refresh(scan)
+
+    # Dispatch to Celery worker (non-blocking)
+    from app.worker.tasks import scan_application_task
+    scan_application_task.delay(str(app_id), scan_type)
+
     return scan
 
 

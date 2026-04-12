@@ -13,6 +13,7 @@ class ApplicationBase(BaseModel):
     repo_url: str
     team_name: str
     language: Optional[str] = None
+    scan_schedule: str = "none"
 
 
 class ApplicationCreate(ApplicationBase):
@@ -25,6 +26,7 @@ class ApplicationUpdate(BaseModel):
     team_name: Optional[str] = None
     language: Optional[str] = None
     repo_url: Optional[str] = None
+    scan_schedule: Optional[str] = None
 
 
 class ApplicationResponse(ApplicationBase):
@@ -33,6 +35,7 @@ class ApplicationResponse(ApplicationBase):
     id: uuid.UUID
     risk_score: float
     risk_level: str
+    scan_schedule: str
     last_scan_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime

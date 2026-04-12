@@ -7,6 +7,32 @@ from app.models.application import Application
 logger = logging.getLogger(__name__)
 
 
+def list_accessible_repos(token: str) -> list[dict]:
+    """Return all repos accessible to the given GitHub token."""
+    try:
+        from github import Github
+
+        g = Github(token)
+        repos = []
+        for repo in g.get_user().get_repos(sort="updated"):
+            repos.append({
+                "github_org": repo.owner.login,
+                "github_repo": repo.name,
+                "full_name": repo.full_name,
+                "description": repo.description,
+                "language": repo.language,
+                "repo_url": repo.html_url,
+                "private": repo.private,
+                "archived": repo.archived,
+                "default_branch": repo.default_branch,
+                "updated_at": repo.updated_at.isoformat() if repo.updated_at else None,
+            })
+        return repos
+    except Exception as e:
+        logger.error("Failed to list accessible repos: %s", e)
+        return []
+
+
 def sync_github_security_alerts(app: Application, token: str) -> list[dict]:
     """Fetch code scanning alerts from GitHub and convert to internal finding format."""
     try:

@@ -13,6 +13,7 @@ class Settings(BaseSettings):
 
     GITHUB_TOKEN: Optional[str] = None
     ANTHROPIC_API_KEY: Optional[str] = None
+    REDIS_URL: str = "redis://redis:6379/0"
 
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000", "*"]
 
