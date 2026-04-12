@@ -83,9 +83,6 @@ async def generate_plan(
 
     plan_text, model_used = await generate_remediation_plan(app, list(findings))
 
-    sev_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
-    top = min(findings, key=lambda f: sev_order.get(f.severity, 4))
-
     remediation = Remediation(
         application_id=payload.application_id,
         title=f"Remediation plan for {app.name}: {len(findings)} findings",
