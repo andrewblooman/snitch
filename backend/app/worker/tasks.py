@@ -232,7 +232,8 @@ def _upsert_cicd_findings_sync(
         if key in existing_by_key:
             match = existing_by_key[key]
             match.last_seen_at = now
-            match.cicd_scan_id = cicd_scan_id
+            # Preserve the original scan association so historical
+            # per-scan finding membership does not change on re-seen findings.
             match.severity = raw.get("severity", match.severity)
             match.package_version = raw.get("package_version", match.package_version)
             match.fixed_version = raw.get("fixed_version", match.fixed_version)
