@@ -196,12 +196,19 @@ def _upsert_cicd_findings_sync(
     application_id: uuid.UUID,
     cicd_scan_id: uuid.UUID,
     raw_findings: list[dict],
+    scan_type: str,
 ) -> tuple[int, int]:
-    """Upsert CI/CD findings — uses a separate dedup pool from repository findings."""
+    """Upsert CI/CD findings — uses a separate dedup pool from repository findings.
+
+    Only findings matching ``scan_type`` (i.e. the same scanner) are considered
+    for the "disappeared → fixed" logic so that Semgrep and Grype scans do not
+    interfere with each other's open findings.
+    """
     existing = db.execute(
         select(Finding).where(
             Finding.application_id == application_id,
             Finding.cicd_scan_id.isnot(None),
+            Finding.scanner == scan_type,
         )
     ).scalars().all()
 
@@ -385,7 +392,7 @@ def process_cicd_scan_task(self, bucket: str, key: str, receipt_handle: str) -> 
         db.flush()
 
         try:
-            created, updated = _upsert_cicd_findings_sync(db, app.id, cicd_scan.id, raw_findings)
+            created, updated = _upsert_cicd_findings_sync(db, app.id, cicd_scan.id, raw_findings, detected_scan_type)
 
             cicd_scan.findings_count = len(raw_findings)
             cicd_scan.critical_count = sum(1 for f in raw_findings if f.get("severity") == "critical")
