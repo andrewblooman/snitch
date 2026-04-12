@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snitch — Repositories</title>
+  <style>/* Inter font fallback */ body { font-family: "Inter", system-ui, -apple-system, sans-serif; }</style>
+  <script src="/static/js/lucide.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    @keyframes fadeInUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .nav-link:hover { background:rgba(255,255,255,0.05) !important; color:#e2e8f0 !important; }
+    .card-hover:hover { border-color:rgba(0,212,255,0.3) !important; transform:translateY(-2px); transition:all 0.3s; }
+    .btn-primary { background:linear-gradient(135deg,#00d4ff,#6366f1);color:white;border:none;padding:10px 20px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:8px; }
+    .btn-primary:hover { transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,212,255,0.4); }
+    .btn-secondary { background:rgba(255,255,255,0.05);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);padding:8px 14px;border-radius:8px;font-weight:500;font-size:13px;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px; }
+    .btn-secondary:hover { background:rgba(255,255,255,0.1);color:#f1f5f9; }
+    .card { background:rgba(13,17,23,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:16px;backdrop-filter:blur(20px); }
+    .dark-input { background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#f1f5f9;font-size:14px;padding:8px 12px;outline:none;transition:border 0.2s;font-family:'Inter',sans-serif; }
+    .dark-input:focus { border-color:rgba(0,212,255,0.5); }
+    .dark-input::placeholder { color:#475569; }
+    .dark-select { background:#0d1117;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#f1f5f9;font-size:14px;padding:8px 12px;outline:none;cursor:pointer;font-family:'Inter',sans-serif; }
+    .dark-select:focus { border-color:rgba(0,212,255,0.5); }
+    .dark-select option { background:#0d1117; }
+    ::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-track { background:rgba(255,255,255,0.02); } ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1);border-radius:3px; }
+    .modal-backdrop { position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);z-index:200;display:flex;align-items:center;justify-content:center; }
+  </style>
+</head>
+<body style="font-family:'Inter',sans-serif;background:#0a0e1a;color:#f1f5f9;margin:0;padding:0;min-height:100vh;">
+
+  <!-- Sidebar -->
+  <aside style="width:260px;min-height:100vh;background:#080c18;border-right:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;">
+    <div style="padding:24px 20px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;background:linear-gradient(135deg,#00d4ff22,#6366f122);border:1px solid #00d4ff44;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+        <i data-lucide="shield-alert" style="width:20px;height:20px;color:#00d4ff;"></i>
+      </div>
+      <div>
+        <div style="font-size:20px;font-weight:800;color:#f1f5f9;letter-spacing:-0.5px;">Snitch</div>
+        <div style="font-size:11px;color:#00d4ff;font-weight:500;letter-spacing:1px;text-transform:uppercase;">AppSec Platform</div>
+      </div>
+    </div>
+    <nav style="padding:12px 12px;flex:1;">
+      <div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:4px 8px 8px;">Platform</div>
+      <a href="/" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="layout-dashboard" style="width:18px;height:18px;"></i> Dashboard
+      </a>
+      <a href="/applications.html" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="layers" style="width:18px;height:18px;"></i> Applications
+      </a>
+      <a href="/repositories.html" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(99,102,241,0.15));color:#00d4ff;border:1px solid rgba(0,212,255,0.2);">
+        <i data-lucide="git-branch" style="width:18px;height:18px;"></i> Repositories
+      </a>
+      <a href="/reports.html" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="bar-chart-3" style="width:18px;height:18px;"></i> Reports
+      </a>
+      <div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:16px 8px 4px;">Developer</div>
+      <a href="/docs" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="code-2" style="width:18px;height:18px;"></i> API Docs
+        <i data-lucide="external-link" style="width:12px;height:12px;margin-left:auto;"></i>
+      </a>
+    </nav>
+    <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,0.08);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:8px;height:8px;background:#10b981;border-radius:50%;box-shadow:0 0 8px #10b981;"></div>
+        <span style="font-size:12px;color:#64748b;">System Online</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main style="margin-left:260px;padding:32px;min-height:100vh;">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
+      <div>
+        <h1 style="font-size:22px;font-weight:700;color:#f1f5f9;margin:0 0 4px;">Repositories</h1>
+        <p style="color:#64748b;font-size:14px;margin:0;">Discover and track GitHub repositories for security scanning</p>
+      </div>
+      <button class="btn-primary" onclick="loadRepos()">
+        <i data-lucide="refresh-cw" style="width:16px;height:16px;" id="refresh-icon"></i> Refresh
+      </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="card" style="padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div style="position:relative;flex:1;min-width:200px;">
+        <i data-lucide="search" style="width:16px;height:16px;color:#475569;position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;"></i>
+        <input type="text" id="search-input" placeholder="Search repositories..." class="dark-input" style="width:100%;padding-left:34px;" oninput="renderRepos()">
+      </div>
+      <select id="filter-org" class="dark-select" onchange="renderRepos()">
+        <option value="">All orgs / owners</option>
+      </select>
+      <select id="filter-tracked" class="dark-select" onchange="renderRepos()">
+        <option value="">All repos</option>
+        <option value="tracked">Tracked only</option>
+        <option value="untracked">Untracked only</option>
+      </select>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#94a3b8;cursor:pointer;white-space:nowrap;">
+        <input type="checkbox" id="show-archived" onchange="renderRepos()" style="accent-color:#00d4ff;">
+        Show archived
+      </label>
+      <span id="repo-count" style="font-size:13px;color:#64748b;white-space:nowrap;"></span>
+    </div>
+
+    <!-- Repo grid -->
+    <div id="repo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;"></div>
+
+    <!-- No token warning -->
+    <div id="no-token" style="display:none;text-align:center;padding:60px 20px;">
+      <i data-lucide="key" style="width:48px;height:48px;color:#475569;margin:0 auto 16px;display:block;"></i>
+      <div style="font-size:18px;font-weight:600;color:#f1f5f9;margin-bottom:8px;">GitHub Token Required</div>
+      <div style="color:#64748b;font-size:14px;max-width:400px;margin:0 auto;">
+        Set <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;">GITHUB_TOKEN</code> in your <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;">.env</code> file and restart to discover repositories.
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" style="display:none;text-align:center;padding:60px 20px;">
+      <div style="width:32px;height:32px;border:3px solid rgba(0,212,255,0.2);border-top-color:#00d4ff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
+      <div style="color:#64748b;font-size:14px;">Fetching repositories from GitHub…</div>
+    </div>
+  </main>
+
+  <!-- Add to Snitch modal -->
+  <div id="add-modal" class="modal-backdrop" style="display:none;" onclick="if(event.target===this)closeModal()">
+    <div class="card" style="width:480px;max-width:95vw;padding:28px;position:relative;" onclick="event.stopPropagation()">
+      <button onclick="closeModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:#64748b;cursor:pointer;padding:4px;">
+        <i data-lucide="x" style="width:18px;height:18px;"></i>
+      </button>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(99,102,241,0.15));border:1px solid rgba(0,212,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+          <i data-lucide="plus-circle" style="width:18px;height:18px;color:#00d4ff;"></i>
+        </div>
+        <div>
+          <div style="font-size:16px;font-weight:600;color:#f1f5f9;" id="modal-repo-name">Add Repository</div>
+          <div style="font-size:12px;color:#64748b;">Configure tracking settings</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label style="font-size:12px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Team Name</label>
+          <input type="text" id="modal-team" placeholder="e.g. platform, security, backend" class="dark-input" style="width:100%;">
+        </div>
+        <div>
+          <label style="font-size:12px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Scan Schedule</label>
+          <select id="modal-schedule" class="dark-select" style="width:100%;">
+            <option value="none">Manual only</option>
+            <option value="weekly">Weekly (every Sunday 2am UTC)</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:6px;">
+          <button class="btn-secondary" style="flex:1;justify-content:center;" onclick="closeModal()">Cancel</button>
+          <button class="btn-primary" style="flex:1;justify-content:center;" id="modal-confirm-btn" onclick="confirmAdd()">
+            <i data-lucide="plus" style="width:14px;height:14px;"></i> Add to Snitch
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allRepos = [];
+    let pendingRepo = null;
+
+    const LANG_COLORS = {
+      Python:'#3776ab',JavaScript:'#f7df1e',TypeScript:'#3178c6',Go:'#00add8',
+      Java:'#b07219',Ruby:'#cc342d',Rust:'#dea584','C++':'#f34b7d',
+      C:'#555555','C#':'#178600',PHP:'#4f5d95',Kotlin:'#7f52ff',Swift:'#f05138',
+    };
+
+    async function loadRepos() {
+      const grid = document.getElementById('repo-grid');
+      const loading = document.getElementById('loading');
+      const noToken = document.getElementById('no-token');
+      const refreshIcon = document.getElementById('refresh-icon');
+
+      grid.innerHTML = '';
+      loading.style.display = 'block';
+      noToken.style.display = 'none';
+      refreshIcon.style.animation = 'spin 0.8s linear infinite';
+
+      try {
+        const showArchived = document.getElementById('show-archived').checked;
+        const res = await fetch(`/api/v1/github/repos?include_archived=${showArchived}`);
+        if (res.status === 400) {
+          loading.style.display = 'none';
+          noToken.style.display = 'block';
+          refreshIcon.style.animation = '';
+          return;
+        }
+        if (!res.ok) throw new Error(await res.text());
+        allRepos = await res.json();
+
+        // Populate org filter
+        const orgs = [...new Set(allRepos.map(r => r.github_org))].sort();
+        const orgSelect = document.getElementById('filter-org');
+        orgSelect.innerHTML = '<option value="">All orgs / owners</option>';
+        orgs.forEach(o => {
+          const opt = document.createElement('option');
+          opt.value = o; opt.textContent = o;
+          orgSelect.appendChild(opt);
+        });
+
+        renderRepos();
+      } catch (e) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#ef4444;">${e.message}</div>`;
+      } finally {
+        loading.style.display = 'none';
+        refreshIcon.style.animation = '';
+        lucide.createIcons();
+      }
+    }
+
+    function renderRepos() {
+      const search = document.getElementById('search-input').value.toLowerCase();
+      const org = document.getElementById('filter-org').value;
+      const trackedFilter = document.getElementById('filter-tracked').value;
+      const showArchived = document.getElementById('show-archived').checked;
+
+      let filtered = allRepos.filter(r => {
+        if (!showArchived && r.archived) return false;
+        if (org && r.github_org !== org) return false;
+        if (trackedFilter === 'tracked' && !r.tracked) return false;
+        if (trackedFilter === 'untracked' && r.tracked) return false;
+        if (search && !r.full_name.toLowerCase().includes(search) && !(r.description||'').toLowerCase().includes(search)) return false;
+        return true;
+      });
+
+      document.getElementById('repo-count').textContent = `${filtered.length} repositories`;
+
+      const grid = document.getElementById('repo-grid');
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;">
+          <i data-lucide="inbox" style="width:48px;height:48px;color:#475569;margin:0 auto 16px;display:block;"></i>
+          <div style="font-size:16px;color:#64748b;">No repositories match your filters</div>
+        </div>`;
+        lucide.createIcons();
+        return;
+      }
+
+      grid.innerHTML = filtered.map((r, idx) => {
+        const langColor = LANG_COLORS[r.language] || '#64748b';
+        const trackedBadge = r.tracked
+          ? `<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;">
+              <i data-lucide="check" style="width:11px;height:11px;"></i> Tracked
+             </span>`
+          : `<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(100,116,139,0.1);color:#64748b;border:1px solid rgba(100,116,139,0.2);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:500;">
+              Not tracked
+             </span>`;
+        const archiveBadge = r.archived ? `<span style="background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.2);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:500;">Archived</span>` : '';
+        const privateBadge = r.private ? `<span style="background:rgba(139,92,246,0.1);color:#a78bfa;border:1px solid rgba(139,92,246,0.2);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:500;">Private</span>` : '';
+
+        const actionBtn = r.tracked
+          ? `<a href="/applications.html" class="btn-secondary" style="font-size:12px;padding:7px 12px;text-decoration:none;">
+               <i data-lucide="eye" style="width:13px;height:13px;"></i> View
+             </a>`
+          : `<button class="btn-primary" style="font-size:12px;padding:7px 14px;" onclick="openAddModal(${idx})">
+               <i data-lucide="plus" style="width:13px;height:13px;"></i> Add to Snitch
+             </button>`;
+
+        return `<div class="card card-hover" style="padding:20px;animation:fadeInUp 0.3s ease both;animation-delay:${Math.min(idx*0.03,0.3)}s;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px;">
+            <div style="min-width:0;">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                <i data-lucide="git-branch" style="width:14px;height:14px;color:#64748b;flex-shrink:0;"></i>
+                <span style="font-size:11px;color:#64748b;">${r.github_org}</span>
+              </div>
+              <div style="font-size:15px;font-weight:600;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.github_repo}</div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;flex-shrink:0;">${trackedBadge}${archiveBadge}${privateBadge}</div>
+          </div>
+          ${r.description ? `<p style="font-size:13px;color:#64748b;margin:0 0 12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${r.description}</p>` : '<p style="font-size:13px;color:#334155;margin:0 0 12px;font-style:italic;">No description</p>'}
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              ${r.language ? `<span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#94a3b8;"><span style="width:9px;height:9px;border-radius:50%;background:${langColor};display:inline-block;"></span>${r.language}</span>` : ''}
+              ${r.updated_at ? `<span style="font-size:11px;color:#475569;">Updated ${new Date(r.updated_at).toLocaleDateString()}</span>` : ''}
+            </div>
+            ${actionBtn}
+          </div>
+        </div>`;
+      }).join('');
+
+      lucide.createIcons();
+      // Store filtered for modal reference
+      window._filteredRepos = filtered;
+    }
+
+    function openAddModal(filteredIdx) {
+      pendingRepo = window._filteredRepos[filteredIdx];
+      document.getElementById('modal-repo-name').textContent = pendingRepo.full_name;
+      document.getElementById('modal-team').value = pendingRepo.github_org;
+      document.getElementById('modal-schedule').value = 'weekly';
+      document.getElementById('add-modal').style.display = 'flex';
+      lucide.createIcons();
+    }
+
+    function closeModal() {
+      document.getElementById('add-modal').style.display = 'none';
+      pendingRepo = null;
+    }
+
+    async function confirmAdd() {
+      if (!pendingRepo) return;
+      const btn = document.getElementById('modal-confirm-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;"></div> Adding…';
+
+      const team = document.getElementById('modal-team').value.trim() || pendingRepo.github_org;
+      const schedule = document.getElementById('modal-schedule').value;
+
+      try {
+        const res = await fetch('/api/v1/applications', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            name: pendingRepo.github_repo,
+            description: pendingRepo.description || '',
+            github_org: pendingRepo.github_org,
+            github_repo: pendingRepo.github_repo,
+            repo_url: pendingRepo.repo_url,
+            team_name: team,
+            language: pendingRepo.language || null,
+            scan_schedule: schedule,
+          }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        closeModal();
+        await loadRepos();
+      } catch(e) {
+        alert('Failed to add repository: ' + e.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="plus" style="width:14px;height:14px;"></i> Add to Snitch';
+        lucide.createIcons();
+      }
+    }
+
+    lucide.createIcons();
+    loadRepos();
+  </script>
+</body>
+</html>

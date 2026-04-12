@@ -19,6 +19,7 @@ class Application(Base):
     repo_url: Mapped[str] = mapped_column(String(512), nullable=False)
     team_name: Mapped[str] = mapped_column(String(255), nullable=False)
     language: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    scan_schedule: Mapped[str] = mapped_column(String(50), default="none", nullable=False, server_default="none")
 
     risk_score: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     risk_level: Mapped[str] = mapped_column(String(50), default="info", nullable=False)

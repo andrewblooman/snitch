@@ -105,6 +105,8 @@ async def test_delete_application(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_trigger_scan(client: AsyncClient):
+    from unittest.mock import patch, MagicMock
+
     payload = {
         "name": "scan-test-api",
         "github_org": "org",
@@ -115,11 +117,16 @@ async def test_trigger_scan(client: AsyncClient):
     create_resp = await client.post("/api/v1/applications", json=payload)
     app_id = create_resp.json()["id"]
 
-    scan_resp = await client.post(f"/api/v1/applications/{app_id}/scan?scan_type=semgrep")
+    mock_task = MagicMock()
+    mock_task.delay = MagicMock(return_value=MagicMock(id="mock-task-id"))
+
+    with patch("app.worker.tasks.scan_application_task", mock_task):
+        scan_resp = await client.post(f"/api/v1/applications/{app_id}/scan?scan_type=semgrep")
+
     assert scan_resp.status_code == 200
     scan_data = scan_resp.json()
-    assert scan_data["status"] == "completed"
-    assert scan_data["findings_count"] >= 0
+    assert scan_data["status"] == "queued"
+    mock_task.delay.assert_called_once_with(app_id, "semgrep")
 
 
 @pytest.mark.asyncio
@@ -133,8 +140,6 @@ async def test_get_application_findings(client: AsyncClient):
     }
     create_resp = await client.post("/api/v1/applications", json=payload)
     app_id = create_resp.json()["id"]
-
-    await client.post(f"/api/v1/applications/{app_id}/scan?scan_type=all")
 
     resp = await client.get(f"/api/v1/applications/{app_id}/findings")
     assert resp.status_code == 200

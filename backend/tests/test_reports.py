@@ -46,7 +46,8 @@ async def test_top_vulnerabilities_empty(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_overview_with_data(client: AsyncClient):
-    # Create an app and run a scan
+    from unittest.mock import MagicMock, patch
+
     create_resp = await client.post("/api/v1/applications", json={
         "name": "report-test-app",
         "github_org": "org",
@@ -55,7 +56,11 @@ async def test_overview_with_data(client: AsyncClient):
         "team_name": "ReportTeam",
     })
     app_id = create_resp.json()["id"]
-    await client.post(f"/api/v1/applications/{app_id}/scan?scan_type=all")
+
+    mock_task = MagicMock()
+    mock_task.delay = MagicMock(return_value=MagicMock(id="mock-task-id"))
+    with patch("app.worker.tasks.scan_application_task", mock_task):
+        await client.post(f"/api/v1/applications/{app_id}/scan?scan_type=all")
 
     resp = await client.get("/api/v1/reports/overview")
     assert resp.status_code == 200
@@ -99,6 +104,8 @@ async def test_trend_with_days_param(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_top_vulnerabilities_with_data(client: AsyncClient):
+    from unittest.mock import MagicMock, patch
+
     create_resp = await client.post("/api/v1/applications", json={
         "name": "vuln-test-app",
         "github_org": "org",
@@ -107,7 +114,11 @@ async def test_top_vulnerabilities_with_data(client: AsyncClient):
         "team_name": "VulnTeam",
     })
     app_id = create_resp.json()["id"]
-    await client.post(f"/api/v1/applications/{app_id}/scan?scan_type=trivy")
+
+    mock_task = MagicMock()
+    mock_task.delay = MagicMock(return_value=MagicMock(id="mock-task-id"))
+    with patch("app.worker.tasks.scan_application_task", mock_task):
+        await client.post(f"/api/v1/applications/{app_id}/scan?scan_type=trivy")
 
     resp = await client.get("/api/v1/reports/top-vulnerabilities")
     assert resp.status_code == 200

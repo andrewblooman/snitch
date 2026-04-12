@@ -1,10 +1,295 @@
-import random
+import json
+import logging
+import shutil
+import subprocess
+import tempfile
 import uuid
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 from app.models.application import Application
 
+logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Semgrep severity mapping
+# ---------------------------------------------------------------------------
+_SEMGREP_SEVERITY: dict[str, str] = {
+    "ERROR": "high",
+    "WARNING": "medium",
+    "INFO": "low",
+}
+_SEMGREP_IMPACT: dict[str, str] = {
+    "CRITICAL": "critical",
+    "HIGH": "high",
+    "MEDIUM": "medium",
+    "LOW": "low",
+}
+
+# Trivy severity is already lowercase-compatible
+_TRIVY_SEVERITY: dict[str, str] = {
+    "CRITICAL": "critical",
+    "HIGH": "high",
+    "MEDIUM": "medium",
+    "LOW": "low",
+    "UNKNOWN": "info",
+}
+
+
+class RealScannerService:
+    """Clones a GitHub repo and runs real Semgrep + Trivy scans."""
+
+    def _clone_repo(self, app: Application, dest: Path) -> bool:
+        from app.core.config import settings
+
+        token = settings.GITHUB_TOKEN
+        repo_url = app.repo_url
+        if token:
+            # Inject token into HTTPS URL for auth
+            repo_url = repo_url.replace("https://", f"https://{token}@")
+
+        result = subprocess.run(
+            ["git", "clone", "--depth", "1", repo_url, str(dest)],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        if result.returncode != 0:
+            logger.error("git clone failed for %s: %s", app.repo_url, result.stderr)
+            return False
+        return True
+
+    def run_semgrep_scan(self, app: Application, repo_path: Path) -> list[dict[str, Any]]:
+        try:
+            result = subprocess.run(
+                ["semgrep", "--config", "auto", "--json", "--quiet", str(repo_path)],
+                capture_output=True,
+                text=True,
+                timeout=300,
+            )
+        except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+            logger.error("semgrep failed for %s: %s", app.name, e)
+            return []
+
+        if result.returncode not in (0, 1):
+            # semgrep exits 0 for no findings, 1 for findings; 2+ means error
+            logger.error(
+                "semgrep error (exit %d) for %s:\nstderr: %s\nstdout: %s",
+                result.returncode, app.name,
+                result.stderr[:2000] if result.stderr else "",
+                result.stdout[:500] if result.stdout else "",
+            )
+            return []
+
+        try:
+            output = json.loads(result.stdout or "{}")
+        except json.JSONDecodeError as e:
+            logger.error("semgrep JSON parse error for %s: %s\nstdout: %s", app.name, e, result.stdout[:500])
+            return []
+
+        findings = []
+        for item in output.get("results", []):
+            extra = item.get("extra", {})
+            meta = extra.get("metadata", {})
+
+            raw_severity = extra.get("severity", "INFO")
+            impact = str(meta.get("impact", meta.get("confidence", ""))).upper()
+            severity = _SEMGREP_IMPACT.get(impact) or _SEMGREP_SEVERITY.get(raw_severity, "medium")
+
+            file_path = item.get("path", "")
+            # Make path relative to the repo root
+            try:
+                file_path = str(Path(file_path).relative_to(repo_path))
+            except ValueError:
+                pass
+
+            findings.append({
+                "title": extra.get("message", item.get("check_id", "Unknown finding"))[:512],
+                "description": extra.get("message"),
+                "severity": severity,
+                "finding_type": "SAST",
+                "scanner": "semgrep",
+                "file_path": file_path or None,
+                "line_number": item.get("start", {}).get("line"),
+                "rule_id": item.get("check_id"),
+                "status": "open",
+            })
+
+        logger.info("semgrep found %d findings in %s", len(findings), app.name)
+        return findings
+
+    def run_trivy_scan(self, app: Application, repo_path: Path) -> list[dict[str, Any]]:
+        try:
+            result = subprocess.run(
+                [
+                    "trivy", "fs",
+                    "--format", "json",
+                    "--quiet",
+                    "--no-progress",
+                    str(repo_path),
+                ],
+                capture_output=True,
+                text=True,
+                timeout=300,
+            )
+        except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+            logger.error("trivy failed for %s: %s", app.name, e)
+            return []
+
+        if result.returncode != 0:
+            logger.error(
+                "trivy error (exit %d) for %s:\nstderr: %s\nstdout: %s",
+                result.returncode, app.name,
+                result.stderr[:2000] if result.stderr else "",
+                result.stdout[:500] if result.stdout else "",
+            )
+            return []
+
+        try:
+            output = json.loads(result.stdout or "{}")
+        except json.JSONDecodeError as e:
+            logger.error("trivy JSON parse error for %s: %s\nstdout: %s", app.name, e, result.stdout[:500])
+            return []
+
+        findings = []
+        for target_result in output.get("Results", []):
+            for vuln in target_result.get("Vulnerabilities") or []:
+                severity = _TRIVY_SEVERITY.get(vuln.get("Severity", "UNKNOWN"), "info")
+                cvss_score = None
+                cvss_data = vuln.get("CVSS", {})
+                for source in ("nvd", "redhat"):
+                    v3 = cvss_data.get(source, {}).get("V3Score")
+                    if v3 is not None:
+                        cvss_score = float(v3)
+                        break
+
+                cve_id = vuln.get("VulnerabilityID")
+                pkg = vuln.get("PkgName", "")
+                findings.append({
+                    "title": f"{cve_id}: {vuln.get('Title', pkg)}"[:512],
+                    "description": vuln.get("Description"),
+                    "severity": severity,
+                    "finding_type": "SCA",
+                    "scanner": "trivy",
+                    "cve_id": cve_id,
+                    "package_name": pkg or None,
+                    "package_version": vuln.get("InstalledVersion"),
+                    "fixed_version": vuln.get("FixedVersion"),
+                    "cvss_score": cvss_score,
+                    "status": "open",
+                })
+
+        logger.info("trivy found %d findings in %s", len(findings), app.name)
+        return findings
+
+    def run_govulncheck_scan(self, app: Application, repo_path: Path) -> list[dict[str, Any]]:
+        """Run govulncheck for Go stdlib + module vulnerability coverage."""
+        if not (repo_path / "go.mod").exists():
+            return []
+
+        try:
+            result = subprocess.run(
+                ["govulncheck", "-json", "-mode=module", "./..."],
+                capture_output=True,
+                text=True,
+                timeout=120,
+                cwd=str(repo_path),
+            )
+        except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+            logger.error("govulncheck failed for %s: %s", app.name, e)
+            return []
+
+        if result.returncode not in (0, 3):
+            # 0 = no vulns, 3 = vulns found; any other code is an error
+            logger.error(
+                "govulncheck error (exit %d) for %s:\nstderr: %s",
+                result.returncode, app.name,
+                result.stderr[:2000] if result.stderr else "",
+            )
+            return []
+
+        findings = []
+        seen_osv: set[str] = set()
+        for line in result.stdout.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                msg = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+
+            # govulncheck -json emits a stream: {"osv": {...}}, {"finding": {...}}, etc.
+            osv = msg.get("osv")
+            if not osv:
+                continue
+            osv_id = osv.get("id", "")
+            if osv_id in seen_osv:
+                continue
+            seen_osv.add(osv_id)
+
+            # Map CVSS score from database_specific if available
+            cvss_score = None
+            db_specific = osv.get("database_specific", {})
+            cvss_v3 = db_specific.get("cvss_v3", {})
+            if isinstance(cvss_v3, dict):
+                cvss_score = cvss_v3.get("baseScore")
+
+            severity_str = (db_specific.get("severity") or "").upper()
+            severity = {"CRITICAL": "critical", "HIGH": "high", "MEDIUM": "medium", "LOW": "low"}.get(severity_str, "medium")
+
+            aliases = osv.get("aliases", [])
+            cve_id = next((a for a in aliases if a.startswith("CVE-")), None) or osv_id
+
+            # Pick the most informative summary
+            summary = osv.get("summary") or osv.get("details") or osv_id
+            description = osv.get("details") or osv.get("summary")
+
+            affected = osv.get("affected", [])
+            package_name = affected[0].get("package", {}).get("name") if affected else None
+            fixed_version = None
+            if affected:
+                ranges = affected[0].get("ranges", [])
+                for r in ranges:
+                    for ev in r.get("events", []):
+                        if "fixed" in ev:
+                            fixed_version = ev["fixed"]
+                            break
+
+            findings.append({
+                "title": f"{cve_id}: {summary}"[:512],
+                "description": description,
+                "severity": severity,
+                "finding_type": "SCA",
+                "scanner": "govulncheck",
+                "cve_id": cve_id,
+                "package_name": package_name,
+                "fixed_version": fixed_version,
+                "cvss_score": float(cvss_score) if cvss_score else None,
+                "status": "open",
+            })
+
+        logger.info("govulncheck found %d findings in %s", len(findings), app.name)
+        return findings
+
+    def run_all_scans(self, app: Application) -> list[dict[str, Any]]:
+        with tempfile.TemporaryDirectory(prefix="snitch-scan-") as tmp:
+            repo_path = Path(tmp) / "repo"
+            if not self._clone_repo(app, repo_path):
+                raise RuntimeError(f"Failed to clone repository: {app.repo_url}")
+
+            semgrep_findings = self.run_semgrep_scan(app, repo_path)
+            trivy_findings = self.run_trivy_scan(app, repo_path)
+            govulncheck_findings = self.run_govulncheck_scan(app, repo_path)
+
+        return semgrep_findings + trivy_findings + govulncheck_findings
+
+
+# ---------------------------------------------------------------------------
+# Mock scanner (kept for testing / when tools are unavailable)
+# ---------------------------------------------------------------------------
+import random
 
 SEMGREP_RULES = [
     ("python.django.security.injection.sql.sql-injection-using-db-cursor-fetchone", "SQL Injection via cursor", "critical"),
@@ -19,16 +304,6 @@ SEMGREP_RULES = [
     ("python.lang.security.audit.insecure-transport.requests.request-with-http", "Insecure HTTP transport", "low"),
     ("python.django.security.audit.csrf-exempt", "CSRF protection disabled", "medium"),
     ("ruby.rails.security.brakeman.check-render-inline", "Inline render XSS risk", "medium"),
-]
-
-GRYPE_CVES = [
-    ("CVE-2023-44487", "HTTP/2 Rapid Reset Attack", "critical", "golang.org/x/net", "0.14.0", "0.17.0", 7.5),
-    ("CVE-2023-39325", "HTTP/2 rapid reset can cause excessive work", "high", "golang.org/x/net", "0.13.0", "0.17.0", 7.5),
-    ("CVE-2024-21626", "Leaky vessels - container escape", "critical", "runc", "1.1.9", "1.1.12", 8.6),
-    ("CVE-2023-47108", "OpenTelemetry gRPC DoS", "high", "go.opentelemetry.io/otel", "1.19.0", "1.20.0", 7.5),
-    ("CVE-2023-29406", "HTTP/1 client insufficient validation of Host header", "medium", "stdlib", "1.20.5", "1.21.0", 6.5),
-    ("CVE-2024-24786", "Infinite loop in protojson.Unmarshal", "medium", "google.golang.org/protobuf", "1.32.0", "1.33.0", 5.9),
-    ("CVE-2023-48795", "Terrapin attack - SSH protocol downgrade", "medium", "golang.org/x/crypto", "0.14.0", "0.17.0", 5.9),
 ]
 
 TRIVY_CVES = [
@@ -58,11 +333,9 @@ FILE_PATHS = [
 class MockScannerService:
     def run_semgrep_scan(self, app: Application) -> list[dict[str, Any]]:
         findings = []
-        count = random.randint(3, 8)
-        for _ in range(count):
+        for _ in range(random.randint(3, 8)):
             rule_id, title, severity = random.choice(SEMGREP_RULES)
             findings.append({
-                "id": str(uuid.uuid4()),
                 "title": title,
                 "description": f"Static analysis finding: {title}. Review the code and apply appropriate fix.",
                 "severity": severity,
@@ -72,41 +345,14 @@ class MockScannerService:
                 "line_number": random.randint(1, 500),
                 "rule_id": rule_id,
                 "status": "open",
-                "first_seen_at": datetime.now(timezone.utc).isoformat(),
-                "last_seen_at": datetime.now(timezone.utc).isoformat(),
-            })
-        return findings
-
-    def run_grype_scan(self, app: Application) -> list[dict[str, Any]]:
-        findings = []
-        count = random.randint(2, 6)
-        for _ in range(count):
-            cve_id, title, severity, pkg, ver, fixed, cvss = random.choice(GRYPE_CVES)
-            findings.append({
-                "id": str(uuid.uuid4()),
-                "title": f"{cve_id}: {title}",
-                "description": f"Container image vulnerability: {title}. Upgrade {pkg} to {fixed} or later.",
-                "severity": severity,
-                "finding_type": "container",
-                "scanner": "grype",
-                "cve_id": cve_id,
-                "package_name": pkg,
-                "package_version": ver,
-                "fixed_version": fixed,
-                "cvss_score": cvss,
-                "status": "open",
-                "first_seen_at": datetime.now(timezone.utc).isoformat(),
-                "last_seen_at": datetime.now(timezone.utc).isoformat(),
             })
         return findings
 
     def run_trivy_scan(self, app: Application) -> list[dict[str, Any]]:
         findings = []
-        count = random.randint(2, 6)
-        for _ in range(count):
+        for _ in range(random.randint(2, 6)):
             cve_id, title, severity, pkg, ver, fixed, cvss = random.choice(TRIVY_CVES)
             findings.append({
-                "id": str(uuid.uuid4()),
                 "title": f"{cve_id}: {title}",
                 "description": f"SCA vulnerability: {title}. Package {pkg} version {ver} is vulnerable. Upgrade to {fixed}.",
                 "severity": severity,
@@ -118,17 +364,13 @@ class MockScannerService:
                 "fixed_version": fixed,
                 "cvss_score": cvss,
                 "status": "open",
-                "first_seen_at": datetime.now(timezone.utc).isoformat(),
-                "last_seen_at": datetime.now(timezone.utc).isoformat(),
             })
         return findings
 
     def run_all_scans(self, app: Application) -> list[dict[str, Any]]:
-        return (
-            self.run_semgrep_scan(app)
-            + self.run_grype_scan(app)
-            + self.run_trivy_scan(app)
-        )
+        return self.run_semgrep_scan(app) + self.run_trivy_scan(app)
 
 
 scanner_service = MockScannerService()
+real_scanner_service = RealScannerService()
+
