@@ -55,8 +55,22 @@ def upgrade() -> None:
             nullable=True,
         ),
     )
+    op.create_index(
+        "ix_findings_cicd_scan_id",
+        "findings",
+        ["cicd_scan_id"],
+        unique=False,
+    )
+    op.create_index(
+        "ix_findings_application_id_cicd_scan_id",
+        "findings",
+        ["application_id", "cicd_scan_id"],
+        unique=False,
+    )
 
 
 def downgrade() -> None:
+    op.drop_index("ix_findings_application_id_cicd_scan_id", table_name="findings")
+    op.drop_index("ix_findings_cicd_scan_id", table_name="findings")
     op.drop_column("findings", "cicd_scan_id")
     op.drop_table("cicd_scans")
