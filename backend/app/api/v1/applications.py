@@ -187,12 +187,12 @@ async def trigger_scan(
         scan.status = "completed"
         scan.completed_at = datetime.now(timezone.utc)
 
-        # Recalculate risk score from all open findings
+        # Recalculate risk score from all findings (new ones are already flushed above)
         all_findings_result = await db.execute(
             select(Finding).where(Finding.application_id == app_id)
         )
         all_findings = all_findings_result.scalars().all()
-        risk_score, risk_level = calculate_risk_score(list(all_findings) + new_findings)
+        risk_score, risk_level = calculate_risk_score(list(all_findings))
         app.risk_score = risk_score
         app.risk_level = risk_level
         app.last_scan_at = datetime.now(timezone.utc)

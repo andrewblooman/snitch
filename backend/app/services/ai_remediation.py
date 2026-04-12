@@ -58,6 +58,22 @@ def _build_prompt(app: Application, findings: List[Finding]) -> str:
     return "\n".join(lines)
 
 
+def _upgrade_command(language: str | None, package: str, version: str) -> str:
+    lang = (language or "").lower()
+    if lang in ("javascript", "typescript", "js", "ts"):
+        return f"npm install {package}@{version}"
+    if lang == "go":
+        return f"go get {package}@v{version}"
+    if lang == "java":
+        return f"# Update pom.xml or build.gradle: {package} to {version}"
+    if lang == "ruby":
+        return f"bundle update {package}"
+    if lang == "rust":
+        return f"cargo update {package}"
+    # Default: Python / unknown
+    return f"pip install '{package}>={version}'"
+
+
 def _mock_plan(app: Application, findings: List[Finding]) -> str:
     severity_counts: dict = {"critical": 0, "high": 0, "medium": 0, "low": 0}
     for f in findings:
@@ -87,7 +103,8 @@ def _mock_plan(app: Application, findings: List[Finding]) -> str:
         for f in sev_findings:
             lines.append(f"\n#### {f.title}")
             if f.package_name and f.fixed_version:
-                lines.append(f"```bash\n# Upgrade {f.package_name} to {f.fixed_version}\npip install {f.package_name}>={f.fixed_version}\n```")
+                cmd = _upgrade_command(app.language, f.package_name, f.fixed_version)
+                lines.append(f"```bash\n# Upgrade {f.package_name} to {f.fixed_version}\n{cmd}\n```")
             elif f.file_path:
                 lines.append(f"- Review `{f.file_path}`" + (f" at line {f.line_number}" if f.line_number else ""))
                 lines.append("- Apply the recommended code fix for this rule")
