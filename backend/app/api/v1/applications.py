@@ -1,7 +1,7 @@
 import math
 import uuid
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
@@ -135,7 +135,7 @@ async def delete_application(app_id: uuid.UUID, db: AsyncSession = Depends(get_d
 @router.post("/{app_id}/scan", response_model=ScanResponse)
 async def trigger_scan(
     app_id: uuid.UUID,
-    scan_type: str = Query("all", enum=["semgrep", "grype", "trivy", "all"]),
+    scan_type: Literal["semgrep", "grype", "trivy", "all"] = Query("all"),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(select(Application).where(Application.id == app_id))
