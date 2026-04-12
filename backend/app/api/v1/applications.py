@@ -61,13 +61,58 @@ async def list_applications(
     result = await db.execute(q)
     apps = result.scalars().all()
 
+    app_ids = [app.id for app in apps]
+    counts_by_app = {
+        app_id: {
+            "critical_count": 0,
+            "high_count": 0,
+            "medium_count": 0,
+            "low_count": 0,
+            "total_findings": 0,
+            "open_findings": 0,
+        }
+        for app_id in app_ids
+    }
+
+    if app_ids:
+        findings_result = await db.execute(
+            select(
+                Finding.application_id,
+                Finding.status,
+                Finding.severity,
+                func.count().label("finding_count"),
+            )
+            .where(Finding.application_id.in_(app_ids))
+            .group_by(Finding.application_id, Finding.status, Finding.severity)
+        )
+
+        for application_id, finding_status, finding_severity, finding_count in findings_result.all():
+            counts = counts_by_app[application_id]
+            counts["total_findings"] += finding_count
+            if finding_status == "open":
+                counts["open_findings"] += finding_count
+                if finding_severity == "critical":
+                    counts["critical_count"] += finding_count
+                elif finding_severity == "high":
+                    counts["high_count"] += finding_count
+                elif finding_severity == "medium":
+                    counts["medium_count"] += finding_count
+                elif finding_severity == "low":
+                    counts["low_count"] += finding_count
+
     items = []
     for app in apps:
-        findings_result = await db.execute(
-            select(Finding).where(Finding.application_id == app.id)
+        counts = counts_by_app.get(
+            app.id,
+            {
+                "critical_count": 0,
+                "high_count": 0,
+                "medium_count": 0,
+                "low_count": 0,
+                "total_findings": 0,
+                "open_findings": 0,
+            },
         )
-        findings = findings_result.scalars().all()
-        counts = _finding_counts(findings)
         items.append(ApplicationListResponse(**app.__dict__, **counts))
 
     return PaginatedApplications(
