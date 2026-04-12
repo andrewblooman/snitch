@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: snitch
+      POSTGRES_PASSWORD: snitch
+      POSTGRES_DB: snitch
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U snitch"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build: ./backend
+    command: alembic upgrade head
+    environment:
+      DATABASE_URL: postgresql+asyncpg://snitch:snitch@db:5432/snitch
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://snitch:snitch@db:5432/snitch
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      CORS_ORIGINS: '["http://localhost:3000","http://localhost:8000","*"]'
+    volumes:
+      - ./backend:/app
+      - ./frontend:/app/frontend
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
