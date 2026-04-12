@@ -18,6 +18,9 @@ class Finding(Base):
     scan_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("scans.id", ondelete="SET NULL"), nullable=True
     )
+    cicd_scan_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("cicd_scans.id", ondelete="SET NULL"), nullable=True
+    )
 
     title: Mapped[str] = mapped_column(String(512), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -51,9 +54,16 @@ class Finding(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
+    @property
+    def source(self) -> str:
+        return "cicd" if self.cicd_scan_id is not None else "repository"
+
     application: Mapped["Application"] = relationship(  # noqa: F821
         "Application", back_populates="findings"
     )
     scan: Mapped["Scan | None"] = relationship(  # noqa: F821
         "Scan", back_populates="findings"
+    )
+    cicd_scan: Mapped["CiCdScan | None"] = relationship(  # noqa: F821
+        "CiCdScan", back_populates="findings"
     )

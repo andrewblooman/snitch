@@ -23,5 +23,9 @@ celery_app.conf.update(
             # Every Sunday at 02:00 UTC
             "schedule": crontab(hour=2, minute=0, day_of_week=0),
         },
+        "poll-cicd-sqs": {
+            "task": "app.worker.tasks.poll_sqs_task",
+            "schedule": 60.0,  # Every 60 seconds
+        },
     },
 )

@@ -41,3 +41,6 @@ class Application(Base):
     remediations: Mapped[list["Remediation"]] = relationship(  # noqa: F821
         "Remediation", back_populates="application", cascade="all, delete-orphan"
     )
+    cicd_scans: Mapped[list["CiCdScan"]] = relationship(  # noqa: F821
+        "CiCdScan", back_populates="application", cascade="all, delete-orphan"
+    )
