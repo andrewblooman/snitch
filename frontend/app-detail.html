@@ -315,7 +315,13 @@ function showToast(message, type='success'){
   const icons={success:'check-circle',error:'alert-circle',warning:'alert-triangle',info:'info'};
   const toast=document.createElement('div');
   toast.style.cssText=`position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(13,17,23,0.95);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:#f1f5f9;font-size:14px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:slideInRight 0.3s ease;`;
-  toast.innerHTML=`<i data-lucide="${icons[type]}" style="width:18px;height:18px;color:${colors[type]};flex-shrink:0;"></i>${message}`;
+  const _icon = document.createElement('i');
+  _icon.setAttribute('data-lucide', icons[type]);
+  _icon.style.cssText = `width:18px;height:18px;color:${colors[type]};flex-shrink:0;`;
+  const _msg = document.createElement('span');
+  _msg.textContent = message;
+  toast.appendChild(_icon);
+  toast.appendChild(_msg);
   document.body.appendChild(toast);
   lucide.createIcons();
   setTimeout(()=>{toast.style.animation='slideOutRight 0.3s ease forwards';setTimeout(()=>toast.remove(),300);},3500);
@@ -734,7 +740,15 @@ async function loadScansTab(){
     const data=await res.json();
     renderScansTab(data.items||data||[]);
   }catch(e){
-    el.innerHTML=`<div style="text-align:center;padding:32px;color:#ef4444;font-size:14px;">${e.message}</div>`;
+    const _errDiv=document.createElement('div');
+
+    _errDiv.style.cssText='text-align:center;padding:32px;color:#ef4444;font-size:14px;';
+
+    _errDiv.textContent=e.message||'An error occurred';
+
+    el.innerHTML='';
+
+    el.appendChild(_errDiv);
   }
 }
 
@@ -747,7 +761,15 @@ async function loadRemediationsTab(){
     const data=await res.json();
     renderRemediationsTab(data.items||data||[]);
   }catch(e){
-    el.innerHTML=`<div style="text-align:center;padding:32px;color:#ef4444;font-size:14px;">${e.message}</div>`;
+    const _errDiv=document.createElement('div');
+
+    _errDiv.style.cssText='text-align:center;padding:32px;color:#ef4444;font-size:14px;';
+
+    _errDiv.textContent=e.message||'An error occurred';
+
+    el.innerHTML='';
+
+    el.appendChild(_errDiv);
   }
 }
 
@@ -778,7 +800,15 @@ async function loadPage(){
   }catch(e){
     document.getElementById('page-title').textContent='Error Loading App';
     showToast(e.message,'error');
-    document.getElementById('app-info-card').innerHTML=`<div style="color:#ef4444;font-size:14px;">${e.message}</div>`;
+    const _errDiv2=document.createElement('div');
+
+    _errDiv2.style.cssText='color:#ef4444;font-size:14px;';
+
+    _errDiv2.textContent=e.message||'An error occurred';
+
+    document.getElementById('app-info-card').innerHTML='';
+
+    document.getElementById('app-info-card').appendChild(_errDiv2);
   }
 }
 

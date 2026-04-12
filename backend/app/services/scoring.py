@@ -15,6 +15,10 @@ def calculate_risk_score(findings: List[Finding]) -> Tuple[float, str]:
     medium = sum(1 for f in open_findings if f.severity == "medium")
     low = sum(1 for f in open_findings if f.severity == "low")
 
+    # Weighted scoring: critical=25, high=10, medium=3, low=1
+    # Rationale: critical findings represent active exploit risk (CVSS 9+),
+    # high represent significant risk (CVSS 7-9), medium are moderate issues,
+    # and low are informational/best-practice. Scores are capped at 100.
     score = (critical * 25) + (high * 10) + (medium * 3) + (low * 1)
     score = min(score, 100.0)
 
