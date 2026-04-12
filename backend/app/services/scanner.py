@@ -273,17 +273,34 @@ class RealScannerService:
         logger.info("govulncheck found %d findings in %s", len(findings), app.name)
         return findings
 
-    def run_all_scans(self, app: Application) -> list[dict[str, Any]]:
+    def run_scan(self, app: Application, scan_type: str = "all") -> list[dict[str, Any]]:
+        """Clone the repo once and run only the scanner(s) requested by *scan_type*.
+
+        Supported values: ``"all"``, ``"semgrep"``, ``"trivy"``, ``"govulncheck"``.
+        Unknown values fall back to ``"all"`` so callers are never silently broken.
+        """
+        _KNOWN_TYPES = {"all", "semgrep", "trivy", "govulncheck"}
+        if scan_type not in _KNOWN_TYPES:
+            logger.warning("Unknown scan_type %r — running all scanners", scan_type)
+            scan_type = "all"
+
         with tempfile.TemporaryDirectory(prefix="snitch-scan-") as tmp:
             repo_path = Path(tmp) / "repo"
             if not self._clone_repo(app, repo_path):
                 raise RuntimeError(f"Failed to clone repository: {app.repo_url}")
 
-            semgrep_findings = self.run_semgrep_scan(app, repo_path)
-            trivy_findings = self.run_trivy_scan(app, repo_path)
-            govulncheck_findings = self.run_govulncheck_scan(app, repo_path)
+            findings: list[dict[str, Any]] = []
+            if scan_type in ("all", "semgrep"):
+                findings += self.run_semgrep_scan(app, repo_path)
+            if scan_type in ("all", "trivy"):
+                findings += self.run_trivy_scan(app, repo_path)
+            if scan_type in ("all", "govulncheck"):
+                findings += self.run_govulncheck_scan(app, repo_path)
 
-        return semgrep_findings + trivy_findings + govulncheck_findings
+        return findings
+
+    def run_all_scans(self, app: Application) -> list[dict[str, Any]]:
+        return self.run_scan(app, scan_type="all")
 
 
 # ---------------------------------------------------------------------------

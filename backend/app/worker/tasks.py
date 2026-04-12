@@ -156,7 +156,7 @@ def scan_application_task(self, app_id: str, scan_type: str = "all") -> dict:
 
         try:
             svc = RealScannerService()
-            raw_findings = svc.run_all_scans(app)
+            raw_findings = svc.run_scan(app, scan_type)
 
             created, updated = _upsert_findings_sync(db, application_id, scan_id, raw_findings)
 
