@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snitch — Security Reports</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>/* Inter font fallback */ body { font-family: "Inter", system-ui, -apple-system, sans-serif; }</style>
+  
+  <script src="/static/js/chart.min.js"></script>
+  <script src="/static/js/lucide.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     @keyframes slideInRight { from{transform:translateX(100px);opacity:0} to{transform:translateX(0);opacity:1} }
@@ -270,9 +270,9 @@ function setRange(days){
 // ── Stats ──────────────────────────────────────────────────────────────────────
 function renderStats(d){
   const stats=[
-    {label:'Total Applications',value:d.total_applications||0,icon:'layers',color:'#00d4ff',gradient:'rgba(0,212,255,0.15)',border:'rgba(0,212,255,0.3)',suffix:''},
+    {label:'Total Applications',value:d.total_apps||0,icon:'layers',color:'#00d4ff',gradient:'rgba(0,212,255,0.15)',border:'rgba(0,212,255,0.3)',suffix:''},
     {label:'Total Findings',value:d.open_findings||(d.total_findings||0),icon:'bug',color:'#ef4444',gradient:'rgba(239,68,68,0.15)',border:'rgba(239,68,68,0.3)',suffix:''},
-    {label:'Avg MTTR',value:Math.round(d.avg_mttr_days||d.avg_mttr||0),icon:'clock',color:'#f97316',gradient:'rgba(249,115,22,0.15)',border:'rgba(249,115,22,0.3)',suffix:' days'},
+    {label:'Avg MTTR',value:Math.round(d.mttr_days||0),icon:'clock',color:'#f97316',gradient:'rgba(249,115,22,0.15)',border:'rgba(249,115,22,0.3)',suffix:' days'},
     {label:'Avg Risk Score',value:Math.round(d.avg_risk_score||0),icon:'activity',color:'#6366f1',gradient:'rgba(99,102,241,0.15)',border:'rgba(99,102,241,0.3)',suffix:'/100'},
   ];
   document.getElementById('stats-row').innerHTML=stats.map((s,i)=>`
@@ -314,20 +314,20 @@ function renderTrendChart(data){
   const ctx=document.getElementById('trendChart').getContext('2d');
 
   let labels=[], critical=[], high=[], medium=[], low=[];
-  if(data && (data.dates||data.labels)){
+  const pts = data && (data.data_points || (Array.isArray(data) ? data : null));
+  if(pts && pts.length){
+    labels=pts.map(d=>d.date||d.label||'');
+    critical=pts.map(d=>d.critical||0);
+    high=pts.map(d=>d.high||0);
+    medium=pts.map(d=>d.medium||0);
+    low=pts.map(d=>d.low||0);
+  } else if(data && (data.dates||data.labels)){
     labels=data.dates||data.labels||[];
     critical=data.critical||[];
     high=data.high||[];
     medium=data.medium||[];
     low=data.low||[];
-  } else if(data && Array.isArray(data)){
-    labels=data.map(d=>d.date||d.label||'');
-    critical=data.map(d=>d.critical||0);
-    high=data.map(d=>d.high||0);
-    medium=data.map(d=>d.medium||0);
-    low=data.map(d=>d.low||0);
   } else {
-    // Empty state
     labels=[];critical=[];high=[];medium=[];low=[];
   }
 

@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snitch — Applications</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>/* Inter font fallback */ body { font-family: "Inter", system-ui, -apple-system, sans-serif; }</style>
+  
+  <script src="/static/js/chart.min.js"></script>
+  <script src="/static/js/lucide.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     @keyframes slideInRight { from{transform:translateX(100px);opacity:0} to{transform:translateX(0);opacity:1} }
@@ -232,6 +232,10 @@ function appCard(app, idx) {
   const score = app.risk_score || 0;
   const risk = getRiskLevel(score);
   const fs = app.findings_summary || {};
+  const c = fs.critical ?? app.critical_count ?? 0;
+  const h = fs.high ?? app.high_count ?? 0;
+  const m = fs.medium ?? app.medium_count ?? 0;
+  const l = fs.low ?? app.low_count ?? 0;
   const langColors = { Python:'#3b82f6', JavaScript:'#f59e0b', TypeScript:'#6366f1', Go:'#00d4ff', Java:'#f97316', Kotlin:'#a78bfa', Ruby:'#ef4444', PHP:'#8b5cf6', 'C#':'#10b981', 'C++':'#94a3b8', Rust:'#f97316' };
   const langColor = langColors[app.language] || '#475569';
 
@@ -257,10 +261,10 @@ function appCard(app, idx) {
 
       <!-- Finding Pills -->
       <div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
-        <span style="background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;">${fs.critical||0} C</span>
-        <span style="background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;">${fs.high||0} H</span>
-        <span style="background:rgba(249,115,22,0.12);color:#f97316;border:1px solid rgba(249,115,22,0.2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;">${fs.medium||0} M</span>
-        <span style="background:rgba(59,130,246,0.12);color:#3b82f6;border:1px solid rgba(59,130,246,0.2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;">${fs.low||0} L</span>
+        <span style="background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;">${c} C</span>
+        <span style="background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;">${h} H</span>
+        <span style="background:rgba(249,115,22,0.12);color:#f97316;border:1px solid rgba(249,115,22,0.2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;">${m} M</span>
+        <span style="background:rgba(59,130,246,0.12);color:#3b82f6;border:1px solid rgba(59,130,246,0.2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;">${l} L</span>
       </div>
 
       <!-- Footer -->

@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snitch — Security Overview</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>/* Inter font fallback */ body { font-family: "Inter", system-ui, -apple-system, sans-serif; }</style>
+  
+  <script src="/static/js/chart.min.js"></script>
+  <script src="/static/js/lucide.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     @keyframes slideInRight { from{transform:translateX(100px);opacity:0} to{transform:translateX(0);opacity:1} }
@@ -309,7 +309,7 @@ function renderRiskChart(data) {
 function renderStats(d) {
   const row = document.getElementById('stats-row');
   const stats = [
-    { label:'Total Applications', value:d.total_applications||0, icon:'layers', color:'#00d4ff', gradient:'rgba(0,212,255,0.15)', border:'rgba(0,212,255,0.3)', trend:'+2 this week', suffix:'' },
+    { label:'Total Applications', value:d.total_apps||0, icon:'layers', color:'#00d4ff', gradient:'rgba(0,212,255,0.15)', border:'rgba(0,212,255,0.3)', trend:'+2 this week', suffix:'' },
     { label:'Critical Findings', value:d.critical_findings||0, icon:'alert-triangle', color:'#ef4444', gradient:'rgba(239,68,68,0.15)', border:'rgba(239,68,68,0.3)', trend:'+5 this week', suffix:'' },
     { label:'Open Findings', value:d.open_findings||0, icon:'shield-alert', color:'#f97316', gradient:'rgba(249,115,22,0.15)', border:'rgba(249,115,22,0.3)', trend:'+12 this week', suffix:'' },
     { label:'Avg Risk Score', value:Math.round(d.avg_risk_score||0), icon:'activity', color:'#6366f1', gradient:'rgba(99,102,241,0.15)', border:'rgba(99,102,241,0.3)', trend:'-3 this week', suffix:'/100' },
@@ -356,6 +356,9 @@ function renderAppsTable(items) {
   tbody.innerHTML = sorted.map((app, idx) => {
     const risk = getRiskLevel(app.risk_score||0);
     const fs = app.findings_summary || {};
+    const c = fs.critical ?? app.critical_count ?? 0;
+    const h = fs.high ?? app.high_count ?? 0;
+    const m = fs.medium ?? app.medium_count ?? 0;
     return `
       <tr class="table-row" style="border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;transition:background 0.2s;" onclick="location.href='/app-detail.html?id=${app.id}'">
         <td style="padding:12px 12px;text-align:center;">${rankBadge(idx+1)}</td>
@@ -368,9 +371,9 @@ function renderAppsTable(items) {
         <td style="padding:12px 12px;text-align:center;">
           <span style="background:${risk.bg};color:${risk.color};border:1px solid ${risk.color}44;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:700;">${app.risk_score||0}/100</span>
         </td>
-        <td style="padding:12px 12px;text-align:center;font-size:13px;font-weight:600;color:${(fs.critical||0) > 0 ? '#ef4444' : '#475569'};">${fs.critical||0}</td>
-        <td style="padding:12px 12px;text-align:center;font-size:13px;font-weight:600;color:${(fs.high||0) > 0 ? '#f59e0b' : '#475569'};">${fs.high||0}</td>
-        <td style="padding:12px 12px;text-align:center;font-size:13px;font-weight:600;color:${(fs.medium||0) > 0 ? '#f97316' : '#475569'};">${fs.medium||0}</td>
+        <td style="padding:12px 12px;text-align:center;font-size:13px;font-weight:600;color:${c > 0 ? '#ef4444' : '#475569'};">${c}</td>
+        <td style="padding:12px 12px;text-align:center;font-size:13px;font-weight:600;color:${h > 0 ? '#f59e0b' : '#475569'};">${h}</td>
+        <td style="padding:12px 12px;text-align:center;font-size:13px;font-weight:600;color:${m > 0 ? '#f97316' : '#475569'};">${m}</td>
         <td style="padding:12px 12px;font-size:12px;color:#475569;">${timeAgo(app.last_scan_at)}</td>
       </tr>
     `;
@@ -413,8 +416,16 @@ async function loadDashboard() {
     if (overviewRes.ok) {
       const d = await overviewRes.json();
       renderStats(d);
-      renderSeverityChart(d.findings_by_severity || {});
-      renderRiskChart(d.applications_by_risk || {});
+      // Map API fields to chart format
+      const sev = {
+        critical: d.critical_findings||0,
+        high: d.high_findings||0,
+        medium: d.medium_findings||0,
+        low: d.low_findings||0,
+        info: 0
+      };
+      renderSeverityChart(d.findings_by_severity || sev);
+      renderRiskChart(d.applications_by_risk || d.apps_by_risk_level || {});
     } else {
       renderStats({});
       renderSeverityChart({});
