@@ -15,6 +15,31 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Semgrep severity mapping
 # ---------------------------------------------------------------------------
+def _mask_secret(secret: str) -> str:
+    if not secret or len(secret) < 4:
+        return "****"
+    return f"****{secret[-4:]}"
+
+
+_GITLEAKS_SEVERITY: dict[str, str] = {
+    "critical": "critical",
+    "high": "high",
+    "medium": "medium",
+    "low": "low",
+}
+
+
+def _gitleaks_severity(item: dict, custom_severity_map: dict[str, str]) -> str:
+    rule_id = item.get("RuleID", "")
+    if rule_id in custom_severity_map:
+        return custom_severity_map[rule_id]
+    for tag in item.get("Tags") or []:
+        sev = _GITLEAKS_SEVERITY.get(tag.lower())
+        if sev:
+            return sev
+    return "high"
+
+
 _SEMGREP_SEVERITY: dict[str, str] = {
     "ERROR": "high",
     "WARNING": "medium",
@@ -273,13 +298,124 @@ class RealScannerService:
         logger.info("govulncheck found %d findings in %s", len(findings), app.name)
         return findings
 
-    def run_scan(self, app: Application, scan_type: str = "all") -> list[dict[str, Any]]:
+    def run_gitleaks_scan(
+        self,
+        app: Application,
+        repo_path: Path,
+        custom_patterns: list[dict] | None = None,
+    ) -> list[dict[str, Any]]:
+        config_path: Path | None = None
+        custom_severity_map: dict[str, str] = {}
+        try:
+            if custom_patterns:
+                toml_lines = ['title = "snitch"\n', "\n", "[extend]\n", "useDefault = true\n"]
+                for p in custom_patterns:
+                    safe_name = p["name"].replace("\\", "\\\\").replace('"', '\\"')
+                    safe_pattern = p["pattern"].replace("'''", "\\'\\'\\'")
+                    rule_id = f"custom-{p['id']}"
+                    custom_severity_map[rule_id] = p["severity"]
+                    toml_lines += [
+                        "\n[[rules]]\n",
+                        f'id = "{rule_id}"\n',
+                        f'description = "{safe_name}"\n',
+                        f"regex = '''{safe_pattern}'''\n",
+                        f'severity = "{p["severity"].upper()}"\n',
+                    ]
+                with tempfile.NamedTemporaryFile(
+                    mode="w", suffix=".toml", delete=False, prefix="snitch-gitleaks-"
+                ) as tmp_cfg:
+                    tmp_cfg.writelines(toml_lines)
+                    tmp_cfg.flush()
+                    config_path = Path(tmp_cfg.name)
+
+            cmd = [
+                "gitleaks", "detect",
+                "--source", str(repo_path),
+                "--no-git",
+                "--report-format", "json",
+                "--report-path", "/dev/stdout",
+                "--exit-code", "0",
+            ]
+            if config_path:
+                cmd += ["--config", str(config_path)]
+
+            try:
+                result = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=300,
+                )
+            except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+                logger.error("gitleaks failed for %s: %s", app.name, e)
+                return []
+
+            if result.returncode != 0:
+                logger.error(
+                    "gitleaks error (exit %d) for %s:\nstderr: %s",
+                    result.returncode, app.name,
+                    result.stderr[:2000] if result.stderr else "",
+                )
+                return []
+
+            stdout = (result.stdout or "").strip()
+            if not stdout:
+                return []
+
+            try:
+                raw_output = json.loads(stdout)
+            except json.JSONDecodeError as e:
+                logger.error("gitleaks JSON parse error for %s: %s\nstdout: %s", app.name, e, stdout[:500])
+                return []
+
+            if not isinstance(raw_output, list):
+                return []
+
+            findings = []
+            for item in raw_output:
+                rule_id = item.get("RuleID", "")
+                file_path = item.get("File", "") or None
+                line_number = item.get("StartLine")
+                secret = item.get("Secret", "") or ""
+                match_text = item.get("Match", "") or ""
+                description = item.get("Description", rule_id)
+
+                try:
+                    if file_path:
+                        file_path = str(Path(file_path).relative_to(repo_path))
+                except ValueError:
+                    pass
+
+                findings.append({
+                    "title": f"Secret detected: {description}"[:512],
+                    "description": f"Rule: {rule_id}. Match context: {_mask_secret(secret or match_text)}",
+                    "severity": _gitleaks_severity(item, custom_severity_map),
+                    "finding_type": "secrets",
+                    "scanner": "gitleaks",
+                    "file_path": file_path,
+                    "line_number": line_number,
+                    "rule_id": rule_id or None,
+                    "status": "open",
+                })
+
+            logger.info("gitleaks found %d findings in %s", len(findings), app.name)
+            return findings
+        finally:
+            if config_path and config_path.exists():
+                config_path.unlink(missing_ok=True)
+
+    def run_scan(
+        self,
+        app: Application,
+        scan_type: str = "all",
+        custom_secret_patterns: list[dict] | None = None,
+    ) -> list[dict[str, Any]]:
         """Clone the repo once and run only the scanner(s) requested by *scan_type*.
 
-        Supported values: ``"all"``, ``"semgrep"``, ``"trivy"``, ``"govulncheck"``.
+        Supported values: ``"all"``, ``"semgrep"``, ``"trivy"``, ``"govulncheck"``, ``"gitleaks"``.
         Unknown values fall back to ``"all"`` so callers are never silently broken.
         """
-        _KNOWN_TYPES = {"all", "semgrep", "trivy", "govulncheck"}
+        _KNOWN_TYPES = {"all", "semgrep", "trivy", "govulncheck", "gitleaks"}
         if scan_type not in _KNOWN_TYPES:
             logger.warning("Unknown scan_type %r — running all scanners", scan_type)
             scan_type = "all"
@@ -296,6 +432,8 @@ class RealScannerService:
                 findings += self.run_trivy_scan(app, repo_path)
             if scan_type in ("all", "govulncheck"):
                 findings += self.run_govulncheck_scan(app, repo_path)
+            if scan_type in ("all", "gitleaks"):
+                findings += self.run_gitleaks_scan(app, repo_path, custom_secret_patterns)
 
         return findings
 
@@ -307,6 +445,15 @@ class RealScannerService:
 # Mock scanner (kept for testing / when tools are unavailable)
 # ---------------------------------------------------------------------------
 import random
+
+GITLEAKS_RULES = [
+    ("aws-access-token", "AWS Access Key", "AKIA1234567890ABCDEF", "config/aws.py"),
+    ("github-pat", "GitHub Personal Access Token", "ghp_1234567890abcdef", ".env"),
+    ("generic-api-key", "Generic API Key", "api_key_xYzAbC123456", "src/config.py"),
+    ("stripe-access-token", "Stripe API Key", "sk_live_123456789abc", "payments/client.py"),
+    ("slack-webhook", "Slack Webhook URL", "https://hooks.slack.com/services/T00/B00/xxx", "notify.py"),
+    ("private-key", "Private Key", "-----BEGIN RSA PRIVATE KEY-----", "certs/server.key"),
+]
 
 SEMGREP_RULES = [
     ("python.django.security.injection.sql.sql-injection-using-db-cursor-fetchone", "SQL Injection via cursor", "critical"),
@@ -384,8 +531,25 @@ class MockScannerService:
             })
         return findings
 
+    def run_gitleaks_scan(self, app: Application) -> list[dict[str, Any]]:
+        findings = []
+        for _ in range(random.randint(1, 4)):
+            rule_id, title, secret, file_path = random.choice(GITLEAKS_RULES)
+            findings.append({
+                "title": f"Secret detected: {title}"[:512],
+                "description": f"Rule: {rule_id}. Match context: {_mask_secret(secret)}",
+                "severity": "high",
+                "finding_type": "secrets",
+                "scanner": "gitleaks",
+                "file_path": file_path,
+                "line_number": random.randint(1, 100),
+                "rule_id": rule_id,
+                "status": "open",
+            })
+        return findings
+
     def run_all_scans(self, app: Application) -> list[dict[str, Any]]:
-        return self.run_semgrep_scan(app) + self.run_trivy_scan(app)
+        return self.run_semgrep_scan(app) + self.run_trivy_scan(app) + self.run_gitleaks_scan(app)
 
 
 scanner_service = MockScannerService()

@@ -17,6 +17,7 @@ from app.models.application import Application
 from app.models.cicd_scan import CiCdScan
 from app.models.finding import Finding
 from app.models.scan import Scan
+from app.models.secret_pattern import SecretPattern
 from app.worker.celery_app import celery_app
 
 logger = logging.getLogger(__name__)
@@ -68,10 +69,13 @@ def _upsert_findings_sync(
 
     def _key(f_dict: dict | Finding) -> tuple:
         if isinstance(f_dict, Finding):
-            return _raw_key(f_dict.rule_id, f_dict.file_path, f_dict.cve_id, f_dict.package_name, f_dict.scanner, f_dict.title)
-        return _raw_key(f_dict.get("rule_id"), f_dict.get("file_path"), f_dict.get("cve_id"), f_dict.get("package_name"), f_dict.get("scanner", ""), f_dict.get("title", ""))
+            return _raw_key(f_dict.rule_id, f_dict.file_path, f_dict.cve_id, f_dict.package_name, f_dict.scanner, f_dict.title, f_dict.finding_type)
+        return _raw_key(f_dict.get("rule_id"), f_dict.get("file_path"), f_dict.get("cve_id"), f_dict.get("package_name"), f_dict.get("scanner", ""), f_dict.get("title", ""), f_dict.get("finding_type", ""))
 
-    def _raw_key(rule_id, file_path, cve_id, package_name, scanner, title):
+    def _raw_key(rule_id, file_path, cve_id, package_name, scanner, title, finding_type=""):
+        ftype = (finding_type or "").lower()
+        if ftype == "secrets" and rule_id and file_path:
+            return ("secrets", rule_id, file_path)
         if rule_id and file_path:
             return ("sast", rule_id, file_path)
         if cve_id and package_name:
@@ -121,6 +125,44 @@ def _upsert_findings_sync(
     return created, updated
 
 
+def _evaluate_policies_sync(db: Session, application_id: uuid.UUID) -> dict:
+    """Evaluate all active policies against open findings for this application."""
+    from app.models.finding import Finding
+    from app.models.policy import Policy
+    from app.services.policy_evaluator import evaluate_policy
+
+    active_policies = db.execute(
+        select(Policy).where(Policy.is_active == True)  # noqa: E712
+    ).scalars().all()
+
+    if not active_policies:
+        return {"evaluated": 0, "blocked": False, "total_violations": 0}
+
+    findings = db.execute(
+        select(Finding).where(
+            Finding.application_id == application_id,
+            Finding.status == "open",
+        )
+    ).scalars().all()
+
+    results = [evaluate_policy(p, list(findings)) for p in active_policies]
+    blocked = any(r["blocked"] for r in results)
+    total_violations = sum(r["total_violations"] for r in results)
+
+    if blocked:
+        logger.warning(
+            "Policy violation: %d violations across %d policies for app %s",
+            total_violations, len(active_policies), application_id,
+        )
+
+    return {
+        "evaluated": len(active_policies),
+        "blocked": blocked,
+        "total_violations": total_violations,
+        "policies": [{"name": r["policy_name"], "violations": r["total_violations"], "blocked": r["blocked"]} for r in results],
+    }
+
+
 @celery_app.task(bind=True, name="app.worker.tasks.scan_application_task", max_retries=2)
 def scan_application_task(self, app_id: str, scan_type: str = "all") -> dict:
     """Run a real Semgrep + Trivy scan for a single application."""
@@ -158,8 +200,16 @@ def scan_application_task(self, app_id: str, scan_type: str = "all") -> dict:
         scan_id = scan.id
 
         try:
+            active_patterns = db.execute(
+                select(SecretPattern).where(SecretPattern.is_active == True)  # noqa: E712
+            ).scalars().all()
+            custom_secret_patterns = [
+                {"id": str(p.id), "name": p.name, "pattern": p.pattern, "severity": p.severity}
+                for p in active_patterns
+            ]
+
             svc = RealScannerService()
-            raw_findings = svc.run_scan(app, scan_type)
+            raw_findings = svc.run_scan(app, scan_type, custom_secret_patterns=custom_secret_patterns)
 
             created, updated = _upsert_findings_sync(db, application_id, scan_id, raw_findings)
 
@@ -172,6 +222,14 @@ def scan_application_task(self, app_id: str, scan_type: str = "all") -> dict:
             scan.completed_at = datetime.now(timezone.utc)
 
             _recalculate_risk(db, app)
+
+            # Only evaluate policies on full scans — partial scans produce incomplete
+            # finding sets and would cause false negatives in policy results.
+            if scan_type == "all":
+                policy_summary = _evaluate_policies_sync(db, application_id)
+            else:
+                policy_summary = {"skipped": True, "reason": f"partial scan ({scan_type})"}
+
             db.commit()
 
             return {
@@ -180,6 +238,7 @@ def scan_application_task(self, app_id: str, scan_type: str = "all") -> dict:
                 "findings": len(raw_findings),
                 "created": created,
                 "updated": updated,
+                "policy_evaluation": policy_summary,
             }
 
         except Exception as exc:
@@ -214,10 +273,13 @@ def _upsert_cicd_findings_sync(
 
     def _key(f_dict: dict | Finding) -> tuple:
         if isinstance(f_dict, Finding):
-            return _raw_key(f_dict.rule_id, f_dict.file_path, f_dict.cve_id, f_dict.package_name, f_dict.scanner, f_dict.title)
-        return _raw_key(f_dict.get("rule_id"), f_dict.get("file_path"), f_dict.get("cve_id"), f_dict.get("package_name"), f_dict.get("scanner", ""), f_dict.get("title", ""))
+            return _raw_key(f_dict.rule_id, f_dict.file_path, f_dict.cve_id, f_dict.package_name, f_dict.scanner, f_dict.title, f_dict.finding_type)
+        return _raw_key(f_dict.get("rule_id"), f_dict.get("file_path"), f_dict.get("cve_id"), f_dict.get("package_name"), f_dict.get("scanner", ""), f_dict.get("title", ""), f_dict.get("finding_type", ""))
 
-    def _raw_key(rule_id, file_path, cve_id, package_name, scanner, title):
+    def _raw_key(rule_id, file_path, cve_id, package_name, scanner, title, finding_type=""):
+        ftype = (finding_type or "").lower()
+        if ftype == "secrets" and rule_id and file_path:
+            return ("secrets", rule_id, file_path)
         if rule_id and file_path:
             return ("sast", rule_id, file_path)
         if cve_id and package_name:

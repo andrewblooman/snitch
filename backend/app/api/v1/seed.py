@@ -40,6 +40,12 @@ SEED_FINDINGS = [
     ("CSRF protection disabled", "CSRF exempt decorator found", "medium", "SAST", "semgrep", "src/api/handlers/auth.py", 15, "python.django.security.audit.csrf-exempt", None, None, None, None, None),
     ("Insecure HTTP transport", "Credentials sent over unencrypted HTTP", "low", "SAST", "semgrep", "src/api/handlers/users.py", 312, "python.lang.security.audit.insecure-transport.requests.request-with-http", None, None, None, None, None),
     ("CVE-2024-2961: glibc iconv overflow", "glibc iconv buffer overflow", "high", "SCA", "trivy", None, None, None, "CVE-2024-2961", "libc6", "2.37-15", "2.38", 8.8),
+    # IaC / Checkov findings
+    ("IAM policy allows full admin access (*:*)", "IAM policy grants all actions on all resources — violates CIS AWS 1.0 L1 (CKV_AWS_1)", "critical", "IaC", "checkov", "terraform/iam.tf", 14, "CKV_AWS_1", None, None, None, None, None),
+    ("Security group allows unrestricted SSH ingress (0.0.0.0/0:22)", "Inbound SSH open to the internet — violates CIS AWS 4.1 L1 (CKV_AWS_24)", "critical", "IaC", "checkov", "terraform/sg.tf", 31, "CKV_AWS_24", None, None, None, None, None),
+    ("S3 bucket publicly accessible via ACL", "S3 ACL grants public read/write access — violates CIS AWS 2.1 L1 (CKV_AWS_20)", "high", "IaC", "checkov", "terraform/s3.tf", 8, "CKV_AWS_20", None, None, None, None, None),
+    ("RDS instance storage not encrypted at rest", "RDS storage encryption disabled — violates CIS AWS 2.3 L1 (CKV_AWS_16)", "high", "IaC", "checkov", "terraform/rds.tf", 22, "CKV_AWS_16", None, None, None, None, None),
+    ("CloudTrail log file validation not enabled", "CloudTrail integrity validation disabled — violates CIS AWS 3.2 L1 (CKV_AWS_36)", "medium", "IaC", "checkov", "terraform/cloudtrail.tf", 5, "CKV_AWS_36", None, None, None, None, None),
 ]
 
 
