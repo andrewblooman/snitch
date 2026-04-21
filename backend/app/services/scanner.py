@@ -1,6 +1,5 @@
 import json
 import logging
-import re
 import shutil
 import subprocess
 import tempfile
@@ -20,6 +19,25 @@ def _mask_secret(secret: str) -> str:
     if not secret or len(secret) < 4:
         return "****"
     return f"****{secret[-4:]}"
+
+
+_GITLEAKS_SEVERITY: dict[str, str] = {
+    "critical": "critical",
+    "high": "high",
+    "medium": "medium",
+    "low": "low",
+}
+
+
+def _gitleaks_severity(item: dict, custom_severity_map: dict[str, str]) -> str:
+    rule_id = item.get("RuleID", "")
+    if rule_id in custom_severity_map:
+        return custom_severity_map[rule_id]
+    for tag in item.get("Tags") or []:
+        sev = _GITLEAKS_SEVERITY.get(tag.lower())
+        if sev:
+            return sev
+    return "high"
 
 
 _SEMGREP_SEVERITY: dict[str, str] = {
@@ -287,23 +305,28 @@ class RealScannerService:
         custom_patterns: list[dict] | None = None,
     ) -> list[dict[str, Any]]:
         config_path: Path | None = None
+        custom_severity_map: dict[str, str] = {}
         try:
             if custom_patterns:
                 toml_lines = ['title = "snitch"\n', "\n", "[extend]\n", "useDefault = true\n"]
                 for p in custom_patterns:
+                    safe_name = p["name"].replace("\\", "\\\\").replace('"', '\\"')
+                    safe_pattern = p["pattern"].replace("'''", "\\'\\'\\'")
+                    rule_id = f"custom-{p['id']}"
+                    custom_severity_map[rule_id] = p["severity"]
                     toml_lines += [
                         "\n[[rules]]\n",
-                        f'id = "custom-{p["id"]}"\n',
-                        f'description = "{p["name"]}"\n',
-                        f"regex = '''{p['pattern']}'''\n",
+                        f'id = "{rule_id}"\n',
+                        f'description = "{safe_name}"\n',
+                        f"regex = '''{safe_pattern}'''\n",
                         f'severity = "{p["severity"].upper()}"\n',
                     ]
-                tmp_cfg = tempfile.NamedTemporaryFile(
+                with tempfile.NamedTemporaryFile(
                     mode="w", suffix=".toml", delete=False, prefix="snitch-gitleaks-"
-                )
-                tmp_cfg.writelines(toml_lines)
-                tmp_cfg.flush()
-                config_path = Path(tmp_cfg.name)
+                ) as tmp_cfg:
+                    tmp_cfg.writelines(toml_lines)
+                    tmp_cfg.flush()
+                    config_path = Path(tmp_cfg.name)
 
             cmd = [
                 "gitleaks", "detect",
@@ -366,7 +389,7 @@ class RealScannerService:
                 findings.append({
                     "title": f"Secret detected: {description}"[:512],
                     "description": f"Rule: {rule_id}. Match context: {_mask_secret(secret or match_text)}",
-                    "severity": "high",
+                    "severity": _gitleaks_severity(item, custom_severity_map),
                     "finding_type": "secrets",
                     "scanner": "gitleaks",
                     "file_path": file_path,

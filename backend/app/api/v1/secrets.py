@@ -65,27 +65,36 @@ async def get_secret_finding_stats(
     application_id: Optional[uuid.UUID] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
-    q = select(Finding).where(Finding.finding_type == "secrets")
+    filters = [Finding.finding_type == "secrets"]
     if application_id:
-        q = q.where(Finding.application_id == application_id)
+        filters.append(Finding.application_id == application_id)
 
-    result = await db.execute(q)
-    findings = result.scalars().all()
+    total = (await db.execute(select(func.count()).select_from(Finding).where(*filters))).scalar_one()
 
-    by_rule: dict = {}
-    for f in findings:
-        rule = f.rule_id or "unknown"
-        by_rule[rule] = by_rule.get(rule, 0) + 1
+    sev_rows = (await db.execute(
+        select(Finding.severity, func.count()).where(*filters).group_by(Finding.severity)
+    )).all()
+    severity_counts = {s: c for s, c in sev_rows}
+
+    status_rows = (await db.execute(
+        select(Finding.status, func.count()).where(*filters).group_by(Finding.status)
+    )).all()
+    status_counts = {s: c for s, c in status_rows}
+
+    rule_rows = (await db.execute(
+        select(Finding.rule_id, func.count()).where(*filters).group_by(Finding.rule_id)
+    )).all()
+    by_rule = {(r or "unknown"): c for r, c in rule_rows}
 
     return {
-        "total": len(findings),
-        "critical": sum(1 for f in findings if f.severity == "critical"),
-        "high": sum(1 for f in findings if f.severity == "high"),
-        "medium": sum(1 for f in findings if f.severity == "medium"),
-        "low": sum(1 for f in findings if f.severity == "low"),
-        "open": sum(1 for f in findings if f.status == "open"),
-        "accepted": sum(1 for f in findings if f.status == "accepted"),
-        "false_positive": sum(1 for f in findings if f.status == "false_positive"),
+        "total": total,
+        "critical": severity_counts.get("critical", 0),
+        "high": severity_counts.get("high", 0),
+        "medium": severity_counts.get("medium", 0),
+        "low": severity_counts.get("low", 0),
+        "open": status_counts.get("open", 0),
+        "accepted": status_counts.get("accepted", 0),
+        "false_positive": status_counts.get("false_positive", 0),
         "by_rule": by_rule,
     }
 

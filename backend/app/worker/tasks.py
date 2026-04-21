@@ -223,8 +223,12 @@ def scan_application_task(self, app_id: str, scan_type: str = "all") -> dict:
 
             _recalculate_risk(db, app)
 
-            # Evaluate all active policies against the updated findings
-            policy_summary = _evaluate_policies_sync(db, application_id)
+            # Only evaluate policies on full scans — partial scans produce incomplete
+            # finding sets and would cause false negatives in policy results.
+            if scan_type == "all":
+                policy_summary = _evaluate_policies_sync(db, application_id)
+            else:
+                policy_summary = {"skipped": True, "reason": f"partial scan ({scan_type})"}
 
             db.commit()
 

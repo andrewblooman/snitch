@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -9,7 +9,7 @@ class SecretPatternBase(BaseModel):
     name: str
     description: Optional[str] = None
     pattern: str
-    severity: str = "high"
+    severity: Literal["critical", "high", "medium", "low"] = "high"
     is_active: bool = True
 
 
@@ -21,7 +21,7 @@ class SecretPatternUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     pattern: Optional[str] = None
-    severity: Optional[str] = None
+    severity: Optional[Literal["critical", "high", "medium", "low"]] = None
     is_active: Optional[bool] = None
 
 

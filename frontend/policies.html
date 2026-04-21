@@ -523,7 +523,7 @@
     // ----------------------------------------------------------------
     async function evaluatePolicy(id, name) {
       showDrawer(`Evaluating: ${name}`, 'Running policy against open findings…');
-      const res = await fetch(`${API}/${id}/evaluate`);
+      const res = await fetch(`${API}/${id}/evaluate`, { method: 'POST' });
       const data = await res.json();
       renderEvalResult([data], name);
     }

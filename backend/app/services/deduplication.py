@@ -27,7 +27,7 @@ def _match_key(raw: dict) -> tuple:
     """Return a tuple that uniquely identifies a finding for deduplication."""
     ftype = (raw.get("finding_type") or "").lower()
     if ftype == "secrets" and raw.get("rule_id") and raw.get("file_path"):
-        return ("secrets", raw["rule_id"], raw["file_path"], str(raw.get("line_number") or ""))
+        return ("secrets", raw["rule_id"], raw["file_path"])
     if raw.get("rule_id") and raw.get("file_path"):
         return ("sast", raw["rule_id"], raw["file_path"])
     if raw.get("cve_id") and raw.get("package_name"):
