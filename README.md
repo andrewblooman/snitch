@@ -7,7 +7,7 @@
 [![Powered by Claude](https://img.shields.io/badge/AI-Claude%203.5%20Sonnet-orange.svg?logo=anthropic)](https://www.anthropic.com/)
 [![GitHub Issues](https://img.shields.io/github/issues/andrewblooman/snitch)](https://github.com/andrewblooman/snitch/issues)
 
-> **Snitch** is a developer-focused AppSec platform that collects security findings from Semgrep (SAST), Grype (container scanning), and Trivy (SCA), calculates per-application risk scores, and provides AI-powered remediation via Anthropic Claude.
+> **Snitch** is a developer-focused AppSec platform that collects security findings from Semgrep (SAST), Grype (container scanning), Trivy (SCA), and Gitleaks (secrets), calculates per-application risk scores, and provides AI-powered remediation via Anthropic Claude.
 
 ![Dashboard](https://github.com/user-attachments/assets/36512a1b-3b76-41cc-af98-0ad688ce1784)
 
@@ -18,10 +18,12 @@
 | Feature | Description |
 |---|---|
 | 📊 **Risk Scoring** | Automatic risk score (0–100) per app derived from open findings by severity |
-| 🔍 **Multi-Scanner** | Semgrep (SAST), Grype (container CVEs), Trivy (SCA/OS vulnerabilities) |
+| 🔍 **Multi-Scanner** | Semgrep (SAST), Grype (container CVEs), Trivy (SCA/OS vulnerabilities), Gitleaks (secrets) |
+| 🔑 **Secrets Detection** | Gitleaks integration with configurable custom regex patterns per organisation |
 | 🤖 **AI Remediation** | Claude-powered "Plan Remediation" generates fix instructions, then creates a GitHub PR |
 | 📈 **90-Day Trends** | Management reporting with vulnerability trends, team leaderboard, and MTTR |
 | 🔗 **GitHub Integration** | Sync code-scanning alerts from GitHub Security; auto-create branches & PRs |
+| 🚦 **Policy Engine** | Define pass/fail gates by severity, scan type, and rule — evaluated on every scan |
 | 🌐 **REST API** | Full OpenAPI/Swagger docs at `/docs` |
 
 ---
@@ -53,17 +55,16 @@ The platform will be available at **http://localhost:8000**
 - 🏠 Dashboard: http://localhost:8000/
 - 📱 Applications: http://localhost:8000/applications.html
 - 📊 Reports: http://localhost:8000/reports.html
+- 🔑 Secrets: http://localhost:8000/secrets.html
 - 📖 API Docs: http://localhost:8000/docs
 
-### 3. Seed demo data
-
-Click the **"Seed Demo Data"** button on the dashboard, or call the API directly:
+### 3. Seed demo data (optional)
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/seed
 ```
 
-This creates 8 realistic demo applications with findings from Semgrep, Grype, and Trivy across 4 teams.
+Creates 8 realistic demo applications with findings from Semgrep, Grype, and Trivy across 4 teams.
 
 ---
 
@@ -76,7 +77,11 @@ snitch/
 │   │   ├── main.py             # FastAPI app, middleware, static mount
 │   │   ├── core/config.py      # Settings (pydantic-settings)
 │   │   ├── db/                 # SQLAlchemy async engine + session
-│   │   ├── models/             # ORM models (Application, Scan, Finding, Remediation)
+│   │   ├── models/             # ORM models
+│   │   │   ├── application.py, scan.py, finding.py, remediation.py
+│   │   │   ├── cicd_scan.py    # CI/CD scan ingestion records
+│   │   │   ├── policy.py       # Policy engine rules
+│   │   │   └── secret_pattern.py  # Custom Gitleaks regex patterns
 │   │   ├── schemas/            # Pydantic request/response schemas
 │   │   ├── api/v1/             # API route handlers
 │   │   │   ├── applications.py # CRUD + scan trigger + GitHub sync
@@ -84,23 +89,34 @@ snitch/
 │   │   │   ├── scans.py        # Scan history
 │   │   │   ├── remediation.py  # AI plan + PR execution
 │   │   │   ├── reports.py      # Overview, leaderboard, trend, top CVEs
+│   │   │   ├── cicd_scans.py   # CI/CD scan results (S3/SQS ingestion)
+│   │   │   ├── policies.py     # Policy CRUD + evaluation
+│   │   │   ├── secrets.py      # Secrets findings + custom pattern CRUD
 │   │   │   └── seed.py         # Demo data seeder
-│   │   └── services/
-│   │       ├── scanner.py      # Mock Semgrep/Grype/Trivy scanner
-│   │       ├── scoring.py      # Risk score calculator
-│   │       ├── ai_remediation.py  # Anthropic Claude integration
-│   │       └── github_service.py  # GitHub Security sync + PR creation
-│   ├── alembic/                # Database migrations
-│   ├── tests/                  # pytest test suite (20 tests)
+│   │   ├── services/
+│   │   │   ├── scanner.py      # Semgrep/Trivy/Govulncheck/Gitleaks scanners
+│   │   │   ├── scoring.py      # Risk score calculator
+│   │   │   ├── deduplication.py   # Finding upsert + dedup logic
+│   │   │   ├── cicd_normaliser.py # Normalise Semgrep/Grype CI output
+│   │   │   ├── policy_evaluator.py
+│   │   │   ├── ai_remediation.py  # Anthropic Claude integration
+│   │   │   └── github_service.py  # GitHub Security sync + PR creation
+│   │   └── worker/             # Celery async tasks
+│   │       ├── tasks.py        # scan_application_task, poll_sqs_task, weekly_scan_all
+│   │       └── celery_app.py
+│   ├── alembic/                # Database migrations (005 revisions)
+│   ├── tests/                  # pytest test suite
 │   ├── Dockerfile
 │   └── requirements.txt
-├── frontend/                   # Static HTML/CSS/JS dashboard
-│   ├── index.html              # Main dashboard
-│   ├── applications.html       # Application portfolio view
+├── frontend/                   # Static HTML/CSS/JS (no build step)
+│   ├── index.html              # Dashboard
+│   ├── applications.html       # Application portfolio
 │   ├── app-detail.html         # Per-app findings + remediation
 │   ├── reports.html            # Management reporting
-│   └── static/
-│       └── js/                 # Bundled Chart.js + Lucide icons
+│   ├── repositories.html       # GitHub repo browser
+│   ├── policies.html           # Policy engine UI
+│   ├── secrets.html            # Secrets findings + custom pattern manager
+│   └── static/js/              # Bundled Chart.js + Lucide icons
 ├── docker-compose.yml
 └── .env.example
 ```
@@ -113,23 +129,56 @@ All endpoints are documented via Swagger UI at `/docs` and ReDoc at `/redoc`.
 
 ### Core Endpoints
 
+Full interactive docs at `/docs` (Swagger UI) and `/redoc`.
+
+**Applications & Findings**
+
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/api/v1/applications` | List apps with risk scores (filterable by team, risk level) |
 | `POST` | `/api/v1/applications` | Register a new application |
 | `GET` | `/api/v1/applications/{id}` | Get app detail with finding summary |
-| `POST` | `/api/v1/applications/{id}/scan` | Trigger Semgrep/Grype/Trivy scan |
+| `POST` | `/api/v1/applications/{id}/scan` | Trigger Semgrep/Trivy/Gitleaks scan |
 | `GET` | `/api/v1/applications/{id}/findings` | Get findings (filterable by severity, type, status) |
 | `POST` | `/api/v1/applications/{id}/sync-github` | Sync from GitHub Security alerts |
 | `GET` | `/api/v1/findings` | List all findings across apps |
 | `PATCH` | `/api/v1/findings/{id}` | Update finding status (open/fixed/accepted/false_positive) |
+
+**Secrets**
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/v1/secrets/findings` | List secrets findings (filterable by app, severity, status) |
+| `GET` | `/api/v1/secrets/findings/stats` | Secrets counts by severity and rule |
+| `PATCH` | `/api/v1/secrets/findings/{id}` | Update secret finding status |
+| `GET` | `/api/v1/secrets/patterns` | List custom Gitleaks regex patterns |
+| `POST` | `/api/v1/secrets/patterns` | Create custom pattern |
+| `PUT` | `/api/v1/secrets/patterns/{id}` | Update pattern |
+| `DELETE` | `/api/v1/secrets/patterns/{id}` | Delete pattern |
+| `POST` | `/api/v1/secrets/patterns/test` | Test a regex against sample text |
+
+**Policies**
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/v1/policies` | List policies |
+| `POST` | `/api/v1/policies` | Create policy |
+| `PATCH` | `/api/v1/policies/{id}` | Update policy |
+| `DELETE` | `/api/v1/policies/{id}` | Delete policy |
+| `POST` | `/api/v1/policies/{id}/evaluate` | Evaluate policy against current findings |
+| `GET` | `/api/v1/policies/evaluate/all` | Evaluate all active policies |
+
+**Reports & CI/CD**
+
+| Method | Path | Description |
+|---|---|---|
 | `POST` | `/api/v1/remediation/plan` | Generate AI remediation plan for selected findings |
 | `POST` | `/api/v1/remediation/{id}/execute` | Execute plan: create branch + GitHub PR |
 | `GET` | `/api/v1/reports/overview` | Platform-wide stats |
 | `GET` | `/api/v1/reports/leaderboard` | Team security leaderboard |
 | `GET` | `/api/v1/reports/trend?days=90` | 90-day vulnerability trend |
-| `GET` | `/api/v1/reports/pull-requests` | All Snitch-created PRs |
 | `GET` | `/api/v1/reports/top-vulnerabilities` | Most common CVEs/rules |
+| `GET` | `/api/v1/cicd-scans` | List CI/CD scan results ingested via S3/SQS |
 | `POST` | `/api/v1/seed` | Seed demo data |
 
 ---

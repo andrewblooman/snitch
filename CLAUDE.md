@@ -2,9 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Rules
+
+ALWAYS update CLAUDE.md before pushing any code to GitHub
+ALWAYS create a new branch before starting any new work
+ALWAYS push the branch to GitHub and open a PR
+
 ## What This Is
 
-Snitch is an AppSec platform that aggregates security findings from Semgrep (SAST), Grype (container CVEs), and Trivy (SCA), calculates per-app risk scores, and provides AI-powered remediation via Anthropic Claude.
+Snitch is an AppSec platform that aggregates security findings from Semgrep (SAST), Grype (container CVEs), Trivy (SCA), and Gitleaks (secrets), calculates per-app risk scores, and provides AI-powered remediation via Anthropic Claude.
 
 ## Commands
 
@@ -42,14 +48,18 @@ backend/app/
 ├── main.py          # FastAPI app, CORS, static mount, lifespan (creates tables on startup)
 ├── core/config.py   # pydantic-settings: DATABASE_URL, GITHUB_TOKEN, ANTHROPIC_API_KEY, REDIS_URL
 ├── db/session.py    # async SQLAlchemy engine + get_db() dependency
-├── models/          # SQLAlchemy ORM: Application, Scan, Finding, Remediation
+├── models/          # SQLAlchemy ORM: Application, Scan, Finding, Remediation, CiCdScan, Policy, SecretPattern
 ├── schemas/         # Pydantic request/response schemas (mirrors models/)
 ├── api/v1/          # Route handlers; all mounted under /api/v1/ via router.py
-├── worker/          # Celery task definitions (scans, periodic jobs)
+│   │                # includes: applications, findings, scans, remediation, reports,
+│   │                #           cicd_scans, policies, secrets, github, seed
+├── worker/          # Celery task definitions (scans, periodic jobs, SQS polling)
 └── services/
-    ├── scanner.py         # Mock Semgrep/Grype/Trivy scanner (returns fake findings)
+    ├── scanner.py         # Semgrep/Trivy/Govulncheck/Gitleaks + MockScannerService
     ├── scoring.py         # Risk score calculator
-    ├── deduplication.py   # Finding deduplication logic
+    ├── deduplication.py   # Finding deduplication logic (SAST/SCA/secrets/generic keys)
+    ├── cicd_normaliser.py # Normalise Semgrep/Grype CI/CD JSON output
+    ├── policy_evaluator.py # Evaluate policy rules against findings
     ├── ai_remediation.py  # Claude integration; falls back to mock plan if no API key
     └── github_service.py  # GitHub code scanning sync + branch/PR creation via PyGitHub
 ```
@@ -73,8 +83,14 @@ backend/app/
 ### Finding Fields
 - `severity`: `critical` / `high` / `medium` / `low` / `info`
 - `status`: `open` / `fixed` / `accepted` / `false_positive`
-- `finding_type`: `SAST` / `SCA` / `container`
-- `scanner`: `semgrep` / `grype` / `trivy`
+- `finding_type`: `SAST` / `SCA` / `container` / `secrets`
+- `scanner`: `semgrep` / `grype` / `trivy` / `govulncheck` / `gitleaks`
+
+### Secrets Scanning
+Gitleaks runs alongside Semgrep/Trivy in `scan_application_task`. Active `SecretPattern` rows are loaded from the DB at scan time and written to a temp TOML config passed to gitleaks via `--config`. Raw secret values are never stored — masked to `****{last4}` in the `description` field. Dedup key: `("secrets", rule_id, file_path)`.
+
+### Policy Engine
+`Policy` model stores rules (min_severity, enabled_scan_types, rule_blocklist, rule_allowlist, action). `policy_evaluator.evaluate_policy()` is called after every scan in `scan_application_task`. Actions: `inform` (log only) or `block` (sets blocked=True in task result).
 
 ### AI Remediation
 Uses `claude-3-5-sonnet-20241022` with extended thinking (`budget_tokens=10000`). When `ANTHROPIC_API_KEY` is not set, `_mock_plan()` is returned — no error is raised. The Anthropic client is imported lazily inside the function.

@@ -56,6 +56,12 @@
       <a href="/reports.html" class="nav-link" id="nav-reports" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
         <i data-lucide="bar-chart-3" style="width:18px;height:18px;"></i> Reports
       </a>
+      <a href="/policies.html" class="nav-link" id="nav-policies" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="shield-check" style="width:18px;height:18px;"></i> Policies
+      </a>
+      <a href="/secrets.html" class="nav-link" id="nav-secrets" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="key" style="width:18px;height:18px;"></i> Secrets
+      </a>
       <div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:16px 8px 4px;">Developer</div>
       <a href="/docs" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
         <i data-lucide="code-2" style="width:18px;height:18px;"></i> API Docs
@@ -77,9 +83,6 @@
         <h1 style="font-size:22px;font-weight:700;color:#f1f5f9;margin:0;">Security Overview</h1>
         <p style="font-size:13px;color:#475569;margin:2px 0 0;">Real-time application security monitoring</p>
       </div>
-      <button class="btn-primary" onclick="seedDemo()" id="seed-btn">
-        <i data-lucide="database" style="width:16px;height:16px;"></i> Seed Demo Data
-      </button>
     </header>
 
     <main style="padding:32px;">
@@ -237,23 +240,6 @@ function showToast(message, type='success') {
   setTimeout(() => { toast.style.animation='slideOutRight 0.3s ease forwards'; setTimeout(()=>toast.remove(),300); }, 3500);
 }
 
-// ── Seed Demo Data ─────────────────────────────────────────────────────────────
-async function seedDemo() {
-  const btn = document.getElementById('seed-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<div style="animation:spin 1s linear infinite;display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;"></div> Seeding...';
-  try {
-    const res = await fetch('/api/v1/seed', { method:'POST' });
-    if (!res.ok) throw new Error('Seed failed');
-    showToast('Demo data seeded successfully!', 'success');
-    setTimeout(() => location.reload(), 1000);
-  } catch(e) {
-    showToast('Failed to seed demo data: ' + e.message, 'error');
-    btn.disabled = false;
-    btn.innerHTML = '<i data-lucide="database" style="width:16px;height:16px;"></i> Seed Demo Data';
-    lucide.createIcons();
-  }
-}
 
 // ── Charts ─────────────────────────────────────────────────────────────────────
 let severityChartInst, riskChartInst;
