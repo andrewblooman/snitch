@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snitch — Security Reports</title>
   <style>/* Inter font fallback */ body { font-family: "Inter", system-ui, -apple-system, sans-serif; }</style>
-  
+  <link rel="stylesheet" href="/static/css/theme.css">
   <script src="/static/js/chart.min.js"></script>
   <script src="/static/js/lucide.min.js"></script>
   <style>
@@ -33,6 +33,7 @@
   </style>
 </head>
 <body style="font-family:'Inter',sans-serif;background:#0a0e1a;color:#f1f5f9;margin:0;padding:0;min-height:100vh;">
+<script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);window.applyTheme=function(theme){document.documentElement.setAttribute('data-theme',theme);var light=theme==='light';var sb=document.getElementById('sidebar');if(sb)sb.style.background=light?'#1e293b':'#080c18';document.body.style.background=light?'#f0f4f8':'#0a0e1a';var mc=document.getElementById('main-content');if(mc)mc.style.background=light?'#f0f4f8':'#0a0e1a';};})();</script>
 
   <!-- Sidebar -->
   <aside id="sidebar" style="width:260px;min-height:100vh;background:#080c18;border-right:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;">
@@ -65,6 +66,9 @@
       <a href="/secrets.html" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
         <i data-lucide="key" style="width:18px;height:18px;"></i> Secrets
       </a>
+      <a href="/profile.html" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="user" style="width:18px;height:18px;"></i> Profile
+      </a>
       <div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:16px 8px 4px;">Developer</div>
       <a href="/docs" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
         <i data-lucide="code-2" style="width:18px;height:18px;"></i> API Docs
@@ -80,7 +84,7 @@
   </aside>
 
   <!-- Main -->
-  <div style="margin-left:260px;min-height:100vh;">
+  <div id="main-content" style="margin-left:260px;min-height:100vh;">
     <header style="background:rgba(8,12,24,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
       <div>
         <h1 style="font-size:22px;font-weight:700;color:#f1f5f9;margin:0;">Security Reports</h1>
@@ -539,6 +543,7 @@ async function loadAll(){
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
+  applyTheme(localStorage.getItem('theme')||'dark');
   lucide.createIcons();
   loadAll();
 });

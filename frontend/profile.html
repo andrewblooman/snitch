@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snitch — Profile &amp; Preferences</title>
+  <link rel="stylesheet" href="/static/css/theme.css">
+  <style>/* Inter font fallback */ body { font-family: "Inter", system-ui, -apple-system, sans-serif; }</style>
+  <script src="/static/js/lucide.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    @keyframes fadeInUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+    .nav-link:hover { background:rgba(255,255,255,0.05) !important; color:#e2e8f0 !important; }
+    .btn-primary { background:linear-gradient(135deg,#00d4ff,#6366f1);color:white;border:none;padding:10px 20px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:8px; }
+    .btn-primary:hover { transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,212,255,0.4); }
+    .btn-secondary { background:rgba(255,255,255,0.05);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);padding:10px 20px;border-radius:10px;font-weight:500;font-size:14px;cursor:pointer;transition:all 0.2s; }
+    .btn-secondary:hover { background:rgba(255,255,255,0.1);color:#f1f5f9; }
+    .card { background:rgba(13,17,23,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:16px;backdrop-filter:blur(20px); }
+    .dark-input { background:#0d1117;border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#f1f5f9;font-size:14px;padding:10px 14px;width:100%;outline:none;font-family:inherit; }
+    .dark-input:focus { border-color:rgba(0,212,255,0.4); }
+    .dark-select { background:#0d1117;border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#f1f5f9;font-size:14px;padding:10px 14px;outline:none;font-family:inherit;cursor:pointer; }
+
+    /* Toggle switch */
+    .toggle-switch { position:relative;display:inline-block;width:48px;height:26px;flex-shrink:0; }
+    .toggle-switch input { opacity:0;width:0;height:0; }
+    .toggle-slider { position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.1);border-radius:26px;transition:.3s; }
+    .toggle-slider:before { position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s; }
+    input:checked + .toggle-slider { background:linear-gradient(135deg,#00d4ff,#6366f1); }
+    input:checked + .toggle-slider:before { transform:translateX(22px); }
+
+    /* Theme toggle button */
+    .theme-option { display:flex;align-items:center;gap:16px;padding:16px;border-radius:12px;border:2px solid transparent;cursor:pointer;transition:all 0.2s;flex:1; }
+    .theme-option.active { border-color:rgba(0,212,255,0.5);background:rgba(0,212,255,0.08); }
+    .theme-option:hover:not(.active) { background:rgba(255,255,255,0.04); }
+
+    .section-card { padding:28px;margin-bottom:20px;animation:fadeInUp 0.4s ease both; }
+    .section-title { font-size:16px;font-weight:700;color:#f1f5f9;margin:0 0 4px; }
+    .section-sub { font-size:13px;color:#475569;margin:0 0 24px; }
+    .pref-row { display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.05); }
+    .pref-row:last-child { border-bottom:none; }
+    .pref-label { font-size:14px;font-weight:500;color:#f1f5f9; }
+    .pref-desc { font-size:12px;color:#475569;margin-top:2px; }
+
+    [data-theme="light"] .theme-option:hover:not(.active) { background:rgba(0,0,0,0.04); }
+    [data-theme="light"] .pref-row { border-bottom-color:rgba(0,0,0,0.06); }
+    [data-theme="light"] .toggle-slider { background:rgba(0,0,0,0.15); }
+    [data-theme="light"] .section-title { color:#0f172a; }
+    [data-theme="light"] .pref-label { color:#0f172a; }
+    [data-theme="light"] .theme-option.active { border-color:rgba(8,145,178,0.5);background:rgba(8,145,178,0.08); }
+  </style>
+</head>
+<body style="font-family:'Inter',sans-serif;background:#0a0e1a;color:#f1f5f9;margin:0;padding:0;min-height:100vh;">
+<script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" style="width:260px;min-height:100vh;background:#080c18;border-right:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;">
+    <div style="padding:24px 20px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;background:linear-gradient(135deg,#00d4ff22,#6366f122);border:1px solid #00d4ff44;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+        <i data-lucide="shield-alert" style="width:20px;height:20px;color:#00d4ff;"></i>
+      </div>
+      <div>
+        <div style="font-size:20px;font-weight:800;color:#f1f5f9;letter-spacing:-0.5px;">Snitch</div>
+        <div style="font-size:11px;color:#00d4ff;font-weight:500;letter-spacing:1px;text-transform:uppercase;">AppSec Platform</div>
+      </div>
+    </div>
+    <nav style="flex:1;padding:16px 12px;">
+      <div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:8px 8px 4px;">Main Menu</div>
+      <a href="/" class="nav-link" id="nav-dashboard" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="layout-dashboard" style="width:18px;height:18px;"></i> Dashboard
+      </a>
+      <a href="/applications.html" class="nav-link" id="nav-apps" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="layers" style="width:18px;height:18px;"></i> Applications
+      </a>
+      <a href="/repositories.html" class="nav-link" id="nav-repos" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="git-branch" style="width:18px;height:18px;"></i> Repositories
+      </a>
+      <a href="/reports.html" class="nav-link" id="nav-reports" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="bar-chart-3" style="width:18px;height:18px;"></i> Reports
+      </a>
+      <a href="/policies.html" class="nav-link" id="nav-policies" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="shield-check" style="width:18px;height:18px;"></i> Policies
+      </a>
+      <a href="/secrets.html" class="nav-link" id="nav-secrets" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="key" style="width:18px;height:18px;"></i> Secrets
+      </a>
+      <a href="/profile.html" class="nav-link" id="nav-profile" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(99,102,241,0.15));color:#00d4ff;border:1px solid rgba(0,212,255,0.2);">
+        <i data-lucide="user" style="width:18px;height:18px;"></i> Profile
+      </a>
+      <div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:16px 8px 4px;">Developer</div>
+      <a href="/docs" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="code-2" style="width:18px;height:18px;"></i> API Docs
+        <i data-lucide="external-link" style="width:12px;height:12px;margin-left:auto;"></i>
+      </a>
+    </nav>
+    <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,0.08);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:8px;height:8px;background:#10b981;border-radius:50%;box-shadow:0 0 8px #10b981;"></div>
+        <span style="font-size:12px;color:#475569;">All systems operational</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div id="main-content" style="margin-left:260px;min-height:100vh;">
+    <header style="background:rgba(8,12,24,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
+      <div>
+        <h1 style="font-size:22px;font-weight:700;color:#f1f5f9;margin:0;">Profile &amp; Preferences</h1>
+        <p style="font-size:13px;color:#475569;margin:2px 0 0;">Manage your account settings and preferences</p>
+      </div>
+    </header>
+
+    <main style="padding:32px;max-width:900px;">
+
+      <!-- ── Appearance ── -->
+      <div class="card section-card" style="animation-delay:0s;">
+        <p class="section-title">Appearance</p>
+        <p class="section-sub">Choose how Snitch looks to you. Your preference is saved in this browser.</p>
+
+        <div style="display:flex;gap:12px;">
+          <!-- Dark option -->
+          <div class="theme-option" id="opt-dark" onclick="setTheme('dark')" style="background:rgba(8,12,24,0.6);">
+            <div style="width:40px;height:40px;background:#080c18;border-radius:10px;border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i data-lucide="moon" style="width:20px;height:20px;color:#6366f1;"></i>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:#f1f5f9;">Dark</div>
+              <div style="font-size:12px;color:#475569;">Easy on the eyes</div>
+            </div>
+          </div>
+
+          <!-- Light option -->
+          <div class="theme-option" id="opt-light" onclick="setTheme('light')" style="background:rgba(248,250,252,0.05);">
+            <div style="width:40px;height:40px;background:#f0f4f8;border-radius:10px;border:1px solid rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i data-lucide="sun" style="width:20px;height:20px;color:#f59e0b;"></i>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:#f1f5f9;">Light</div>
+              <div style="font-size:12px;color:#475569;">Clean and bright</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── API Token ── -->
+      <div class="card section-card" style="animation-delay:0.08s;">
+        <p class="section-title">API Token</p>
+        <p class="section-sub">Use this token to authenticate requests to the Snitch API from CI/CD scripts or integrations.</p>
+
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;">
+          <input type="password" id="token-input" class="dark-input" readonly placeholder="No token generated yet" style="font-family:monospace;font-size:13px;letter-spacing:0.5px;">
+          <button class="btn-secondary" id="toggle-visibility-btn" onclick="toggleTokenVisibility()" title="Show / hide token" style="padding:10px 14px;flex-shrink:0;">
+            <i data-lucide="eye" id="eye-icon" style="width:16px;height:16px;"></i>
+          </button>
+          <button class="btn-secondary" id="copy-btn" onclick="copyToken()" title="Copy token" style="padding:10px 14px;flex-shrink:0;">
+            <i data-lucide="copy" style="width:16px;height:16px;"></i>
+          </button>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button class="btn-primary" onclick="generateToken()">
+            <i data-lucide="refresh-cw" style="width:16px;height:16px;"></i>
+            Generate New Token
+          </button>
+          <span id="token-note" style="font-size:12px;color:#475569;"></span>
+        </div>
+
+        <div id="token-warning" style="display:none;margin-top:14px;padding:12px 16px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:10px;font-size:13px;color:#f59e0b;">
+          <i data-lucide="alert-triangle" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:6px;"></i>
+          Copy this token now — it won't be shown again after you leave this page.
+        </div>
+      </div>
+
+      <!-- ── Notifications ── -->
+      <div class="card section-card" style="animation-delay:0.16s;">
+        <p class="section-title">Notifications</p>
+        <p class="section-sub">Control which events show browser notifications. (Browser permission required.)</p>
+
+        <div class="pref-row">
+          <div>
+            <div class="pref-label">Scan completed</div>
+            <div class="pref-desc">Notify when a security scan finishes</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="notif-scan" onchange="saveNotifPref()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="pref-row">
+          <div>
+            <div class="pref-label">Critical findings</div>
+            <div class="pref-desc">Alert immediately on new critical severity findings</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="notif-critical" onchange="saveNotifPref()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="pref-row">
+          <div>
+            <div class="pref-label">Policy violations</div>
+            <div class="pref-desc">Alert when a policy evaluation blocks or flags a scan</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="notif-policy" onchange="saveNotifPref()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- ── Preferences ── -->
+      <div class="card section-card" style="animation-delay:0.24s;">
+        <p class="section-title">Preferences</p>
+        <p class="section-sub">Defaults used throughout the platform.</p>
+
+        <div class="pref-row">
+          <div>
+            <div class="pref-label">Default scan type</div>
+            <div class="pref-desc">Pre-selected scan type when triggering a new scan</div>
+          </div>
+          <select class="dark-select" id="pref-scan-type" onchange="savePref('scanType', this.value)" style="width:160px;">
+            <option value="all">All scanners</option>
+            <option value="semgrep">SAST (Semgrep)</option>
+            <option value="trivy">SCA (Trivy)</option>
+            <option value="gitleaks">Secrets (Gitleaks)</option>
+          </select>
+        </div>
+
+        <div class="pref-row">
+          <div>
+            <div class="pref-label">Items per page</div>
+            <div class="pref-desc">Default pagination size for findings tables</div>
+          </div>
+          <select class="dark-select" id="pref-page-size" onchange="savePref('pageSize', this.value)" style="width:100px;">
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+
+        <div class="pref-row">
+          <div>
+            <div class="pref-label">Default severity filter</div>
+            <div class="pref-desc">Pre-selected severity when viewing findings</div>
+          </div>
+          <select class="dark-select" id="pref-severity" onchange="savePref('defaultSeverity', this.value)" style="width:140px;">
+            <option value="">All severities</option>
+            <option value="critical">Critical</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+<script>
+// ── Theme ────────────────────────────────────────────────────────────────────
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const light = theme === 'light';
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar) sidebar.style.background = light ? '#1e293b' : '#080c18';
+  document.body.style.background = light ? '#f0f4f8' : '#0a0e1a';
+  const main = document.getElementById('main-content');
+  if (main) main.style.background = light ? '#f0f4f8' : '#0a0e1a';
+
+  document.getElementById('opt-dark').classList.toggle('active', theme === 'dark');
+  document.getElementById('opt-light').classList.toggle('active', theme === 'light');
+}
+
+function setTheme(theme) {
+  localStorage.setItem('theme', theme);
+  applyTheme(theme);
+}
+
+// ── API Token ────────────────────────────────────────────────────────────────
+
+let currentToken = '';
+let tokenVisible = false;
+
+function generateToken() {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  currentToken = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+  localStorage.setItem('api_token', currentToken);
+
+  const input = document.getElementById('token-input');
+  input.type = 'text';
+  input.value = currentToken;
+  tokenVisible = true;
+  document.getElementById('eye-icon').setAttribute('data-lucide', 'eye-off');
+  lucide.createIcons();
+
+  document.getElementById('token-warning').style.display = 'block';
+  document.getElementById('token-note').textContent = 'Generated ' + new Date().toLocaleTimeString();
+}
+
+function toggleTokenVisibility() {
+  if (!currentToken) return;
+  tokenVisible = !tokenVisible;
+  const input = document.getElementById('token-input');
+  input.type = tokenVisible ? 'text' : 'password';
+  input.value = currentToken;
+  document.getElementById('eye-icon').setAttribute('data-lucide', tokenVisible ? 'eye-off' : 'eye');
+  lucide.createIcons();
+}
+
+function copyToken() {
+  if (!currentToken) return;
+  navigator.clipboard.writeText(currentToken).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.innerHTML = '<i data-lucide="check" style="width:16px;height:16px;color:#10b981;"></i>';
+    lucide.createIcons();
+    setTimeout(() => {
+      btn.innerHTML = '<i data-lucide="copy" style="width:16px;height:16px;"></i>';
+      lucide.createIcons();
+    }, 2000);
+  });
+}
+
+// ── Notifications ────────────────────────────────────────────────────────────
+
+function loadNotifPrefs() {
+  const prefs = JSON.parse(localStorage.getItem('notifications') || '{}');
+  document.getElementById('notif-scan').checked = !!prefs.scan;
+  document.getElementById('notif-critical').checked = !!prefs.critical;
+  document.getElementById('notif-policy').checked = !!prefs.policy;
+}
+
+function saveNotifPref() {
+  const prefs = {
+    scan: document.getElementById('notif-scan').checked,
+    critical: document.getElementById('notif-critical').checked,
+    policy: document.getElementById('notif-policy').checked,
+  };
+  localStorage.setItem('notifications', JSON.stringify(prefs));
+
+  // Request browser notification permission if any toggle enabled
+  const anyEnabled = Object.values(prefs).some(Boolean);
+  if (anyEnabled && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}
+
+// ── Preferences ──────────────────────────────────────────────────────────────
+
+function loadPrefs() {
+  const prefs = JSON.parse(localStorage.getItem('preferences') || '{}');
+  if (prefs.scanType) document.getElementById('pref-scan-type').value = prefs.scanType;
+  if (prefs.pageSize) document.getElementById('pref-page-size').value = prefs.pageSize;
+  if (prefs.defaultSeverity !== undefined) document.getElementById('pref-severity').value = prefs.defaultSeverity;
+}
+
+function savePref(key, value) {
+  const prefs = JSON.parse(localStorage.getItem('preferences') || '{}');
+  prefs[key] = value;
+  localStorage.setItem('preferences', JSON.stringify(prefs));
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+
+(function init() {
+  const theme = localStorage.getItem('theme') || 'dark';
+  applyTheme(theme);
+
+  // Load existing token (masked)
+  const stored = localStorage.getItem('api_token');
+  if (stored) {
+    currentToken = stored;
+    const input = document.getElementById('token-input');
+    input.type = 'password';
+    input.value = stored;
+    document.getElementById('token-note').textContent = 'Token exists — generate a new one to rotate.';
+  }
+
+  loadNotifPrefs();
+  loadPrefs();
+  lucide.createIcons();
+})();
+</script>
+</body>
+</html>

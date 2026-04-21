@@ -5,12 +5,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Rules
 
 ALWAYS update CLAUDE.md before pushing any code to GitHub
+ALWAYS check for multiple branches and question of any branches other than main can be deleted
 ALWAYS create a new branch before starting any new work
 ALWAYS push the branch to GitHub and open a PR
 
 ## What This Is
 
-Snitch is an AppSec platform that aggregates security findings from Semgrep (SAST), Grype (container CVEs), Trivy (SCA), and Gitleaks (secrets), calculates per-app risk scores, and provides AI-powered remediation via Anthropic Claude.
+Snitch is an AppSec platform that aggregates security findings from Semgrep (SAST), Grype (container CVEs), Trivy (SCA), and Gitleaks (secrets), calculates per-app risk scores, and provides AI-powered remediation via Anthropic Claude. Includes a User Profile page with light/dark mode toggle (stored in localStorage).
 
 ## Commands
 
