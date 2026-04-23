@@ -279,4 +279,4 @@ Or enable **GitHub Security** (code scanning + Dependabot) and use the **"Sync f
 
 ## License
 
-MIT — see [LICENSE](LICENSE)
+Apache 2.0 — see [LICENSE](LICENSE)
