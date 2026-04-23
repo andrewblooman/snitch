@@ -18,6 +18,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    conn = op.get_bind()
+    if sa.inspect(conn).has_table("secret_patterns"):
+        return
     op.create_table(
         "secret_patterns",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
