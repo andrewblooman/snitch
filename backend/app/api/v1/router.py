@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1 import applications, cicd_scans, findings, github, policies, remediation, reports, scans, secrets, seed
+from app.api.v1 import applications, cicd_scans, findings, github, policies, remediation, reports, rules, scans, secrets, seed
 
 api_router = APIRouter(prefix="/api/v1")
 
@@ -14,3 +14,4 @@ api_router.include_router(github.router)
 api_router.include_router(cicd_scans.router)
 api_router.include_router(policies.router)
 api_router.include_router(secrets.router)
+api_router.include_router(rules.router)
