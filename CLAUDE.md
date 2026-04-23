@@ -53,7 +53,7 @@ backend/app/
 ├── schemas/         # Pydantic request/response schemas (mirrors models/)
 ├── api/v1/          # Route handlers; all mounted under /api/v1/ via router.py
 │   │                # includes: applications, findings, scans, remediation, reports,
-│   │                #           cicd_scans, policies, secrets, github, seed
+│   │                #           cicd_scans, policies, secrets, github, seed, rules
 ├── worker/          # Celery task definitions (scans, periodic jobs, SQS polling)
 └── services/
     ├── scanner.py         # Semgrep/Trivy/Govulncheck/Gitleaks + MockScannerService
@@ -61,6 +61,7 @@ backend/app/
     ├── deduplication.py   # Finding deduplication logic (SAST/SCA/secrets/generic keys)
     ├── cicd_normaliser.py # Normalise Semgrep/Grype CI/CD JSON output
     ├── policy_evaluator.py # Evaluate policy rules against findings
+    ├── rule_catalog.py    # Static catalog of ~37 rules (Checkov/IaC, Semgrep/SAST, Gitleaks/secrets)
     ├── ai_remediation.py  # Claude integration; falls back to mock plan if no API key
     └── github_service.py  # GitHub code scanning sync + branch/PR creation via PyGitHub
 ```
