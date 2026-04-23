@@ -157,10 +157,10 @@ body {
 
 /* ── Shared utility classes ── */
 
-/* Nav link hover (sidebar) */
-.nav-link:hover {
-  background: rgba(255,255,255,0.05) !important;
-  color: #e2e8f0 !important;
+/* Nav link hover (sidebar) — scoped to non-active links */
+.nav-link:not(.active):hover {
+  background: rgba(255,255,255,0.05);
+  color: #e2e8f0;
 }
 
 /* Buttons */

@@ -216,6 +216,16 @@ backend/.pytest_cache/
 backend/test_local.db
 *.db
 
+# Celery Beat runtime artifacts
+backend/celerybeat-schedule-shm
+backend/celerybeat-schedule-wal
+
+# Playwright MCP tool artifacts
+.playwright-mcp/
+
+# Scratch / planning files
+todo.txt
+
 # Python cache
 **/__pycache__/
 **/*.pyc

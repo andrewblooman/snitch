@@ -12,20 +12,15 @@
  * of the page body is parsed. Page-level scripts that call lucide.createIcons()
  * will therefore pick up the sidebar icons automatically.
  *
- * applyTheme(theme) is defined here as the default. profile.html overrides it
- * with its own version (which additionally updates the theme-toggle UI).
+ * applyTheme(theme) is defined here as the default global implementation.
+ * Pages that need custom theme behaviour must explicitly assign
+ * window.applyTheme = applyTheme to override this shared version.
  */
 (function () {
   // ── Default applyTheme (may be overridden by individual pages) ───────────
   window.applyTheme = function (theme) {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
-    var light = theme === 'light';
-    var sb = document.getElementById('sidebar');
-    if (sb) sb.style.background = light ? '#1e293b' : '#080c18';
-    var mc = document.getElementById('main-content');
-    if (mc) mc.style.background = light ? '#f0f4f8' : '';
-    document.body.style.background = light ? '#f0f4f8' : '';
   };
 
   // ── Nav items definition ─────────────────────────────────────────────────
@@ -47,7 +42,9 @@
 
   function isActive(item) {
     return item.matchPaths.some(function (p) {
-      return currentPath === p || currentPath.startsWith(p.replace('.html', ''));
+      if (p === '/') return currentPath === '/';
+      var prefixPath = p.replace('.html', '');
+      return currentPath === p || currentPath.startsWith(prefixPath);
     });
   }
 
@@ -76,7 +73,7 @@
       active ? ACTIVE_STYLE : INACTIVE_STYLE,
     ].join(';');
 
-    return '<a href="' + item.href + '" class="nav-link" style="' + styleStr + '">'
+    return '<a href="' + item.href + '" class="nav-link' + (active ? ' active' : '') + '" style="' + styleStr + '">'
       + '<i data-lucide="' + item.icon + '" style="width:18px;height:18px;flex-shrink:0;"></i> '
       + item.label
       + '</a>';
