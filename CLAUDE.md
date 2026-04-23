@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Rules
 
 ALWAYS update CLAUDE.md before pushing any code to GitHub
-ALWAYS check for multiple branches and question of any branches other than main can be deleted
+ALWAYS check for multiple branches and question whether any branches other than main can be deleted
 ALWAYS create a new branch before starting any new work
 ALWAYS push the branch to GitHub and open a PR
 

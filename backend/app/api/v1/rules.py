@@ -4,7 +4,7 @@ import math
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import distinct, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
@@ -20,12 +20,13 @@ _SEV_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
 
 def _build_policy_memberships(rule_id: str, policies: list) -> list[dict]:
     """Return which policies include rule_id and whether it's blocklisted/allowlisted."""
+    rid = rule_id.lower()
     memberships = []
     for p in policies:
         list_type = None
-        if rule_id in (p.rule_allowlist or []):
+        if rid in [r.lower() for r in (p.rule_allowlist or [])]:
             list_type = "allowlist"
-        elif rule_id in (p.rule_blocklist or []):
+        elif rid in [r.lower() for r in (p.rule_blocklist or [])]:
             list_type = "blocklist"
         if list_type:
             memberships.append(
@@ -56,21 +57,26 @@ async def list_rules(
         {**r, "source": "catalog"} for r in RULE_CATALOG
     ]
 
-    # Discover rule IDs from findings that are not in the catalog
+    # Discover rule IDs from findings that are not in the catalog.
+    # Group by rule_id so each rule produces exactly one row (deterministic).
     discovered_result = await db.execute(
-        select(distinct(Finding.rule_id), Finding.scanner, Finding.finding_type, Finding.severity)
+        select(
+            Finding.rule_id,
+            func.max(Finding.scanner).label("scanner"),
+            func.max(Finding.finding_type).label("finding_type"),
+            func.min(Finding.severity).label("severity"),
+        )
         .where(Finding.rule_id.isnot(None))
         .where(Finding.rule_id != "")
+        .group_by(Finding.rule_id)
     )
     discovered_rows = discovered_result.all()
 
-    seen_discovered: set[str] = set()
     discovered_items: list[dict] = []
     for row in discovered_rows:
         rid, scanner_name, ftype, sev = row
-        if rid in CATALOG_BY_ID or rid in seen_discovered:
+        if rid in CATALOG_BY_ID:
             continue
-        seen_discovered.add(rid)
         discovered_items.append(
             {
                 "id": rid,

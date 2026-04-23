@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snitch — Rules Library</title>
+  <link rel="stylesheet" href="/static/css/theme.css">
+  <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);window.applyTheme=function(theme){document.documentElement.setAttribute('data-theme',theme);var light=theme==='light';var sb=document.getElementById('sidebar');if(sb)sb.style.background=light?'#1e293b':'#080c18';document.body.style.background=light?'#f0f4f8':'#0a0e1a';};})();</script>
   <style>/* Inter font fallback */ body { font-family: "Inter", system-ui, -apple-system, sans-serif; }</style>
   <script src="/static/js/lucide.min.js"></script>
   <style>
@@ -301,6 +303,9 @@
       }
     }
 
+    // Rule object store — populated on each load so onclick handlers can look up by ID
+    const _ruleMap = {};
+
     function renderRules(data) {
       totalPages = data.pages;
       document.getElementById('page-info').textContent =
@@ -311,6 +316,8 @@
         data.discovered_count > 0 ? `🔍 ${data.discovered_count} discovered` : '';
       document.getElementById('prev-btn').disabled = currentPage <= 1;
       document.getElementById('next-btn').disabled = currentPage >= totalPages;
+
+      data.items.forEach(r => { _ruleMap[r.id] = r; });
 
       const list = document.getElementById('rules-list');
       if (data.items.length === 0) {
@@ -346,7 +353,7 @@
 
     function renderRuleCard(r) {
       const memberChips = (r.policy_memberships || []).map(m =>
-        `<span class="member-chip member-chip-${m.list_type}" title="${escHtml(m.list_type)}" onclick="removeMembership('${escHtml(r.id)}', '${m.policy_id}', '${m.list_type}', event)">
+        `<span class="member-chip member-chip-${m.list_type}" title="${escHtml(m.list_type)}" onclick="removeMembership(${JSON.stringify(String(r.id))}, ${JSON.stringify(String(m.policy_id))}, ${JSON.stringify(String(m.list_type))}, event)">
           <i data-lucide="${m.list_type === 'blocklist' ? 'ban' : 'shield-check'}" style="width:10px;height:10px;"></i>
           ${escHtml(m.policy_name)}
           <i data-lucide="x" style="width:9px;height:9px;opacity:0.7;"></i>
@@ -369,7 +376,7 @@
           <!-- Main content -->
           <div style="flex:1;min-width:0;">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-              <span class="rule-id" onclick="copyRuleId('${escHtml(r.id)}')" title="Click to copy">${escHtml(r.id)}</span>
+              <span class="rule-id" onclick="copyRuleId(${JSON.stringify(String(r.id))})" title="Click to copy">${escHtml(r.id)}</span>
               <span class="sev-badge ${sevClass(r.severity)}">
                 <i data-lucide="${sevIcon(r.severity)}" style="width:11px;height:11px;"></i>
                 ${escHtml(r.severity)}
@@ -384,10 +391,10 @@
             <!-- Policy memberships + actions -->
             <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;">
               ${memberChips}
-              <button class="btn-secondary" onclick="openAddModal('${escHtml(r.id)}')" style="padding:4px 12px;font-size:12px;gap:4px;display:inline-flex;align-items:center;">
+              <button class="btn-secondary" onclick="openAddModal(${JSON.stringify(String(r.id))})" style="padding:4px 12px;font-size:12px;gap:4px;display:inline-flex;align-items:center;">
                 <i data-lucide="plus" style="width:11px;height:11px;"></i> Add to Policy
               </button>
-              <button onclick="openDrawer(${JSON.stringify(r).replace(/"/g,'&quot;')})" style="background:none;border:none;cursor:pointer;font-size:12px;color:#475569;padding:4px 8px;border-radius:6px;transition:all 0.15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#475569'">
+              <button onclick="openDrawer(${JSON.stringify(String(r.id))})" style="background:none;border:none;cursor:pointer;font-size:12px;color:#475569;padding:4px 8px;border-radius:6px;transition:all 0.15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#475569'">
                 <i data-lucide="info" style="width:13px;height:13px;vertical-align:middle;margin-right:3px;"></i>Details
               </button>
             </div>
@@ -408,7 +415,9 @@
     }
 
     // ── Rule detail drawer ────────────────────────────────────────────────────
-    function openDrawer(rule) {
+    function openDrawer(ruleId) {
+      const rule = _ruleMap[ruleId];
+      if (!rule) return;
       document.getElementById('drawer-rule-id').textContent = rule.id;
       document.getElementById('drawer-rule-name').textContent = rule.name;
 
@@ -462,7 +471,7 @@
           <div style="display:flex;gap:6px;flex-wrap:wrap;">${memberHtml}</div>
         </div>
         <div style="padding-top:8px;">
-          <button class="btn-primary" onclick="openAddModal('${escHtml(rule.id)}');closeDrawer();" style="width:100%;justify-content:center;">
+          <button class="btn-primary" onclick="openAddModal(${JSON.stringify(String(rule.id))});closeDrawer();" style="width:100%;justify-content:center;">
             <i data-lucide="plus" style="width:14px;height:14px;"></i> Add to Policy
           </button>
         </div>

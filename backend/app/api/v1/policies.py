@@ -24,6 +24,14 @@ class RuleMembershipRequest(BaseModel):
     rule_id: str
     list_type: str  # "blocklist" | "allowlist"
 
+    @field_validator("rule_id")
+    @classmethod
+    def validate_rule_id(cls, v: str) -> str:
+        v = v.strip().lower()
+        if not v:
+            raise ValueError("rule_id must not be empty")
+        return v
+
     @field_validator("list_type")
     @classmethod
     def validate_list_type(cls, v: str) -> str:
@@ -300,6 +308,9 @@ async def remove_rule_from_policy(
     db: AsyncSession = Depends(get_db),
 ):
     """Remove a rule from a policy's blocklist, allowlist, or both."""
+    if list_type is not None and list_type not in ("blocklist", "allowlist"):
+        raise HTTPException(status_code=422, detail="list_type must be 'blocklist' or 'allowlist'")
+
     result = await db.execute(select(Policy).where(Policy.id == policy_id))
     policy = result.scalar_one_or_none()
     if not policy:

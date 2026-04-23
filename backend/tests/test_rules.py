@@ -114,7 +114,8 @@ async def test_add_rule_to_blocklist(client: AsyncClient):
         json={"rule_id": "CKV_AWS_1", "list_type": "blocklist"},
     )
     assert resp.status_code == 200
-    assert "CKV_AWS_1" in resp.json()["rule_blocklist"]
+    # rule_id is normalised to lowercase on storage
+    assert "ckv_aws_1" in resp.json()["rule_blocklist"]
 
 
 async def test_add_rule_to_allowlist(client: AsyncClient):
@@ -126,7 +127,7 @@ async def test_add_rule_to_allowlist(client: AsyncClient):
         json={"rule_id": "CKV_AWS_7", "list_type": "allowlist"},
     )
     assert resp.status_code == 200
-    assert "CKV_AWS_7" in resp.json()["rule_allowlist"]
+    assert "ckv_aws_7" in resp.json()["rule_allowlist"]
 
 
 async def test_add_rule_idempotent(client: AsyncClient):
@@ -136,7 +137,7 @@ async def test_add_rule_idempotent(client: AsyncClient):
     await client.post(f"{POLICIES_BASE}/{pid}/rules", json={"rule_id": "CKV_AWS_24", "list_type": "blocklist"})
     resp = await client.post(f"{POLICIES_BASE}/{pid}/rules", json={"rule_id": "CKV_AWS_24", "list_type": "blocklist"})
     assert resp.status_code == 200
-    assert resp.json()["rule_blocklist"].count("CKV_AWS_24") == 1
+    assert resp.json()["rule_blocklist"].count("ckv_aws_24") == 1
 
 
 async def test_add_rule_moves_between_lists(client: AsyncClient):
@@ -150,8 +151,8 @@ async def test_add_rule_moves_between_lists(client: AsyncClient):
     )
     assert resp.status_code == 200
     data = resp.json()
-    assert "CKV_AWS_20" in data["rule_blocklist"]
-    assert "CKV_AWS_20" not in data["rule_allowlist"]
+    assert "ckv_aws_20" in data["rule_blocklist"]
+    assert "ckv_aws_20" not in data["rule_allowlist"]
 
 
 async def test_add_rule_missing_rule_id(client: AsyncClient):
@@ -163,11 +164,29 @@ async def test_add_rule_missing_rule_id(client: AsyncClient):
     assert resp.status_code == 422
 
 
+async def test_add_rule_empty_rule_id(client: AsyncClient):
+    policy = await _create_policy(client)
+    resp = await client.post(
+        f"{POLICIES_BASE}/{policy['id']}/rules",
+        json={"rule_id": "   ", "list_type": "blocklist"},
+    )
+    assert resp.status_code == 422
+
+
 async def test_add_rule_invalid_list_type(client: AsyncClient):
     policy = await _create_policy(client)
     resp = await client.post(
         f"{POLICIES_BASE}/{policy['id']}/rules",
         json={"rule_id": "CKV_AWS_1", "list_type": "invalid"},
+    )
+    assert resp.status_code == 422
+
+
+async def test_remove_rule_invalid_list_type(client: AsyncClient):
+    policy = await _create_policy(client, rule_blocklist=["CKV_AWS_1"])
+    resp = await client.delete(
+        f"{POLICIES_BASE}/{policy['id']}/rules/CKV_AWS_1",
+        params={"list_type": "invalid"},
     )
     assert resp.status_code == 422
 
