@@ -3,6 +3,7 @@ import uuid
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,6 +18,26 @@ from app.schemas.policy import (
     PolicyUpdate,
 )
 from app.services.policy_evaluator import evaluate_policy
+
+
+class RuleMembershipRequest(BaseModel):
+    rule_id: str
+    list_type: str  # "blocklist" | "allowlist"
+
+    @field_validator("rule_id")
+    @classmethod
+    def validate_rule_id(cls, v: str) -> str:
+        v = v.strip().lower()
+        if not v:
+            raise ValueError("rule_id must not be empty")
+        return v
+
+    @field_validator("list_type")
+    @classmethod
+    def validate_list_type(cls, v: str) -> str:
+        if v not in ("blocklist", "allowlist"):
+            raise ValueError("list_type must be 'blocklist' or 'allowlist'")
+        return v
 
 router = APIRouter(prefix="/policies", tags=["policies"])
 
@@ -244,3 +265,65 @@ async def evaluate_policy_endpoint(
     findings = findings_result.scalars().all()
 
     return evaluate_policy(policy, list(findings))
+
+
+@router.post("/{policy_id}/rules", response_model=PolicyResponse)
+async def add_rule_to_policy(
+    policy_id: uuid.UUID,
+    payload: RuleMembershipRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Add a rule to a policy's blocklist or allowlist. Removes from the other list if present."""
+    result = await db.execute(select(Policy).where(Policy.id == policy_id))
+    policy = result.scalar_one_or_none()
+    if not policy:
+        raise HTTPException(status_code=404, detail="Policy not found")
+
+    blocklist = list(policy.rule_blocklist or [])
+    allowlist = list(policy.rule_allowlist or [])
+
+    if payload.list_type == "blocklist":
+        if payload.rule_id not in blocklist:
+            blocklist.append(payload.rule_id)
+        if payload.rule_id in allowlist:
+            allowlist.remove(payload.rule_id)
+    else:
+        if payload.rule_id not in allowlist:
+            allowlist.append(payload.rule_id)
+        if payload.rule_id in blocklist:
+            blocklist.remove(payload.rule_id)
+
+    policy.rule_blocklist = blocklist
+    policy.rule_allowlist = allowlist
+    await db.flush()
+    await db.refresh(policy)
+    return policy
+
+
+@router.delete("/{policy_id}/rules/{rule_id}", status_code=204)
+async def remove_rule_from_policy(
+    policy_id: uuid.UUID,
+    rule_id: str,
+    list_type: Optional[str] = Query(None, description="blocklist | allowlist — omit to remove from both"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Remove a rule from a policy's blocklist, allowlist, or both."""
+    if list_type is not None and list_type not in ("blocklist", "allowlist"):
+        raise HTTPException(status_code=422, detail="list_type must be 'blocklist' or 'allowlist'")
+
+    result = await db.execute(select(Policy).where(Policy.id == policy_id))
+    policy = result.scalar_one_or_none()
+    if not policy:
+        raise HTTPException(status_code=404, detail="Policy not found")
+
+    blocklist = list(policy.rule_blocklist or [])
+    allowlist = list(policy.rule_allowlist or [])
+
+    if list_type in (None, "blocklist") and rule_id in blocklist:
+        blocklist.remove(rule_id)
+    if list_type in (None, "allowlist") and rule_id in allowlist:
+        allowlist.remove(rule_id)
+
+    policy.rule_blocklist = blocklist
+    policy.rule_allowlist = allowlist
+    await db.flush()

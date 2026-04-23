@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snitch — Rules Library</title>
+  <link rel="stylesheet" href="/static/css/theme.css">
+  <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);window.applyTheme=function(theme){document.documentElement.setAttribute('data-theme',theme);var light=theme==='light';var sb=document.getElementById('sidebar');if(sb)sb.style.background=light?'#1e293b':'#080c18';document.body.style.background=light?'#f0f4f8':'#0a0e1a';};})();</script>
+  <style>/* Inter font fallback */ body { font-family: "Inter", system-ui, -apple-system, sans-serif; }</style>
+  <script src="/static/js/lucide.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    @keyframes fadeInUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    @keyframes slideInRight { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+    @keyframes slideOutRight { from{transform:translateX(0);opacity:1} to{transform:translateX(100%);opacity:0} }
+    .nav-link:hover { background:rgba(255,255,255,0.05) !important; color:#e2e8f0 !important; }
+    .btn-primary { background:linear-gradient(135deg,#00d4ff,#6366f1);color:white;border:none;padding:10px 20px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:8px; }
+    .btn-primary:hover { transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,212,255,0.4); }
+    .btn-secondary { background:rgba(255,255,255,0.05);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);padding:8px 16px;border-radius:8px;font-weight:500;font-size:13px;cursor:pointer;transition:all 0.2s; }
+    .btn-secondary:hover { background:rgba(255,255,255,0.1);color:#f1f5f9; }
+    .btn-danger { background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);padding:6px 12px;border-radius:8px;font-weight:500;font-size:12px;cursor:pointer;transition:all 0.2s; }
+    .btn-danger:hover { background:rgba(239,68,68,0.2); }
+    .card { background:rgba(13,17,23,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:16px;backdrop-filter:blur(20px); }
+    .dark-input { background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#f1f5f9;font-size:14px;padding:8px 12px;outline:none;transition:border 0.2s;font-family:'Inter',sans-serif; }
+    .dark-input:focus { border-color:rgba(0,212,255,0.5); }
+    .dark-input::placeholder { color:#475569; }
+    .dark-select { background:#0d1117;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#f1f5f9;font-size:14px;padding:8px 12px;outline:none;cursor:pointer;font-family:'Inter',sans-serif; }
+    .dark-select:focus { border-color:rgba(0,212,255,0.5); }
+    .dark-select option { background:#0d1117; }
+    ::-webkit-scrollbar { width:6px;height:6px; }
+    ::-webkit-scrollbar-track { background:rgba(255,255,255,0.02); }
+    ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1);border-radius:3px; }
+    .modal-backdrop { position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:center;justify-content:center; }
+    .tag { display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px; }
+    .tag-sast { background:rgba(99,102,241,0.2);color:#a5b4fc; }
+    .tag-sca { background:rgba(16,185,129,0.2);color:#6ee7b7; }
+    .tag-container { background:rgba(245,158,11,0.2);color:#fcd34d; }
+    .tag-secrets { background:rgba(239,68,68,0.2);color:#fca5a5; }
+    .tag-iac { background:rgba(168,85,247,0.2);color:#d8b4fe; }
+    .tag-unknown { background:rgba(100,116,139,0.2);color:#94a3b8; }
+    .sev-critical { color:#ef4444; }
+    .sev-high { color:#f97316; }
+    .sev-medium { color:#eab308; }
+    .sev-low { color:#22c55e; }
+    .sev-info { color:#64748b; }
+    .sev-badge { display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px; }
+    .tab-btn { background:none;border:none;cursor:pointer;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;color:#64748b;transition:all 0.2s;white-space:nowrap; }
+    .tab-btn.active { background:rgba(0,212,255,0.12);color:#00d4ff; }
+    .tab-btn:hover:not(.active) { background:rgba(255,255,255,0.05);color:#94a3b8; }
+    .rule-card { background:rgba(13,17,23,0.6);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:18px 20px;transition:all 0.2s;animation:fadeInUp 0.3s ease; }
+    .rule-card:hover { border-color:rgba(255,255,255,0.14);background:rgba(13,17,23,0.9); }
+    .rule-id { font-family:'SF Mono','Fira Code','Fira Mono','Consolas',monospace;font-size:12px;color:#00d4ff;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:3px 8px;display:inline-block;cursor:pointer;transition:all 0.15s; }
+    .rule-id:hover { background:rgba(0,212,255,0.15); }
+    .source-badge-catalog { background:rgba(0,212,255,0.1);color:#00d4ff;border:1px solid rgba(0,212,255,0.25);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600; }
+    .source-badge-discovered { background:rgba(245,158,11,0.1);color:#fbbf24;border:1px solid rgba(245,158,11,0.25);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600; }
+    .member-chip { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;transition:all 0.15s;user-select:none; }
+    .member-chip-blocklist { background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.2); }
+    .member-chip-blocklist:hover { background:rgba(239,68,68,0.22); }
+    .member-chip-allowlist { background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.2); }
+    .member-chip-allowlist:hover { background:rgba(16,185,129,0.22); }
+    .drawer { position:fixed;top:0;right:0;height:100vh;width:500px;background:#080c18;border-left:1px solid rgba(255,255,255,0.08);z-index:300;overflow-y:auto;animation:slideInRight 0.25s ease; }
+    .dark-label { display:block;font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px; }
+  </style>
+</head>
+<body style="font-family:'Inter',sans-serif;background:#0a0e1a;color:#f1f5f9;margin:0;padding:0;min-height:100vh;">
+
+  <!-- Sidebar -->
+  <aside style="width:260px;min-height:100vh;background:#080c18;border-right:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;">
+    <div style="padding:24px 20px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;background:linear-gradient(135deg,#00d4ff22,#6366f122);border:1px solid #00d4ff44;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+        <i data-lucide="shield-alert" style="width:20px;height:20px;color:#00d4ff;"></i>
+      </div>
+      <div>
+        <div style="font-size:20px;font-weight:800;color:#f1f5f9;letter-spacing:-0.5px;">Snitch</div>
+        <div style="font-size:11px;color:#00d4ff;font-weight:500;letter-spacing:1px;text-transform:uppercase;">AppSec Platform</div>
+      </div>
+    </div>
+    <nav style="flex:1;padding:16px 12px;">
+      <div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:8px 8px 4px;">Main Menu</div>
+      <a href="/" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="layout-dashboard" style="width:18px;height:18px;"></i> Dashboard
+      </a>
+      <a href="/applications.html" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="layers" style="width:18px;height:18px;"></i> Applications
+      </a>
+      <a href="/repositories.html" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="git-branch" style="width:18px;height:18px;"></i> Repositories
+      </a>
+      <a href="/reports.html" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="bar-chart-3" style="width:18px;height:18px;"></i> Reports
+      </a>
+      <a href="/policies.html" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="shield-check" style="width:18px;height:18px;"></i> Policies
+      </a>
+      <a href="/rules.html" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(99,102,241,0.15));color:#00d4ff;border:1px solid rgba(0,212,255,0.2);">
+        <i data-lucide="book-open" style="width:18px;height:18px;"></i> Rules
+      </a>
+      <a href="/secrets.html" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="key" style="width:18px;height:18px;"></i> Secrets
+      </a>
+      <div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:16px 8px 4px;">Developer</div>
+      <a href="/docs" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
+        <i data-lucide="code-2" style="width:18px;height:18px;"></i> API Docs
+        <i data-lucide="external-link" style="width:12px;height:12px;margin-left:auto;"></i>
+      </a>
+    </nav>
+    <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,0.08);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:8px;height:8px;background:#10b981;border-radius:50%;box-shadow:0 0 8px #10b981;"></div>
+        <span style="font-size:12px;color:#475569;">All systems operational</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div style="margin-left:260px;min-height:100vh;">
+
+    <!-- Header -->
+    <header style="background:rgba(8,12,24,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
+      <div>
+        <h1 style="font-size:22px;font-weight:700;color:#f1f5f9;margin:0;">Rules Library</h1>
+        <p style="font-size:13px;color:#475569;margin:2px 0 0;">Browse security rules, understand what they check, and assign them to policies</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div id="rule-counts" style="display:flex;gap:16px;align-items:center;">
+          <span style="font-size:13px;color:#64748b;" id="count-catalog"></span>
+          <span style="font-size:13px;color:#64748b;" id="count-discovered"></span>
+        </div>
+      </div>
+    </header>
+
+    <main style="padding:24px 32px;">
+
+      <!-- Scan type tabs -->
+      <div style="display:flex;gap:4px;margin-bottom:20px;background:rgba(255,255,255,0.03);padding:4px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);width:fit-content;">
+        <button class="tab-btn active" id="tab-all" onclick="setTab('')">All</button>
+        <button class="tab-btn" id="tab-sast" onclick="setTab('sast')">SAST</button>
+        <button class="tab-btn" id="tab-sca" onclick="setTab('sca')">SCA</button>
+        <button class="tab-btn" id="tab-container" onclick="setTab('container')">Container</button>
+        <button class="tab-btn" id="tab-secrets" onclick="setTab('secrets')">Secrets</button>
+        <button class="tab-btn" id="tab-iac" onclick="setTab('iac')">IaC</button>
+      </div>
+
+      <!-- Filter row -->
+      <div style="display:flex;gap:12px;margin-bottom:20px;align-items:center;flex-wrap:wrap;">
+        <div style="position:relative;flex:1;min-width:240px;">
+          <i data-lucide="search" style="width:14px;height:14px;position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#475569;pointer-events:none;"></i>
+          <input type="text" id="search-input" class="dark-input" placeholder="Search rule ID, name, description…" style="padding-left:32px;width:100%;" oninput="debouncedLoad()">
+        </div>
+        <select id="sev-filter" class="dark-select" onchange="loadRules()">
+          <option value="">All severities</option>
+          <option value="critical">Critical</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+          <option value="info">Info</option>
+        </select>
+        <select id="scanner-filter" class="dark-select" onchange="loadRules()">
+          <option value="">All scanners</option>
+          <option value="checkov">Checkov</option>
+          <option value="semgrep">Semgrep</option>
+          <option value="gitleaks">Gitleaks</option>
+          <option value="trivy">Trivy</option>
+          <option value="grype">Grype</option>
+        </select>
+        <select id="source-filter" class="dark-select" onchange="loadRules()">
+          <option value="">All sources</option>
+          <option value="catalog">Catalog</option>
+          <option value="discovered">Discovered</option>
+        </select>
+      </div>
+
+      <!-- Rules list -->
+      <div id="rules-list"></div>
+
+      <!-- Pagination -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:20px;">
+        <div style="font-size:13px;color:#475569;" id="page-info"></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-secondary" id="prev-btn" onclick="changePage(-1)" style="padding:6px 12px;">← Prev</button>
+          <button class="btn-secondary" id="next-btn" onclick="changePage(1)" style="padding:6px 12px;">Next →</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Add to Policy Modal -->
+  <div class="modal-backdrop" id="add-modal" style="display:none;" onclick="if(event.target===this)closeAddModal()">
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:28px;width:420px;max-width:95vw;position:relative;">
+      <button onclick="closeAddModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;color:#64748b;">
+        <i data-lucide="x" style="width:18px;height:18px;"></i>
+      </button>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <div style="width:36px;height:36px;background:rgba(99,102,241,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+          <i data-lucide="shield-plus" style="width:18px;height:18px;color:#a5b4fc;"></i>
+        </div>
+        <div>
+          <div style="font-size:16px;font-weight:700;color:#f1f5f9;">Add to Policy</div>
+          <div id="modal-rule-id" style="font-family:monospace;font-size:12px;color:#64748b;margin-top:2px;"></div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label class="dark-label">Policy</label>
+        <select id="modal-policy-select" class="dark-select" style="width:100%;"></select>
+      </div>
+
+      <div style="margin-bottom:24px;">
+        <label class="dark-label">List Type</label>
+        <div style="display:flex;gap:10px;">
+          <label style="flex:1;display:flex;align-items:center;gap:10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all 0.15s;" id="lbl-blocklist">
+            <input type="radio" name="list-type" value="blocklist" checked onchange="updateListTypeUI()" style="accent-color:#ef4444;">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:#f87171;">Blocklist</div>
+              <div style="font-size:11px;color:#64748b;margin-top:1px;">Flag regardless of severity</div>
+            </div>
+          </label>
+          <label style="flex:1;display:flex;align-items:center;gap:10px;background:rgba(16,185,129,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all 0.15s;" id="lbl-allowlist">
+            <input type="radio" name="list-type" value="allowlist" onchange="updateListTypeUI()" style="accent-color:#10b981;">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:#34d399;">Allowlist</div>
+              <div style="font-size:11px;color:#64748b;margin-top:1px;">Always ignore this rule</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button class="btn-secondary" onclick="closeAddModal()">Cancel</button>
+        <button class="btn-primary" onclick="confirmAddToPolicy()" id="modal-submit-btn">
+          <i data-lucide="plus" style="width:14px;height:14px;"></i> Add Rule
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rule Detail Drawer -->
+  <div id="detail-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:250;" onclick="closeDrawer()"></div>
+  <div class="drawer" id="detail-drawer" style="display:none;">
+    <div style="padding:24px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+      <div style="flex:1;">
+        <span class="rule-id" id="drawer-rule-id" style="cursor:default;font-size:13px;"></span>
+        <h2 id="drawer-rule-name" style="font-size:18px;font-weight:700;color:#f1f5f9;margin:10px 0 0;line-height:1.35;"></h2>
+      </div>
+      <button onclick="closeDrawer()" style="background:none;border:none;cursor:pointer;padding:4px;flex-shrink:0;">
+        <i data-lucide="x" style="width:20px;height:20px;color:#64748b;"></i>
+      </button>
+    </div>
+    <div id="drawer-body" style="padding:24px;display:flex;flex-direction:column;gap:20px;"></div>
+  </div>
+
+  <script>
+    const API = '/api/v1';
+    let currentTab = '';
+    let currentPage = 1;
+    const PAGE_SIZE = 15;
+    let totalPages = 1;
+    let addTarget = null; // { rule_id }
+    let allPolicies = [];
+
+    // ── Debounce ──────────────────────────────────────────────────────────────
+    let debounceTimer;
+    function debouncedLoad() { clearTimeout(debounceTimer); debounceTimer = setTimeout(() => loadRules(), 300); }
+
+    // ── Tab management ────────────────────────────────────────────────────────
+    function setTab(scan_type) {
+      currentTab = scan_type;
+      currentPage = 1;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      const id = 'tab-' + (scan_type || 'all');
+      document.getElementById(id)?.classList.add('active');
+      loadRules();
+    }
+
+    // ── Load rules ────────────────────────────────────────────────────────────
+    async function loadRules(page = currentPage) {
+      currentPage = page;
+      const params = new URLSearchParams({
+        page: currentPage,
+        page_size: PAGE_SIZE,
+      });
+      if (currentTab) params.set('scan_type', currentTab);
+      const sev = document.getElementById('sev-filter').value;
+      const scanner = document.getElementById('scanner-filter').value;
+      const src = document.getElementById('source-filter').value;
+      const search = document.getElementById('search-input').value.trim();
+      if (sev) params.set('severity', sev);
+      if (scanner) params.set('scanner', scanner);
+      if (src) params.set('source', src);
+      if (search) params.set('search', search);
+
+      const list = document.getElementById('rules-list');
+      list.innerHTML = `<div style="padding:60px;text-align:center;color:#475569;animation:pulse 1s infinite;">Loading rules…</div>`;
+
+      try {
+        const resp = await fetch(`${API}/rules?${params}`);
+        const data = await resp.json();
+        renderRules(data);
+      } catch (e) {
+        list.innerHTML = `<div style="padding:40px;text-align:center;color:#f87171;">Failed to load rules. Is the API running?</div>`;
+      }
+    }
+
+    // Rule object store — populated on each load so onclick handlers can look up by ID
+    const _ruleMap = {};
+
+    function renderRules(data) {
+      totalPages = data.pages;
+      document.getElementById('page-info').textContent =
+        `Showing ${data.items.length} of ${data.total} rules`;
+      document.getElementById('count-catalog').textContent =
+        `📚 ${data.catalog_count} catalog`;
+      document.getElementById('count-discovered').textContent =
+        data.discovered_count > 0 ? `🔍 ${data.discovered_count} discovered` : '';
+      document.getElementById('prev-btn').disabled = currentPage <= 1;
+      document.getElementById('next-btn').disabled = currentPage >= totalPages;
+
+      data.items.forEach(r => { _ruleMap[r.id] = r; });
+
+      const list = document.getElementById('rules-list');
+      if (data.items.length === 0) {
+        list.innerHTML = `<div style="padding:60px;text-align:center;">
+          <i data-lucide="search-x" style="width:40px;height:40px;color:#334155;display:block;margin:0 auto 12px;"></i>
+          <div style="font-size:15px;color:#475569;">No rules match your filters</div>
+        </div>`;
+        lucide.createIcons();
+        return;
+      }
+
+      list.innerHTML = data.items.map(r => renderRuleCard(r)).join('');
+      lucide.createIcons();
+    }
+
+    function escHtml(s) {
+      return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function sevClass(s) {
+      const m = {critical:'sev-critical',high:'sev-high',medium:'sev-medium',low:'sev-low',info:'sev-info'};
+      return m[s] || 'sev-info';
+    }
+
+    function sevIcon(s) {
+      const m = {critical:'alert-octagon',high:'alert-triangle',medium:'alert-circle',low:'info',info:'minus-circle'};
+      return m[s] || 'minus-circle';
+    }
+
+    function scanTypeTag(st) {
+      return `<span class="tag tag-${escHtml(st)}">${escHtml(st)}</span>`;
+    }
+
+    function renderRuleCard(r) {
+      const memberChips = (r.policy_memberships || []).map(m =>
+        `<span class="member-chip member-chip-${m.list_type}" title="${escHtml(m.list_type)}" onclick="removeMembership(${JSON.stringify(String(r.id))}, ${JSON.stringify(String(m.policy_id))}, ${JSON.stringify(String(m.list_type))}, event)">
+          <i data-lucide="${m.list_type === 'blocklist' ? 'ban' : 'shield-check'}" style="width:10px;height:10px;"></i>
+          ${escHtml(m.policy_name)}
+          <i data-lucide="x" style="width:9px;height:9px;opacity:0.7;"></i>
+        </span>`
+      ).join('');
+
+      const sourceBadge = r.source === 'catalog'
+        ? `<span class="source-badge-catalog">Catalog</span>`
+        : `<span class="source-badge-discovered">Discovered</span>`;
+
+      const shortDesc = r.description.length > 160 ? r.description.slice(0, 157) + '…' : r.description;
+
+      return `
+      <div class="rule-card" style="margin-bottom:12px;">
+        <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;">
+          <!-- Left: severity indicator -->
+          <div style="flex-shrink:0;width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;margin-top:2px;">
+            <i data-lucide="${sevIcon(r.severity)}" style="width:16px;height:16px;" class="${sevClass(r.severity)}"></i>
+          </div>
+          <!-- Main content -->
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+              <span class="rule-id" onclick="copyRuleId(${JSON.stringify(String(r.id))})" title="Click to copy">${escHtml(r.id)}</span>
+              <span class="sev-badge ${sevClass(r.severity)}">
+                <i data-lucide="${sevIcon(r.severity)}" style="width:11px;height:11px;"></i>
+                ${escHtml(r.severity)}
+              </span>
+              ${scanTypeTag(r.scan_type)}
+              <span style="font-size:11px;color:#64748b;background:rgba(255,255,255,0.04);border-radius:20px;padding:2px 8px;">${escHtml(r.scanner)}</span>
+              <span style="font-size:11px;color:#64748b;">${escHtml(r.category)}</span>
+              ${sourceBadge}
+            </div>
+            <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:4px;line-height:1.4;">${escHtml(r.name)}</div>
+            <div style="font-size:13px;color:#64748b;line-height:1.55;">${escHtml(shortDesc)}</div>
+            <!-- Policy memberships + actions -->
+            <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;">
+              ${memberChips}
+              <button class="btn-secondary" onclick="openAddModal(${JSON.stringify(String(r.id))})" style="padding:4px 12px;font-size:12px;gap:4px;display:inline-flex;align-items:center;">
+                <i data-lucide="plus" style="width:11px;height:11px;"></i> Add to Policy
+              </button>
+              <button onclick="openDrawer(${JSON.stringify(String(r.id))})" style="background:none;border:none;cursor:pointer;font-size:12px;color:#475569;padding:4px 8px;border-radius:6px;transition:all 0.15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#475569'">
+                <i data-lucide="info" style="width:13px;height:13px;vertical-align:middle;margin-right:3px;"></i>Details
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    function changePage(delta) {
+      const np = currentPage + delta;
+      if (np < 1 || np > totalPages) return;
+      loadRules(np);
+    }
+
+    // ── Copy rule ID ──────────────────────────────────────────────────────────
+    function copyRuleId(id) {
+      navigator.clipboard?.writeText(id).then(() => showToast(`Copied: ${id}`, 'info'));
+    }
+
+    // ── Rule detail drawer ────────────────────────────────────────────────────
+    function openDrawer(ruleId) {
+      const rule = _ruleMap[ruleId];
+      if (!rule) return;
+      document.getElementById('drawer-rule-id').textContent = rule.id;
+      document.getElementById('drawer-rule-name').textContent = rule.name;
+
+      const members = (rule.policy_memberships || []);
+      const memberHtml = members.length === 0
+        ? `<span style="color:#475569;font-size:13px;">Not assigned to any policy</span>`
+        : members.map(m => `<span class="member-chip member-chip-${m.list_type}">${m.policy_name} (${m.list_type})</span>`).join(' ');
+
+      document.getElementById('drawer-body').innerHTML = `
+        <div>
+          <div class="dark-label">Description</div>
+          <p style="font-size:14px;color:#94a3b8;line-height:1.65;margin:0;">${escHtml(rule.description)}</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px;">
+            <div class="dark-label">Severity</div>
+            <span class="sev-badge ${sevClass(rule.severity)}" style="font-size:14px;">
+              <i data-lucide="${sevIcon(rule.severity)}" style="width:14px;height:14px;"></i>
+              ${escHtml(rule.severity)}
+            </span>
+          </div>
+          <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px;">
+            <div class="dark-label">Scan Type</div>
+            ${scanTypeTag(rule.scan_type)}
+          </div>
+          <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px;">
+            <div class="dark-label">Scanner</div>
+            <span style="font-size:13px;color:#e2e8f0;">${escHtml(rule.scanner)}</span>
+          </div>
+          <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px;">
+            <div class="dark-label">Category</div>
+            <span style="font-size:13px;color:#e2e8f0;">${escHtml(rule.category)}</span>
+          </div>
+        </div>
+        ${rule.remediation ? `
+        <div>
+          <div class="dark-label">Remediation</div>
+          <div style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.15);border-radius:10px;padding:14px;">
+            <p style="font-size:13px;color:#6ee7b7;line-height:1.6;margin:0;">${escHtml(rule.remediation)}</p>
+          </div>
+        </div>` : ''}
+        ${rule.reference_url ? `
+        <div>
+          <div class="dark-label">Reference</div>
+          <a href="${escHtml(rule.reference_url)}" target="_blank" style="font-size:13px;color:#00d4ff;text-decoration:none;word-break:break-all;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+            ${escHtml(rule.reference_url)}
+          </a>
+        </div>` : ''}
+        <div>
+          <div class="dark-label">Policy Memberships</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">${memberHtml}</div>
+        </div>
+        <div style="padding-top:8px;">
+          <button class="btn-primary" onclick="openAddModal(${JSON.stringify(String(rule.id))});closeDrawer();" style="width:100%;justify-content:center;">
+            <i data-lucide="plus" style="width:14px;height:14px;"></i> Add to Policy
+          </button>
+        </div>
+      `;
+      document.getElementById('detail-overlay').style.display = 'block';
+      document.getElementById('detail-drawer').style.display = 'block';
+      lucide.createIcons();
+    }
+
+    function closeDrawer() {
+      document.getElementById('detail-overlay').style.display = 'none';
+      document.getElementById('detail-drawer').style.display = 'none';
+    }
+
+    // ── Add to Policy modal ───────────────────────────────────────────────────
+    async function loadPolicies() {
+      const resp = await fetch(`${API}/policies?page_size=100`);
+      const data = await resp.json();
+      allPolicies = data.items || [];
+    }
+
+    function openAddModal(ruleId) {
+      addTarget = ruleId;
+      document.getElementById('modal-rule-id').textContent = ruleId;
+
+      const sel = document.getElementById('modal-policy-select');
+      if (allPolicies.length === 0) {
+        sel.innerHTML = `<option value="">No policies available — create one first</option>`;
+      } else {
+        sel.innerHTML = allPolicies.map(p =>
+          `<option value="${p.id}">${escHtml(p.name)}</option>`
+        ).join('');
+      }
+
+      // Reset to blocklist
+      document.querySelector('input[name="list-type"][value="blocklist"]').checked = true;
+      updateListTypeUI();
+
+      document.getElementById('add-modal').style.display = 'flex';
+      lucide.createIcons();
+    }
+
+    function closeAddModal() {
+      document.getElementById('add-modal').style.display = 'none';
+      addTarget = null;
+    }
+
+    function updateListTypeUI() {
+      const val = document.querySelector('input[name="list-type"]:checked')?.value;
+      document.getElementById('lbl-blocklist').style.background = val === 'blocklist' ? 'rgba(239,68,68,0.12)' : 'rgba(255,255,255,0.03)';
+      document.getElementById('lbl-blocklist').style.borderColor = val === 'blocklist' ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.08)';
+      document.getElementById('lbl-allowlist').style.background = val === 'allowlist' ? 'rgba(16,185,129,0.1)' : 'rgba(255,255,255,0.03)';
+      document.getElementById('lbl-allowlist').style.borderColor = val === 'allowlist' ? 'rgba(16,185,129,0.25)' : 'rgba(255,255,255,0.08)';
+    }
+
+    async function confirmAddToPolicy() {
+      const policyId = document.getElementById('modal-policy-select').value;
+      const listType = document.querySelector('input[name="list-type"]:checked')?.value || 'blocklist';
+      if (!policyId || !addTarget) return;
+
+      const btn = document.getElementById('modal-submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Adding…';
+
+      try {
+        const resp = await fetch(`${API}/policies/${policyId}/rules`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ rule_id: addTarget, list_type: listType }),
+        });
+        if (resp.ok) {
+          const policyName = allPolicies.find(p => p.id === policyId)?.name || 'policy';
+          showToast(`Added ${addTarget} to ${policyName} (${listType})`, 'success');
+          closeAddModal();
+          loadRules();
+        } else {
+          const err = await resp.json();
+          showToast(err.detail || 'Failed to add rule', 'error');
+        }
+      } catch (e) {
+        showToast('Network error', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="plus" style="width:14px;height:14px;"></i> Add Rule';
+        lucide.createIcons();
+      }
+    }
+
+    // ── Remove policy membership ──────────────────────────────────────────────
+    async function removeMembership(ruleId, policyId, listType, evt) {
+      evt.stopPropagation();
+      try {
+        const resp = await fetch(
+          `${API}/policies/${policyId}/rules/${encodeURIComponent(ruleId)}?list_type=${listType}`,
+          { method: 'DELETE' }
+        );
+        if (resp.ok || resp.status === 204) {
+          showToast(`Removed ${ruleId} from ${listType}`, 'info');
+          loadRules();
+        } else {
+          showToast('Failed to remove rule', 'error');
+        }
+      } catch (e) {
+        showToast('Network error', 'error');
+      }
+    }
+
+    // ── Toast ─────────────────────────────────────────────────────────────────
+    function showToast(message, type='success') {
+      const colors = {success:'#10b981', error:'#ef4444', warning:'#f59e0b', info:'#00d4ff'};
+      const icons = {success:'check-circle', error:'alert-circle', warning:'alert-triangle', info:'info'};
+      const toast = document.createElement('div');
+      toast.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(13,17,23,0.95);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:#f1f5f9;font-size:14px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.5);`;
+      const _icon = document.createElement('i');
+      _icon.setAttribute('data-lucide', icons[type]);
+      _icon.style.cssText = `width:18px;height:18px;color:${colors[type]};flex-shrink:0;`;
+      const _msg = document.createElement('span');
+      _msg.textContent = message;
+      toast.appendChild(_icon);
+      toast.appendChild(_msg);
+      document.body.appendChild(toast);
+      lucide.createIcons();
+      setTimeout(() => toast.remove(), 3500);
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    lucide.createIcons();
+    Promise.all([loadPolicies(), loadRules()]);
+  </script>
+</body>
+</html>
