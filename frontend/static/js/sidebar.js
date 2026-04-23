@@ -1,0 +1,118 @@
+/**
+ * Shared sidebar component for all Snitch pages.
+ *
+ * Usage in each HTML page:
+ *   1. A tiny inline theme script in <head> prevents FOUC:
+ *      <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
+ *   2. At the start of <body>:
+ *      <div id="sidebar-mount"></div>
+ *      <script src="/static/js/sidebar.js"></script>
+ *
+ * The script runs synchronously so the sidebar is in the DOM before the rest
+ * of the page body is parsed. Page-level scripts that call lucide.createIcons()
+ * will therefore pick up the sidebar icons automatically.
+ *
+ * applyTheme(theme) is defined here as the default. profile.html overrides it
+ * with its own version (which additionally updates the theme-toggle UI).
+ */
+(function () {
+  // ── Default applyTheme (may be overridden by individual pages) ───────────
+  window.applyTheme = function (theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    var light = theme === 'light';
+    var sb = document.getElementById('sidebar');
+    if (sb) sb.style.background = light ? '#1e293b' : '#080c18';
+    var mc = document.getElementById('main-content');
+    if (mc) mc.style.background = light ? '#f0f4f8' : '';
+    document.body.style.background = light ? '#f0f4f8' : '';
+  };
+
+  // ── Nav items definition ─────────────────────────────────────────────────
+  var NAV_ITEMS = [
+    { href: '/',                icon: 'layout-dashboard', label: 'Dashboard',    matchPaths: ['/'] },
+    { href: '/applications.html', icon: 'layers',          label: 'Applications', matchPaths: ['/applications.html', '/app-detail.html'] },
+    { href: '/repositories.html', icon: 'git-branch',      label: 'Repositories', matchPaths: ['/repositories.html'] },
+    { href: '/reports.html',      icon: 'bar-chart-3',     label: 'Reports',      matchPaths: ['/reports.html'] },
+    { href: '/policies.html',     icon: 'shield-check',    label: 'Policies',     matchPaths: ['/policies.html'] },
+    { href: '/secrets.html',      icon: 'key',             label: 'Secrets',      matchPaths: ['/secrets.html'] },
+    { href: '/rules.html',        icon: 'book-open',       label: 'Rules',        matchPaths: ['/rules.html'] },
+    { href: '/profile.html',      icon: 'user',            label: 'Profile',      matchPaths: ['/profile.html'] },
+  ];
+
+  // ── Active-link detection ────────────────────────────────────────────────
+  var currentPath = window.location.pathname;
+  // Normalise: treat bare "/" and "/index.html" as the same
+  if (currentPath === '/index.html') currentPath = '/';
+
+  function isActive(item) {
+    return item.matchPaths.some(function (p) {
+      return currentPath === p || currentPath.startsWith(p.replace('.html', ''));
+    });
+  }
+
+  var ACTIVE_STYLE = [
+    'background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(99,102,241,0.15))',
+    'color:#00d4ff',
+    'border:1px solid rgba(0,212,255,0.2)',
+  ].join(';');
+
+  var INACTIVE_STYLE = 'color:#94a3b8';
+
+  // ── HTML builder ─────────────────────────────────────────────────────────
+  function navLink(item) {
+    var active = isActive(item);
+    var styleStr = [
+      'display:flex',
+      'align-items:center',
+      'gap:10px',
+      'padding:10px 12px',
+      'border-radius:8px',
+      'text-decoration:none',
+      'font-size:14px',
+      'font-weight:500',
+      'margin-bottom:2px',
+      'transition:all 0.2s',
+      active ? ACTIVE_STYLE : INACTIVE_STYLE,
+    ].join(';');
+
+    return '<a href="' + item.href + '" class="nav-link" style="' + styleStr + '">'
+      + '<i data-lucide="' + item.icon + '" style="width:18px;height:18px;flex-shrink:0;"></i> '
+      + item.label
+      + '</a>';
+  }
+
+  var sidebarHTML = ''
+    + '<aside id="sidebar" style="width:260px;min-height:100vh;background:#080c18;border-right:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;">'
+    +   '<div style="padding:24px 20px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:12px;">'
+    +     '<div style="width:40px;height:40px;background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.2));border:1px solid rgba(0,212,255,0.45);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(0,212,255,0.15);">'
+    +       '<i data-lucide="shield-alert" style="width:20px;height:20px;color:#00d4ff;"></i>'
+    +     '</div>'
+    +     '<div>'
+    +       '<div style="font-size:20px;font-weight:800;color:#f1f5f9;letter-spacing:-0.5px;">Snitch</div>'
+    +       '<div style="font-size:11px;color:#00d4ff;font-weight:500;letter-spacing:1px;text-transform:uppercase;">AppSec Platform</div>'
+    +     '</div>'
+    +   '</div>'
+    +   '<nav style="flex:1;padding:16px 12px;overflow-y:auto;">'
+    +     '<div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:8px 8px 4px;">Main Menu</div>'
+    +     NAV_ITEMS.map(navLink).join('')
+    +     '<div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:16px 8px 4px;">Developer</div>'
+    +     '<a href="/docs" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">'
+    +       '<i data-lucide="code-2" style="width:18px;height:18px;flex-shrink:0;"></i> API Docs'
+    +       '<i data-lucide="external-link" style="width:12px;height:12px;margin-left:auto;"></i>'
+    +     '</a>'
+    +   '</nav>'
+    +   '<div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,0.08);">'
+    +     '<div style="display:flex;align-items:center;gap:8px;">'
+    +       '<div style="width:8px;height:8px;background:#10b981;border-radius:50%;box-shadow:0 0 8px #10b981;"></div>'
+    +       '<span style="font-size:12px;color:#475569;">All systems operational</span>'
+    +     '</div>'
+    +   '</div>'
+    + '</aside>';
+
+  // ── Mount (synchronous — runs while body is being parsed) ────────────────
+  var mount = document.getElementById('sidebar-mount');
+  if (mount) {
+    mount.outerHTML = sidebarHTML;
+  }
+})();

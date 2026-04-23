@@ -1,0 +1,244 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - generic [ref=e3]:
+      - img [ref=e5]
+      - generic [ref=e7]:
+        - generic [ref=e8]: Snitch
+        - generic [ref=e9]: AppSec Platform
+    - navigation [ref=e10]:
+      - generic [ref=e11]: Main Menu
+      - link "Dashboard" [ref=e12] [cursor=pointer]:
+        - /url: /
+        - img [ref=e13]
+        - text: Dashboard
+      - link "Applications" [ref=e18] [cursor=pointer]:
+        - /url: /applications.html
+        - img [ref=e19]
+        - text: Applications
+      - link "Repositories" [ref=e23] [cursor=pointer]:
+        - /url: /repositories.html
+        - img [ref=e24]
+        - text: Repositories
+      - link "Reports" [ref=e28] [cursor=pointer]:
+        - /url: /reports.html
+        - img [ref=e29]
+        - text: Reports
+      - link "Policies" [ref=e31] [cursor=pointer]:
+        - /url: /policies.html
+        - img [ref=e32]
+        - text: Policies
+      - link "Secrets" [ref=e35] [cursor=pointer]:
+        - /url: /secrets.html
+        - img [ref=e36]
+        - text: Secrets
+      - link "Rules" [ref=e40] [cursor=pointer]:
+        - /url: /rules.html
+        - img [ref=e41]
+        - text: Rules
+      - link "Profile" [ref=e43] [cursor=pointer]:
+        - /url: /profile.html
+        - img [ref=e44]
+        - text: Profile
+      - generic [ref=e47]: Developer
+      - link "API Docs" [ref=e48] [cursor=pointer]:
+        - /url: /docs
+        - img [ref=e49]
+        - text: API Docs
+        - img [ref=e53]
+    - generic [ref=e60]: All systems operational
+  - generic [ref=e61]:
+    - banner [ref=e62]:
+      - generic [ref=e63]:
+        - heading "Security Overview" [level=1] [ref=e64]
+        - paragraph [ref=e65]: Real-time application security monitoring
+    - main [ref=e66]:
+      - generic [ref=e67]:
+        - generic [ref=e68]:
+          - generic [ref=e69]:
+            - img [ref=e71]
+            - generic [ref=e75]: Live
+          - generic [ref=e76]: "0"
+          - generic [ref=e77]: Total Applications
+          - generic [ref=e78]:
+            - img [ref=e79]
+            - text: +2 this week
+        - generic [ref=e82]:
+          - generic [ref=e83]:
+            - img [ref=e85]
+            - generic [ref=e87]: Live
+          - generic [ref=e88]: "0"
+          - generic [ref=e89]: Critical Findings
+          - generic [ref=e90]:
+            - img [ref=e91]
+            - text: +5 this week
+        - generic [ref=e94]:
+          - generic [ref=e95]:
+            - img [ref=e97]
+            - generic [ref=e99]: Live
+          - generic [ref=e100]: "0"
+          - generic [ref=e101]: Open Findings
+          - generic [ref=e102]:
+            - img [ref=e103]
+            - text: +12 this week
+        - generic [ref=e106]:
+          - generic [ref=e107]:
+            - img [ref=e109]
+            - generic [ref=e111]: Live
+          - generic [ref=e112]: 0/100
+          - generic [ref=e113]: Avg Risk Score
+          - generic [ref=e114]:
+            - img [ref=e115]
+            - text: "-3 this week"
+      - generic [ref=e118]:
+        - generic [ref=e119]:
+          - generic [ref=e121]:
+            - generic [ref=e122]: Findings by Severity
+            - generic [ref=e123]: Distribution of all open findings
+          - generic [ref=e124]:
+            - generic:
+              - generic: "35"
+              - generic: Total
+          - generic [ref=e126]:
+            - generic [ref=e129]:
+              - text: "Critical:"
+              - strong [ref=e130]: "1"
+            - generic [ref=e133]:
+              - text: "High:"
+              - strong [ref=e134]: "4"
+            - generic [ref=e137]:
+              - text: "Medium:"
+              - strong [ref=e138]: "26"
+            - generic [ref=e141]:
+              - text: "Low:"
+              - strong [ref=e142]: "4"
+            - generic [ref=e145]:
+              - text: "Info:"
+              - strong [ref=e146]: "0"
+        - generic [ref=e148]:
+          - generic [ref=e149]: Apps by Risk Level
+          - generic [ref=e150]: Applications grouped by risk classification
+      - generic [ref=e153]:
+        - generic [ref=e154]:
+          - generic [ref=e156]:
+            - generic [ref=e157]: Top Applications by Risk
+            - generic [ref=e158]: Sorted by risk score descending
+          - table [ref=e160]:
+            - rowgroup [ref=e161]:
+              - row "Rank Application Team Risk C H M Last Scan" [ref=e162]:
+                - columnheader "Rank" [ref=e163]
+                - columnheader "Application" [ref=e164]
+                - columnheader "Team" [ref=e165]
+                - columnheader "Risk" [ref=e166]
+                - columnheader "C" [ref=e167]
+                - columnheader "H" [ref=e168]
+                - columnheader "M" [ref=e169]
+                - columnheader "Last Scan" [ref=e170]
+            - rowgroup [ref=e171]:
+              - row "🥇 yolo andrewblooman 55/100 0 3 8 2d ago" [ref=e172] [cursor=pointer]:
+                - cell "🥇" [ref=e173]
+                - cell "yolo" [ref=e174]:
+                  - generic [ref=e175]: yolo
+                - cell "andrewblooman" [ref=e176]
+                - cell "55/100" [ref=e177]
+                - cell "0" [ref=e178]
+                - cell "3" [ref=e179]
+                - cell "8" [ref=e180]
+                - cell "2d ago" [ref=e181]
+              - row "🥈 Secret-Sleuth andrewblooman 53/100 1 0 9 2d ago" [ref=e182] [cursor=pointer]:
+                - cell "🥈" [ref=e183]
+                - cell "Secret-Sleuth" [ref=e184]:
+                  - generic [ref=e185]: Secret-Sleuth
+                - cell "andrewblooman" [ref=e186]
+                - cell "53/100" [ref=e187]
+                - cell "1" [ref=e188]
+                - cell "0" [ref=e189]
+                - cell "9" [ref=e190]
+                - cell "2d ago" [ref=e191]
+              - row "🥉 appsec-demo-pipeline andrewblooman 28/100 0 1 6 2d ago" [ref=e192] [cursor=pointer]:
+                - cell "🥉" [ref=e193]
+                - cell "appsec-demo-pipeline" [ref=e194]:
+                  - generic [ref=e195]: appsec-demo-pipeline
+                - cell "andrewblooman" [ref=e196]
+                - cell "28/100" [ref=e197]
+                - cell "0" [ref=e198]
+                - cell "1" [ref=e199]
+                - cell "6" [ref=e200]
+                - cell "2d ago" [ref=e201]
+              - row "4 secure-container-build andrewblooman 7/100 0 0 2 2d ago" [ref=e202] [cursor=pointer]:
+                - cell "4" [ref=e203]
+                - cell "secure-container-build" [ref=e204]:
+                  - generic [ref=e205]: secure-container-build
+                - cell "andrewblooman" [ref=e206]
+                - cell "7/100" [ref=e207]
+                - cell "0" [ref=e208]
+                - cell "0" [ref=e209]
+                - cell "2" [ref=e210]
+                - cell "2d ago" [ref=e211]
+              - row "5 Base-Image-Bakery andrewblooman 4/100 0 0 1 2d ago" [ref=e212] [cursor=pointer]:
+                - cell "5" [ref=e213]
+                - cell "Base-Image-Bakery" [ref=e214]:
+                  - generic [ref=e215]: Base-Image-Bakery
+                - cell "andrewblooman" [ref=e216]
+                - cell "4/100" [ref=e217]
+                - cell "0" [ref=e218]
+                - cell "0" [ref=e219]
+                - cell "1" [ref=e220]
+                - cell "2d ago" [ref=e221]
+        - generic [ref=e222]:
+          - generic [ref=e223]:
+            - generic [ref=e224]:
+              - generic [ref=e225]: Recent Findings
+              - generic [ref=e226]: Latest security issues detected
+            - link "View all →" [ref=e227] [cursor=pointer]:
+              - /url: /reports.html
+          - generic [ref=e228]:
+            - generic [ref=e229] [cursor=pointer]:
+              - generic [ref=e230]:
+                - generic [ref=e231]: Medium
+                - generic [ref=e232]: By not specifying a USER, a program in t…
+              - generic [ref=e233]:
+                - generic [ref=e234]:
+                  - img [ref=e235]
+                  - text: —
+                - img [ref=e240]
+                - generic [ref=e245]: 2d ago
+            - generic [ref=e246] [cursor=pointer]:
+              - generic [ref=e247]:
+                - generic [ref=e248]: Low
+                - generic [ref=e249]: Detected a dynamic value being used with…
+              - generic [ref=e250]:
+                - generic [ref=e251]:
+                  - img [ref=e252]
+                  - text: —
+                - img [ref=e257]
+                - generic [ref=e262]: 2d ago
+            - generic [ref=e263] [cursor=pointer]:
+              - generic [ref=e264]:
+                - generic [ref=e265]: Medium
+                - generic [ref=e266]: "CVE-2025-71176: pytest: pytest: Denial o…"
+              - generic [ref=e267]:
+                - generic [ref=e268]:
+                  - img [ref=e269]
+                  - text: —
+                - img [ref=e274]
+                - generic [ref=e279]: 2d ago
+            - generic [ref=e280] [cursor=pointer]:
+              - generic [ref=e281]:
+                - generic [ref=e282]: Medium
+                - generic [ref=e283]: "GHSA-r4q5-vmmm-2653: follow-redirects le…"
+              - generic [ref=e284]:
+                - generic [ref=e285]:
+                  - img [ref=e286]
+                  - text: —
+                - img [ref=e291]
+                - generic [ref=e296]: 2d ago
+            - generic [ref=e297] [cursor=pointer]:
+              - generic [ref=e298]:
+                - generic [ref=e299]: High
+                - generic [ref=e300]: Detected subprocess function 'call' with…
+              - generic [ref=e301]:
+                - generic [ref=e302]:
+                  - img [ref=e303]
+                  - text: —
+                - img [ref=e308]
+                - generic [ref=e313]: 2d ago

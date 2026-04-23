@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snitch — Profile &amp; Preferences</title>
+  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
   <link rel="stylesheet" href="/static/css/theme.css">
   <style>/* Inter font fallback */ body { font-family: "Inter", system-ui, -apple-system, sans-serif; }</style>
   <script src="/static/js/lucide.min.js"></script>
@@ -11,15 +12,7 @@
     * { box-sizing: border-box; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
     @keyframes fadeInUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
-    .nav-link:hover { background:rgba(255,255,255,0.05) !important; color:#e2e8f0 !important; }
-    .btn-primary { background:linear-gradient(135deg,#00d4ff,#6366f1);color:white;border:none;padding:10px 20px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:8px; }
-    .btn-primary:hover { transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,212,255,0.4); }
-    .btn-secondary { background:rgba(255,255,255,0.05);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);padding:10px 20px;border-radius:10px;font-weight:500;font-size:14px;cursor:pointer;transition:all 0.2s; }
-    .btn-secondary:hover { background:rgba(255,255,255,0.1);color:#f1f5f9; }
     .card { background:rgba(13,17,23,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:16px;backdrop-filter:blur(20px); }
-    .dark-input { background:#0d1117;border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#f1f5f9;font-size:14px;padding:10px 14px;width:100%;outline:none;font-family:inherit; }
-    .dark-input:focus { border-color:rgba(0,212,255,0.4); }
-    .dark-select { background:#0d1117;border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#f1f5f9;font-size:14px;padding:10px 14px;outline:none;font-family:inherit;cursor:pointer; }
 
     /* Toggle switch */
     .toggle-switch { position:relative;display:inline-block;width:48px;height:26px;flex-shrink:0; }
@@ -50,59 +43,11 @@
     [data-theme="light"] .theme-option.active { border-color:rgba(8,145,178,0.5);background:rgba(8,145,178,0.08); }
   </style>
 </head>
-<body style="font-family:'Inter',sans-serif;background:#0a0e1a;color:#f1f5f9;margin:0;padding:0;min-height:100vh;">
-<script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+<body style="font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
 
   <!-- Sidebar -->
-  <aside id="sidebar" style="width:260px;min-height:100vh;background:#080c18;border-right:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;">
-    <div style="padding:24px 20px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:12px;">
-      <div style="width:40px;height:40px;background:linear-gradient(135deg,#00d4ff22,#6366f122);border:1px solid #00d4ff44;border-radius:12px;display:flex;align-items:center;justify-content:center;">
-        <i data-lucide="shield-alert" style="width:20px;height:20px;color:#00d4ff;"></i>
-      </div>
-      <div>
-        <div style="font-size:20px;font-weight:800;color:#f1f5f9;letter-spacing:-0.5px;">Snitch</div>
-        <div style="font-size:11px;color:#00d4ff;font-weight:500;letter-spacing:1px;text-transform:uppercase;">AppSec Platform</div>
-      </div>
-    </div>
-    <nav style="flex:1;padding:16px 12px;">
-      <div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:8px 8px 4px;">Main Menu</div>
-      <a href="/" class="nav-link" id="nav-dashboard" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
-        <i data-lucide="layout-dashboard" style="width:18px;height:18px;"></i> Dashboard
-      </a>
-      <a href="/applications.html" class="nav-link" id="nav-apps" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
-        <i data-lucide="layers" style="width:18px;height:18px;"></i> Applications
-      </a>
-      <a href="/repositories.html" class="nav-link" id="nav-repos" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
-        <i data-lucide="git-branch" style="width:18px;height:18px;"></i> Repositories
-      </a>
-      <a href="/reports.html" class="nav-link" id="nav-reports" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
-        <i data-lucide="bar-chart-3" style="width:18px;height:18px;"></i> Reports
-      </a>
-      <a href="/policies.html" class="nav-link" id="nav-policies" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
-        <i data-lucide="shield-check" style="width:18px;height:18px;"></i> Policies
-      </a>
-      <a href="/secrets.html" class="nav-link" id="nav-secrets" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
-        <i data-lucide="key" style="width:18px;height:18px;"></i> Secrets
-      </a>
-      <a href="/rules.html" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
-        <i data-lucide="book-open" style="width:18px;height:18px;"></i> Rules
-      </a>
-      <a href="/profile.html" class="nav-link" id="nav-profile" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(99,102,241,0.15));color:#00d4ff;border:1px solid rgba(0,212,255,0.2);">
-        <i data-lucide="user" style="width:18px;height:18px;"></i> Profile
-      </a>
-      <div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:16px 8px 4px;">Developer</div>
-      <a href="/docs" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">
-        <i data-lucide="code-2" style="width:18px;height:18px;"></i> API Docs
-        <i data-lucide="external-link" style="width:12px;height:12px;margin-left:auto;"></i>
-      </a>
-    </nav>
-    <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,0.08);">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <div style="width:8px;height:8px;background:#10b981;border-radius:50%;box-shadow:0 0 8px #10b981;"></div>
-        <span style="font-size:12px;color:#475569;">All systems operational</span>
-      </div>
-    </div>
-  </aside>
+  <div id="sidebar-mount"></div>
+  <script src="/static/js/sidebar.js"></script>
 
   <!-- Main -->
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
