@@ -1,0 +1,90 @@
+/* Snitch theme tokens — dark (default) and light */
+
+:root {
+  --bg-page: #0a0e1a;
+  --bg-sidebar: #080c18;
+  --bg-card: rgba(255,255,255,0.03);
+  --bg-card-hover: rgba(255,255,255,0.05);
+  --bg-input: #0d1117;
+  --bg-modal: #0d1117;
+  --bg-table-header: rgba(255,255,255,0.03);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #475569;
+  --border-color: rgba(255,255,255,0.08);
+  --border-subtle: rgba(255,255,255,0.05);
+  --accent: #00d4ff;
+  --accent-dim: rgba(0,212,255,0.15);
+  --accent-border: rgba(0,212,255,0.2);
+  --table-row-hover: rgba(255,255,255,0.03);
+  --scrollbar-thumb: rgba(255,255,255,0.1);
+}
+
+[data-theme="light"] {
+  --bg-page: #f0f4f8;
+  --bg-sidebar: #1e293b;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+  --bg-input: #f1f5f9;
+  --bg-modal: #ffffff;
+  --bg-table-header: #f8fafc;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --border-color: rgba(0,0,0,0.1);
+  --border-subtle: rgba(0,0,0,0.06);
+  --accent: #0891b2;
+  --accent-dim: rgba(8,145,178,0.1);
+  --accent-border: rgba(8,145,178,0.25);
+  --table-row-hover: rgba(0,0,0,0.02);
+  --scrollbar-thumb: rgba(0,0,0,0.15);
+}
+
+/* ---- CSS class overrides ---- */
+
+[data-theme="light"] body {
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .card {
+  background: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="light"] .card-hover:hover {
+  background: var(--bg-card-hover) !important;
+}
+
+[data-theme="light"] .nav-link {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] .dark-input,
+[data-theme="light"] .dark-select {
+  background: var(--bg-input) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="light"] .dark-input::placeholder {
+  color: var(--text-tertiary) !important;
+}
+
+[data-theme="light"] .table-row:hover {
+  background: var(--table-row-hover) !important;
+}
+
+[data-theme="light"] .btn-secondary {
+  background: rgba(0,0,0,0.06) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .btn-secondary:hover {
+  background: rgba(0,0,0,0.1) !important;
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
