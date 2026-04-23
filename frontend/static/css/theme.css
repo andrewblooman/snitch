@@ -40,11 +40,24 @@
   --scrollbar-thumb: rgba(0,0,0,0.15);
 }
 
-/* ---- CSS class overrides ---- */
+/* ---- Base element overrides ---- */
 
 [data-theme="light"] body {
+  background: var(--bg-page) !important;
   color: var(--text-primary);
 }
+
+[data-theme="light"] aside {
+  background: var(--bg-sidebar) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="light"] header {
+  background: rgba(30,41,59,0.95) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+
+/* ---- CSS class overrides ---- */
 
 [data-theme="light"] .card {
   background: var(--bg-card) !important;
