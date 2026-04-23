@@ -1,21 +1,48 @@
 /* Snitch theme tokens — dark (default) and light */
 
 :root {
+  /* ── Backgrounds ── */
   --bg-page: #0a0e1a;
   --bg-sidebar: #080c18;
-  --bg-card: rgba(255,255,255,0.03);
-  --bg-card-hover: rgba(255,255,255,0.05);
+  --bg-card: rgba(13,17,35,0.8);
+  --bg-card-hover: rgba(15,20,42,0.9);
   --bg-input: #0d1117;
   --bg-modal: #0d1117;
   --bg-table-header: rgba(255,255,255,0.03);
+  /* ── Text ── */
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-tertiary: #475569;
+  /* ── Borders ── */
   --border-color: rgba(255,255,255,0.08);
   --border-subtle: rgba(255,255,255,0.05);
+  /* ── Accent (cyan) ── */
   --accent: #00d4ff;
   --accent-dim: rgba(0,212,255,0.15);
-  --accent-border: rgba(0,212,255,0.2);
+  --accent-border: rgba(0,212,255,0.25);
+  /* ── Severity palette ── */
+  --sev-critical: #ff4757;
+  --sev-critical-bg: rgba(255,71,87,0.13);
+  --sev-critical-border: rgba(255,71,87,0.35);
+  --sev-high: #ff9f43;
+  --sev-high-bg: rgba(255,159,67,0.13);
+  --sev-high-border: rgba(255,159,67,0.35);
+  --sev-medium: #ff6b35;
+  --sev-medium-bg: rgba(255,107,53,0.13);
+  --sev-medium-border: rgba(255,107,53,0.35);
+  --sev-low: #54a0ff;
+  --sev-low-bg: rgba(84,160,255,0.13);
+  --sev-low-border: rgba(84,160,255,0.35);
+  --sev-info: #a29bfe;
+  --sev-info-bg: rgba(162,155,254,0.13);
+  --sev-info-border: rgba(162,155,254,0.35);
+  /* ── Gradients ── */
+  --gradient-brand: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+  --gradient-brand-subtle: linear-gradient(135deg, rgba(0,212,255,0.15) 0%, rgba(124,58,237,0.15) 100%);
+  /* ── Glows ── */
+  --glow-accent: 0 0 24px rgba(0,212,255,0.2);
+  --glow-brand: 0 0 32px rgba(124,58,237,0.15);
+  /* ── Misc ── */
   --table-row-hover: rgba(255,255,255,0.03);
   --scrollbar-thumb: rgba(255,255,255,0.1);
 }
@@ -36,11 +63,38 @@
   --accent: #0891b2;
   --accent-dim: rgba(8,145,178,0.1);
   --accent-border: rgba(8,145,178,0.25);
+  --sev-critical: #e11d48;
+  --sev-critical-bg: rgba(225,29,72,0.08);
+  --sev-critical-border: rgba(225,29,72,0.25);
+  --sev-high: #d97706;
+  --sev-high-bg: rgba(217,119,6,0.08);
+  --sev-high-border: rgba(217,119,6,0.25);
+  --sev-medium: #ea580c;
+  --sev-medium-bg: rgba(234,88,12,0.08);
+  --sev-medium-border: rgba(234,88,12,0.25);
+  --sev-low: #2563eb;
+  --sev-low-bg: rgba(37,99,235,0.08);
+  --sev-low-border: rgba(37,99,235,0.25);
+  --sev-info: #7c3aed;
+  --sev-info-bg: rgba(124,58,237,0.08);
+  --sev-info-border: rgba(124,58,237,0.25);
+  --gradient-brand: linear-gradient(135deg, #0891b2 0%, #6d28d9 100%);
+  --gradient-brand-subtle: linear-gradient(135deg, rgba(8,145,178,0.12) 0%, rgba(109,40,217,0.12) 100%);
   --table-row-hover: rgba(0,0,0,0.02);
   --scrollbar-thumb: rgba(0,0,0,0.15);
 }
 
-/* ---- Base element overrides ---- */
+/* ── Dark-mode atmospheric background ── */
+/* !important so the gradient wins over any inline background on the body element */
+body {
+  background:
+    radial-gradient(ellipse at 15% 60%, rgba(0,212,255,0.04) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 15%, rgba(124,58,237,0.05) 0%, transparent 55%),
+    #0a0e1a !important;
+  color: var(--text-primary);
+}
+
+/* ── Base element overrides (light mode) ── */
 
 [data-theme="light"] body {
   background: var(--bg-page) !important;
@@ -57,7 +111,7 @@
   border-color: rgba(255,255,255,0.1) !important;
 }
 
-/* ---- CSS class overrides ---- */
+/* ── CSS class overrides (light mode) ── */
 
 [data-theme="light"] .card {
   background: var(--bg-card) !important;
@@ -97,7 +151,7 @@
   background: rgba(0,0,0,0.1) !important;
 }
 
-/* ---- Scrollbar ---- */
+/* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
