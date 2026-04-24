@@ -417,7 +417,7 @@ jobs:
       - name: Run Checkov
         run: |
           pip install checkov
-          checkov --directory . --framework terraform,cloudformation --output json --compact --quiet > checkov-results.json || true
+          checkov --directory . --framework terraform,cloudformation,arm,bicep --output json --compact --quiet > checkov-results.json || true
 
       - name: Upload results to Snitch (S3)
         if: always()

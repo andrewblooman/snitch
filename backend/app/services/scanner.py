@@ -359,7 +359,6 @@ class RealScannerService:
             resource = check.get("resource", "")
             check_id = check.get("check_id", "")
             check_type = check.get("check_type", "")
-            description = check.get("check", {}) if isinstance(check.get("check"), dict) else {}
             check_name = (
                 check.get("check_id", "")
                 if not isinstance(check.get("check"), dict)

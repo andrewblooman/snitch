@@ -46,7 +46,7 @@ def detect_format(data: dict) -> str:
 def _is_checkov(data: dict | list) -> bool:
     """Return True if the data looks like checkov --output json output."""
     if isinstance(data, list):
-        return len(data) > 0 and all(_is_checkov_section(s) for s in data if isinstance(s, dict))
+        return len(data) > 0 and all(isinstance(s, dict) and _is_checkov_section(s) for s in data)
     return _is_checkov_section(data)
 
 
