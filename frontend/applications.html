@@ -199,6 +199,10 @@
           <label style="font-size:13px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Description</label>
           <textarea id="field-description" class="dark-input" style="width:100%;min-height:80px;resize:vertical;" placeholder="Brief description of this application..."></textarea>
         </div>
+        <div style="margin-bottom:24px;">
+          <label style="font-size:13px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Container Image <span style="color:#475569;font-weight:400;">(optional — for Grype container scans)</span></label>
+          <input type="text" id="field-container-image" class="dark-input" style="width:100%;" placeholder="e.g. nginx:latest or ghcr.io/org/app:sha">
+        </div>
         <div style="display:flex;gap:12px;justify-content:flex-end;">
           <button type="button" class="btn-secondary" onclick="closeAddModal()">Cancel</button>
           <button type="submit" class="btn-primary" id="add-submit-btn">
@@ -439,12 +443,13 @@ async function submitAddApp(e) {
   btn.innerHTML = '<div style="animation:spin 1s linear infinite;display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;"></div> Adding...';
 
   const payload = {
-    name:        document.getElementById('field-name').value.trim(),
-    github_org:  document.getElementById('field-github-org').value.trim()  || undefined,
-    github_repo: document.getElementById('field-github-repo').value.trim() || undefined,
-    team_name:   document.getElementById('field-team').value.trim()        || undefined,
-    language:    document.getElementById('field-language').value           || undefined,
-    description: document.getElementById('field-description').value.trim() || undefined,
+    name:            document.getElementById('field-name').value.trim(),
+    github_org:      document.getElementById('field-github-org').value.trim()     || undefined,
+    github_repo:     document.getElementById('field-github-repo').value.trim()    || undefined,
+    team_name:       document.getElementById('field-team').value.trim()           || undefined,
+    language:        document.getElementById('field-language').value              || undefined,
+    description:     document.getElementById('field-description').value.trim()    || undefined,
+    container_image: document.getElementById('field-container-image').value.trim() || undefined,
   };
 
   try {

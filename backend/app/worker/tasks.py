@@ -209,7 +209,12 @@ def scan_application_task(self, app_id: str, scan_type: str = "all") -> dict:
             ]
 
             svc = RealScannerService()
-            raw_findings = svc.run_scan(app, scan_type, custom_secret_patterns=custom_secret_patterns)
+            raw_findings = svc.run_scan(
+                app,
+                scan_type,
+                custom_secret_patterns=custom_secret_patterns,
+                container_image=getattr(app, "container_image", None),
+            )
 
             created, updated = _upsert_findings_sync(db, application_id, scan_id, raw_findings)
 
@@ -223,9 +228,11 @@ def scan_application_task(self, app_id: str, scan_type: str = "all") -> dict:
 
             _recalculate_risk(db, app)
 
-            # Only evaluate policies on full scans — partial scans produce incomplete
-            # finding sets and would cause false negatives in policy results.
-            if scan_type == "all":
+            # Evaluate policies after every complete scan.
+            # Partial single-scanner runs (e.g. "semgrep" only) would produce
+            # incomplete finding sets, so skip policy evaluation for those.
+            _FULL_SCAN_TYPES = {"all", "checkov", "grype"}
+            if scan_type in _FULL_SCAN_TYPES or scan_type == "all":
                 policy_summary = _evaluate_policies_sync(db, application_id)
             else:
                 policy_summary = {"skipped": True, "reason": f"partial scan ({scan_type})"}

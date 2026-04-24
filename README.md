@@ -7,7 +7,7 @@
 [![Powered by Claude](https://img.shields.io/badge/AI-Claude%203.5%20Sonnet-orange.svg?logo=anthropic)](https://www.anthropic.com/)
 [![GitHub Issues](https://img.shields.io/github/issues/andrewblooman/snitch)](https://github.com/andrewblooman/snitch/issues)
 
-> **Snitch** is a developer-focused AppSec platform that collects security findings from Semgrep (SAST), Grype (container scanning), Trivy (SCA), and Gitleaks (secrets), calculates per-application risk scores, and provides AI-powered remediation via Anthropic Claude.
+> **Snitch** is a developer-focused AppSec platform that collects security findings from Semgrep (SAST), Grype (container scanning), Trivy (SCA), Checkov (IaC/Terraform), and Gitleaks (secrets), calculates per-application risk scores, and provides AI-powered remediation via Anthropic Claude.
 
 ![Dashboard](docs/images/image.png)
 
@@ -18,7 +18,7 @@
 | Feature | Description |
 |---|---|
 | 📊 **Risk Scoring** | Automatic risk score (0–100) per app derived from open findings by severity |
-| 🔍 **Multi-Scanner** | Semgrep (SAST), Grype (container CVEs), Trivy (SCA/OS vulnerabilities), Gitleaks (secrets) |
+| 🔍 **Multi-Scanner** | Semgrep (SAST), Grype (container CVEs), Trivy (SCA/OS vulnerabilities), Checkov (IaC/Terraform), Gitleaks (secrets) |
 | 🔑 **Secrets Detection** | Gitleaks integration with configurable custom regex patterns per organisation |
 | 🤖 **AI Remediation** | Claude-powered "Plan Remediation" generates fix instructions, then creates a GitHub PR |
 | 📈 **90-Day Trends** | Management reporting with vulnerability trends, team leaderboard, and MTTR |

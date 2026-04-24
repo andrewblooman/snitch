@@ -11,7 +11,7 @@ ALWAYS push the branch to GitHub and open a PR
 
 ## What This Is
 
-Snitch is an AppSec platform that aggregates security findings from Semgrep (SAST), Grype (container CVEs), Trivy (SCA), and Gitleaks (secrets), calculates per-app risk scores, and provides AI-powered remediation via Anthropic Claude. Includes a User Profile page with light/dark mode toggle (stored in localStorage). UI uses a vibrant dark theme with CSS design tokens in `frontend/static/css/theme.css` (severity palette, gradient, glow variables).
+Snitch is an AppSec platform that aggregates security findings from Semgrep (SAST), Grype (container CVEs), Trivy (SCA), Checkov (IaC/Terraform), and Gitleaks (secrets), calculates per-app risk scores, and provides AI-powered remediation via Anthropic Claude. Includes a User Profile page with light/dark mode toggle (stored in localStorage). UI uses a vibrant dark theme with CSS design tokens in `frontend/static/css/theme.css` (severity palette, gradient, glow variables).
 
 The sidebar is a shared JS component defined in `frontend/static/js/sidebar.js`. Each HTML page uses `<div id="sidebar-mount"></div>` followed by `<script src="/static/js/sidebar.js"></script>` — the script renders the full sidebar, auto-detects the active nav link, and defines `window.applyTheme()`. Do not duplicate sidebar HTML across pages; edit `sidebar.js` for any sidebar changes.
 
@@ -66,7 +66,7 @@ backend/app/
 │   │                #           cicd_scans, policies, secrets, github, seed, rules
 ├── worker/          # Celery task definitions (scans, periodic jobs, SQS polling)
 └── services/
-    ├── scanner.py         # Semgrep/Trivy/Govulncheck/Gitleaks + MockScannerService
+    ├── scanner.py         # Semgrep/Trivy/Govulncheck/Gitleaks/Checkov/Grype + MockScannerService
     ├── scoring.py         # Risk score calculator
     ├── deduplication.py   # Finding deduplication logic (SAST/SCA/secrets/generic keys)
     ├── cicd_normaliser.py # Normalise Semgrep/Grype CI/CD JSON output
@@ -101,8 +101,17 @@ backend/app/
 ### Secrets Scanning
 Gitleaks runs alongside Semgrep/Trivy in `scan_application_task`. Active `SecretPattern` rows are loaded from the DB at scan time and written to a temp TOML config passed to gitleaks via `--config`. Raw secret values are never stored — masked to `****{last4}` in the `description` field. Dedup key: `("secrets", rule_id, file_path)`.
 
+### IaC Scanning (Checkov)
+Checkov runs on the cloned repo path using `--framework terraform,cloudformation,arm,bicep --output json`. Failed checks are mapped to `finding_type="IaC"`, `scanner="checkov"`. Checkov exits 0 (all pass) or 1 (findings found) — both are valid. The policy engine maps `iac` scan type to checkov findings.
+
+### Container Scanning (Grype)
+Grype scans a container image by name (e.g. `nginx:latest`, `ghcr.io/org/app:sha`). The `Application` model has a nullable `container_image` field — if empty, the grype step is silently skipped. Grype JSON output is parsed via `cicd_normaliser.normalise_grype()`. Results are stored as `finding_type="container"`, `scanner="grype"`. The policy engine maps `container` scan type to grype findings.
+
+### Scan Types
+`RealScannerService.run_scan(scan_type)` accepts: `"all"`, `"semgrep"`, `"trivy"`, `"govulncheck"`, `"gitleaks"`, `"checkov"`, `"grype"`. Policy evaluation runs for `"all"` and targeted complete scans (`"checkov"`, `"grype"`); it is skipped for partial single-scanner runs that would leave incomplete finding sets.
+
 ### Policy Engine
-`Policy` model stores rules (min_severity, enabled_scan_types, rule_blocklist, rule_allowlist, action). `policy_evaluator.evaluate_policy()` is called after every scan in `scan_application_task`. Actions: `inform` (log only) or `block` (sets blocked=True in task result).
+`Policy` model stores rules (min_severity, enabled_scan_types, rule_blocklist, rule_allowlist, action). `policy_evaluator.evaluate_policy()` is called after every scan in `scan_application_task`. Actions: `inform` (log only) or `block` (sets blocked=True in task result). Scan type labels: `sast`, `sca`, `container`, `secrets`, `iac`.
 
 ### AI Remediation
 Uses `claude-3-5-sonnet-20241022` with extended thinking (`budget_tokens=10000`). When `ANTHROPIC_API_KEY` is not set, `_mock_plan()` is returned — no error is raised. The Anthropic client is imported lazily inside the function.
