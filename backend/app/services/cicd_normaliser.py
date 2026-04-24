@@ -31,12 +31,30 @@ _GRYPE_SEVERITY_MAP = {
 
 
 def detect_format(data: dict) -> str:
-    """Return 'semgrep' or 'grype' based on JSON structure, or 'unknown'."""
+    """Return 'semgrep', 'grype', or 'checkov' based on JSON structure, or 'unknown'."""
     if "results" in data and "version" in data:
         return "semgrep"
     if "matches" in data and "source" in data:
         return "grype"
+    # Checkov: {"results": {"passed_checks": [...], "failed_checks": [...]}}
+    # or a list of per-framework dicts with the same structure
+    if _is_checkov(data):
+        return "checkov"
     return "unknown"
+
+
+def _is_checkov(data: dict | list) -> bool:
+    """Return True if the data looks like checkov --output json output."""
+    if isinstance(data, list):
+        return len(data) > 0 and all(_is_checkov_section(s) for s in data if isinstance(s, dict))
+    return _is_checkov_section(data)
+
+
+def _is_checkov_section(section: dict) -> bool:
+    results = section.get("results")
+    if isinstance(results, dict):
+        return "failed_checks" in results or "passed_checks" in results
+    return False
 
 
 def normalise_semgrep(data: dict) -> list[dict]:
@@ -116,11 +134,67 @@ def normalise_grype(data: dict) -> list[dict]:
     return findings
 
 
-def normalise(data: dict) -> tuple[list[dict], str]:
+def normalise_checkov(data: dict | list) -> list[dict]:
+    """Convert Checkov JSON output (--output json) to Snitch finding dicts.
+
+    Checkov can return a single dict or a list of dicts (one per framework).
+    Only failed_checks are ingested; passed_checks are discarded.
+    """
+    _CHECKOV_SEVERITY: dict[str, str] = {
+        "CRITICAL": "critical",
+        "HIGH": "high",
+        "MEDIUM": "medium",
+        "LOW": "low",
+        "INFO": "info",
+    }
+
+    sections: list[dict] = data if isinstance(data, list) else [data]
+    findings = []
+
+    for section in sections:
+        check_type = section.get("check_type", "")
+        for check in section.get("results", {}).get("failed_checks", []):
+            check_id = check.get("check_id", "")
+            check_name = check.get("check", {})
+            if isinstance(check_name, dict):
+                check_name = check_name.get("name", check_id)
+            elif not isinstance(check_name, str):
+                check_name = check_id
+
+            resource = check.get("resource", "")
+            raw_severity = (check.get("severity") or "").upper()
+            severity = _CHECKOV_SEVERITY.get(raw_severity, "medium")
+
+            file_path = check.get("repo_file_path") or check.get("file_path") or None
+            line_range = check.get("file_line_range")
+            line_number = line_range[0] if isinstance(line_range, list) and line_range else None
+
+            findings.append({
+                "title": f"{check_id}: {check_name}"[:512],
+                "description": f"Resource: {resource}. Framework: {check_type}.",
+                "severity": severity,
+                "finding_type": "IaC",
+                "scanner": "checkov",
+                "file_path": file_path,
+                "line_number": line_number,
+                "rule_id": check_id or None,
+                "cve_id": None,
+                "package_name": None,
+                "package_version": None,
+                "fixed_version": None,
+                "cvss_score": None,
+                "status": "open",
+            })
+
+    return findings
+
+
+def normalise(data: dict | list) -> tuple[list[dict], str]:
     """
     Auto-detect format and normalise to Snitch finding dicts.
 
-    Returns (findings, detected_scan_type) where scan_type is 'semgrep' or 'grype'.
+    Returns (findings, detected_scan_type) where scan_type is one of:
+    'semgrep', 'grype', or 'checkov'.
     Raises ValueError for unrecognised formats.
     """
     fmt = detect_format(data)
@@ -128,4 +202,6 @@ def normalise(data: dict) -> tuple[list[dict], str]:
         return normalise_semgrep(data), "semgrep"
     if fmt == "grype":
         return normalise_grype(data), "grype"
-    raise ValueError(f"Unrecognised scan result format — could not detect semgrep or grype structure")
+    if fmt == "checkov":
+        return normalise_checkov(data), "checkov"
+    raise ValueError("Unrecognised scan result format — could not detect semgrep, grype, or checkov structure")

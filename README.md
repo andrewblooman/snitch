@@ -251,19 +251,213 @@ cd backend
 pytest tests/ -v
 ```
 
-### GitHub Actions integration
+---
 
-To send CI scan results to Snitch, add a step to your workflow:
+## CI/CD Pipeline Integration
 
-```yaml
-- name: Upload findings to Snitch
-  if: always()
-  run: |
-    curl -X POST "$SNITCH_URL/api/v1/applications/$APP_ID/scan?scan_type=all" \
-      -H "Content-Type: application/json"
+Snitch supports two scanning modes that can be used independently or together.
+
+### Mode 1 — Pull model (Snitch scans your repo)
+
+Snitch clones your repository and runs all scanners itself. No pipeline changes required.
+
+```bash
+# Trigger a full scan via the API
+curl -X POST "http://localhost:8000/api/v1/applications/{app_id}/scan?scan_type=all"
+
+# Or trigger a specific scanner only
+curl -X POST "http://localhost:8000/api/v1/applications/{app_id}/scan?scan_type=checkov"
+curl -X POST "http://localhost:8000/api/v1/applications/{app_id}/scan?scan_type=grype"
 ```
 
-Or enable **GitHub Security** (code scanning + Dependabot) and use the **"Sync from GitHub"** button in the application detail page.
+| `scan_type` | Scanner | What it scans |
+|---|---|---|
+| `semgrep` | Semgrep | SAST — first-party code |
+| `trivy` | Trivy | SCA — third-party dependencies |
+| `govulncheck` | Govulncheck | SCA — Go modules |
+| `gitleaks` | Gitleaks | Secrets in code |
+| `checkov` | Checkov | IaC — Terraform, CloudFormation, ARM, Bicep |
+| `grype` | Grype | Container image CVEs (requires `container_image` set on the app) |
+| `all` | All of the above | Full scan |
+
+For Grype to run, set a `container_image` when registering the application:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/applications \
+  -H "Content-Type: application/json" \
+  -d '{"name": "my-api", "github_org": "myorg", "github_repo": "my-api",
+       "repo_url": "https://github.com/myorg/my-api",
+       "team_name": "platform", "container_image": "ghcr.io/myorg/my-api:latest"}'
+```
+
+---
+
+### Mode 2 — Push model (your pipeline uploads scan results)
+
+Your CI/CD pipeline runs the scanner and uploads the JSON output to S3. Snitch polls an SQS queue, downloads the results, normalises them, and stores the findings — including CI context (commit SHA, branch, workflow run ID).
+
+**Supported push formats:** Semgrep JSON, Grype JSON, Checkov JSON
+
+#### Infrastructure setup
+
+You need:
+- An **S3 bucket** with event notifications → **SQS queue**
+- Snitch configured with AWS credentials
+
+```bash
+# .env additions
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=AKIA...
+AWS_SECRET_ACCESS_KEY=...
+S3_CICD_BUCKET=my-snitch-scans
+SQS_CICD_QUEUE_URL=https://sqs.us-east-1.amazonaws.com/123456789/snitch-cicd
+```
+
+#### S3 key format
+
+Results must be uploaded to a key matching:
+
+```
+{github_org}/{github_repo}/{scan_type}/{YYYYMMDD}-{run_id}.json
+```
+
+Example: `myorg/my-api/semgrep/20260424-12345.json`
+
+Snitch uses the org/repo path to look up the registered application. The `scan_type` segment is informational — Snitch auto-detects the format from JSON content.
+
+#### S3 object metadata (optional but recommended)
+
+| Metadata key | Description |
+|---|---|
+| `commit-sha` | The commit SHA that was scanned |
+| `branch` | Branch name (e.g. `main`, `feature/xyz`) |
+| `workflow-run-id` | CI run ID for traceability |
+| `ci-provider` | e.g. `github-actions`, `gitlab-ci` (defaults to `github-actions`) |
+
+---
+
+### GitHub Actions — Semgrep SAST
+
+```yaml
+name: Snitch — SAST scan
+on: [push, pull_request]
+
+jobs:
+  semgrep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        run: |
+          pip install semgrep
+          semgrep --config auto --json --quiet > semgrep-results.json || true
+
+      - name: Upload results to Snitch (S3)
+        if: always()
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+          S3_BUCKET: my-snitch-scans
+        run: |
+          DATE=$(date +%Y%m%d)
+          KEY="${{ github.repository_owner }}/${{ github.event.repository.name }}/semgrep/${DATE}-${{ github.run_id }}.json"
+          aws s3 cp semgrep-results.json "s3://${S3_BUCKET}/${KEY}" \
+            --metadata "commit-sha=${{ github.sha }},branch=${{ github.ref_name }},workflow-run-id=${{ github.run_id }},ci-provider=github-actions"
+```
+
+---
+
+### GitHub Actions — Grype container scan
+
+```yaml
+name: Snitch — Container scan
+on:
+  push:
+    branches: [main]
+
+jobs:
+  grype:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Grype
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+          grype ghcr.io/${{ github.repository }}:latest -o json > grype-results.json || true
+
+      - name: Upload results to Snitch (S3)
+        if: always()
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+          S3_BUCKET: my-snitch-scans
+        run: |
+          DATE=$(date +%Y%m%d)
+          KEY="${{ github.repository_owner }}/${{ github.event.repository.name }}/grype/${DATE}-${{ github.run_id }}.json"
+          aws s3 cp grype-results.json "s3://${S3_BUCKET}/${KEY}" \
+            --metadata "commit-sha=${{ github.sha }},branch=${{ github.ref_name }},workflow-run-id=${{ github.run_id }},ci-provider=github-actions"
+```
+
+---
+
+### GitHub Actions — Checkov IaC scan
+
+```yaml
+name: Snitch — IaC scan
+on: [push, pull_request]
+
+jobs:
+  checkov:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Checkov
+        run: |
+          pip install checkov
+          checkov --directory . --framework terraform,cloudformation --output json --compact --quiet > checkov-results.json || true
+
+      - name: Upload results to Snitch (S3)
+        if: always()
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+          S3_BUCKET: my-snitch-scans
+        run: |
+          DATE=$(date +%Y%m%d)
+          KEY="${{ github.repository_owner }}/${{ github.event.repository.name }}/checkov/${DATE}-${{ github.run_id }}.json"
+          aws s3 cp checkov-results.json "s3://${S3_BUCKET}/${KEY}" \
+            --metadata "commit-sha=${{ github.sha }},branch=${{ github.ref_name }},workflow-run-id=${{ github.run_id }},ci-provider=github-actions"
+```
+
+---
+
+### Policy gate — fail the pipeline on violations
+
+Use the Snitch API to evaluate active policies after uploading results. This lets Snitch act as a quality gate in your pipeline.
+
+```yaml
+      - name: Check Snitch policy gate
+        run: |
+          RESULT=$(curl -sf "$SNITCH_URL/api/v1/policies/evaluate/all" \
+            -H "Content-Type: application/json" \
+            -d "{\"application_id\": \"$APP_ID\"}")
+          BLOCKED=$(echo "$RESULT" | jq '.blocked')
+          if [ "$BLOCKED" = "true" ]; then
+            echo "❌ Snitch policy gate FAILED — pipeline blocked"
+            echo "$RESULT" | jq '.policies[] | select(.blocked) | {name, violations}'
+            exit 1
+          fi
+          echo "✅ Snitch policy gate passed"
+        env:
+          SNITCH_URL: https://snitch.internal
+          APP_ID: ${{ vars.SNITCH_APP_ID }}
+```
+
+> Set `SNITCH_APP_ID` as a GitHub Actions variable per repository. Create policies in the Snitch UI under **Config → Policies**.
 
 ---
 

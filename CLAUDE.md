@@ -69,7 +69,7 @@ backend/app/
     ├── scanner.py         # Semgrep/Trivy/Govulncheck/Gitleaks/Checkov/Grype + MockScannerService
     ├── scoring.py         # Risk score calculator
     ├── deduplication.py   # Finding deduplication logic (SAST/SCA/secrets/generic keys)
-    ├── cicd_normaliser.py # Normalise Semgrep/Grype CI/CD JSON output
+    ├── cicd_normaliser.py # Normalise Semgrep/Grype/Checkov CI/CD JSON output
     ├── policy_evaluator.py # Evaluate policy rules against findings
     ├── rule_catalog.py    # Static catalog of ~37 rules (Checkov/IaC, Semgrep/SAST, Gitleaks/secrets)
     ├── ai_remediation.py  # Claude integration; falls back to mock plan if no API key
@@ -102,7 +102,7 @@ backend/app/
 Gitleaks runs alongside Semgrep/Trivy in `scan_application_task`. Active `SecretPattern` rows are loaded from the DB at scan time and written to a temp TOML config passed to gitleaks via `--config`. Raw secret values are never stored — masked to `****{last4}` in the `description` field. Dedup key: `("secrets", rule_id, file_path)`.
 
 ### IaC Scanning (Checkov)
-Checkov runs on the cloned repo path using `--framework terraform,cloudformation,arm,bicep --output json`. Failed checks are mapped to `finding_type="IaC"`, `scanner="checkov"`. Checkov exits 0 (all pass) or 1 (findings found) — both are valid. The policy engine maps `iac` scan type to checkov findings.
+Checkov runs on the cloned repo path using `--framework terraform,cloudformation,arm,bicep --output json`. Failed checks are mapped to `finding_type="IaC"`, `scanner="checkov"`. Checkov exits 0 (all pass) or 1 (findings found) — both are valid. The policy engine maps `iac` scan type to checkov findings. Checkov JSON is also supported in the CI/CD push path via `cicd_normaliser.normalise_checkov()`.
 
 ### Container Scanning (Grype)
 Grype scans a container image by name (e.g. `nginx:latest`, `ghcr.io/org/app:sha`). The `Application` model has a nullable `container_image` field — if empty, the grype step is silently skipped. Grype JSON output is parsed via `cicd_normaliser.normalise_grype()`. Results are stored as `finding_type="container"`, `scanner="grype"`. The policy engine maps `container` scan type to grype findings.
