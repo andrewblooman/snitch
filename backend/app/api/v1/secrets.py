@@ -232,7 +232,7 @@ def _compile_and_match(pattern: str, sample_text: str) -> list:
 
 @router.post("/patterns/test", response_model=SecretPatternTestResult)
 async def test_pattern(payload: SecretPatternTest):
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     try:
         matches = await asyncio.wait_for(
             loop.run_in_executor(None, _compile_and_match, payload.pattern, payload.sample_text),
