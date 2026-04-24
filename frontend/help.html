@@ -218,17 +218,28 @@ Risk levels:
           <div class="doc-h2">GitHub Actions Integration</div>
           <p class="doc-lead">Push scan results directly to Snitch from your CI/CD pipeline using the <code>POST /api/v1/cicd-scans/push</code> endpoint. Results are normalised and deduplicated automatically.</p>
 
-          <div class="callout callout-info">
-            <i data-lucide="info" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;"></i>
-            <span>You need your application's UUID from the Snitch Applications page, and the Snitch base URL (e.g. <code>http://snitch.internal</code>). Store these as GitHub Actions secrets.</span>
+          <div class="callout callout-tip">
+            <i data-lucide="check-circle" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;"></i>
+            <span><strong>No GitHub App required.</strong> Integration uses plain HTTP — your workflow just runs scanners and calls a <code>curl</code> command to push results to Snitch. The only things you need are two configuration values stored as GitHub Actions repository secrets (not a GitHub App, not OAuth).</span>
           </div>
 
-          <div class="doc-h3">Required Secrets</div>
-          <p class="doc-p">Add the following secrets to your GitHub repository (<strong>Settings → Secrets and variables → Actions</strong>):</p>
+          <div class="doc-h3">Before you start</div>
+          <p class="doc-p">Two values need to be available in your workflow:</p>
+          <ol style="font-size:14px;color:#94a3b8;line-height:1.8;padding-left:20px;margin:0 0 16px;">
+            <li><strong>Snitch URL</strong> — the base URL where your Snitch instance is running (e.g. <code>https://snitch.example.com</code>)</li>
+            <li><strong>Snitch Application ID</strong> — the UUID of the application you registered in Snitch. Find it on the <a href="/applications.html" style="color:#00d4ff;">Applications page</a>: open any app and copy the ID from the URL or detail view.</li>
+          </ol>
+
+          <div class="doc-h3">Add Repository Secrets</div>
+          <p class="doc-p">Store both values as GitHub Actions secrets in your repository (<strong>Settings → Secrets and variables → Actions → New repository secret</strong>):</p>
           <div class="code-block">
-            <div class="code-header"><span class="code-lang">secrets</span><span class="code-file">GitHub → Settings → Secrets</span></div>
-            <div class="code-body"><pre><span class="kw">SNITCH_URL</span>          <span class="cm"># e.g. https://snitch.example.com</span>
-<span class="kw">SNITCH_APP_ID</span>       <span class="cm"># UUID of the application in Snitch</span></pre></div>
+            <div class="code-header"><span class="code-lang">secrets</span><span class="code-file">GitHub → Settings → Secrets and variables → Actions</span></div>
+            <div class="code-body"><pre><span class="kw">SNITCH_URL</span>                <span class="cm"># Base URL of your Snitch instance, e.g. https://snitch.example.com</span>
+<span class="kw">SNITCH_APPLICATION_ID</span>     <span class="cm"># UUID of the app in Snitch (from the Applications page, NOT a GitHub App ID)</span></pre></div>
+          </div>
+          <div class="callout callout-info">
+            <i data-lucide="info" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;"></i>
+            <span>These secrets are just configuration values passed to <code>curl</code> inside your workflow steps. They are not credentials for GitHub itself.</span>
           </div>
         </div>
 
@@ -278,7 +289,7 @@ Risk levels:
           curl -sf -X POST <span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push \
             -H "Content-Type: application/json" \
             -d "{
-              \"application_id\": \"<span class="va">${{ secrets.SNITCH_APP_ID }}</span>\",
+              \"application_id\": \"<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>\",
               \"scan_type\": \"semgrep\",
               \"branch\": \"<span class="va">${{ github.ref_name }}</span>\",
               \"commit_sha\": \"<span class="va">${{ github.sha }}</span>\",
@@ -299,7 +310,7 @@ Risk levels:
           curl -sf -X POST <span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push \
             -H "Content-Type: application/json" \
             -d "{
-              \"application_id\": \"<span class="va">${{ secrets.SNITCH_APP_ID }}</span>\",
+              \"application_id\": \"<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>\",
               \"scan_type\": \"trivy\",
               \"branch\": \"<span class="va">${{ github.ref_name }}</span>\",
               \"commit_sha\": \"<span class="va">${{ github.sha }}</span>\",
@@ -321,7 +332,7 @@ Risk levels:
           curl -sf -X POST <span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push \
             -H "Content-Type: application/json" \
             -d "{
-              \"application_id\": \"<span class="va">${{ secrets.SNITCH_APP_ID }}</span>\",
+              \"application_id\": \"<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>\",
               \"scan_type\": \"checkov\",
               \"branch\": \"<span class="va">${{ github.ref_name }}</span>\",
               \"commit_sha\": \"<span class="va">${{ github.sha }}</span>\",
@@ -343,7 +354,7 @@ Risk levels:
           curl -sf -X POST <span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push \
             -H "Content-Type: application/json" \
             -d "{
-              \"application_id\": \"<span class="va">${{ secrets.SNITCH_APP_ID }}</span>\",
+              \"application_id\": \"<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>\",
               \"scan_type\": \"gitleaks\",
               \"branch\": \"<span class="va">${{ github.ref_name }}</span>\",
               \"commit_sha\": \"<span class="va">${{ github.sha }}</span>\",
@@ -370,7 +381,7 @@ Risk levels:
           curl -sf -X POST <span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push \
             -H "Content-Type: application/json" \
             -d "{
-              \"application_id\": \"<span class="va">${{ secrets.SNITCH_APP_ID }}</span>\",
+              \"application_id\": \"<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>\",
               \"scan_type\": \"grype\",
               \"branch\": \"<span class="va">${{ github.ref_name }}</span>\",
               \"commit_sha\": \"<span class="va">${{ github.sha }}</span>\",
@@ -404,7 +415,7 @@ Risk levels:
           curl -sf -X POST <span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push \
             -H "Content-Type: application/json" \
             -d "{
-              \"application_id\": \"<span class="va">${{ secrets.SNITCH_APP_ID }}</span>\",
+              \"application_id\": \"<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>\",
               \"scan_type\": \"semgrep\",
               \"branch\": \"<span class="va">${{ github.ref_name }}</span>\",
               \"commit_sha\": \"<span class="va">${{ github.sha }}</span>\",
