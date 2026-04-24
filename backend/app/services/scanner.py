@@ -298,6 +298,144 @@ class RealScannerService:
         logger.info("govulncheck found %d findings in %s", len(findings), app.name)
         return findings
 
+    def run_checkov_scan(self, app: Application, repo_path: Path) -> list[dict[str, Any]]:
+        """Run Checkov IaC scan on the cloned repo (Terraform + CloudFormation)."""
+        try:
+            result = subprocess.run(
+                [
+                    "checkov",
+                    "--directory", str(repo_path),
+                    "--framework", "terraform,cloudformation,arm,bicep",
+                    "--output", "json",
+                    "--compact",
+                    "--quiet",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=300,
+            )
+        except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+            logger.error("checkov failed for %s: %s", app.name, e)
+            return []
+
+        # checkov exits 1 when checks fail (findings found), 0 when all pass
+        if result.returncode not in (0, 1):
+            logger.error(
+                "checkov error (exit %d) for %s:\nstderr: %s\nstdout: %s",
+                result.returncode, app.name,
+                result.stderr[:2000] if result.stderr else "",
+                result.stdout[:500] if result.stdout else "",
+            )
+            return []
+
+        stdout = (result.stdout or "").strip()
+        if not stdout:
+            return []
+
+        try:
+            output = json.loads(stdout)
+        except json.JSONDecodeError as e:
+            logger.error("checkov JSON parse error for %s: %s\nstdout: %s", app.name, e, stdout[:500])
+            return []
+
+        # checkov can return a list (one entry per framework) or a single dict
+        if isinstance(output, list):
+            all_failed = []
+            for section in output:
+                all_failed.extend(section.get("results", {}).get("failed_checks", []))
+        else:
+            all_failed = output.get("results", {}).get("failed_checks", [])
+
+        _CHECKOV_SEVERITY: dict[str, str] = {
+            "CRITICAL": "critical",
+            "HIGH": "high",
+            "MEDIUM": "medium",
+            "LOW": "low",
+            "INFO": "info",
+        }
+
+        findings = []
+        for check in all_failed:
+            resource = check.get("resource", "")
+            check_id = check.get("check_id", "")
+            check_type = check.get("check_type", "")
+            check_name = (
+                check.get("check_id", "")
+                if not isinstance(check.get("check"), dict)
+                else check.get("check", {}).get("name", check_id)
+            )
+            # checkov finding dicts have "check" as the check class name in some versions
+            if isinstance(check.get("check"), str):
+                check_name = check.get("check", check_id)
+
+            raw_severity = (check.get("severity") or "").upper()
+            severity = _CHECKOV_SEVERITY.get(raw_severity, "medium")
+
+            file_path = check.get("repo_file_path") or check.get("file_path") or None
+            if file_path:
+                try:
+                    file_path = str(Path(file_path).relative_to(repo_path))
+                except ValueError:
+                    pass
+
+            line = check.get("file_line_range")
+            line_number = line[0] if isinstance(line, list) and line else None
+
+            findings.append({
+                "title": f"{check_id}: {check_name}"[:512],
+                "description": f"Resource: {resource}. Framework: {check_type}.",
+                "severity": severity,
+                "finding_type": "IaC",
+                "scanner": "checkov",
+                "file_path": file_path,
+                "line_number": line_number,
+                "rule_id": check_id or None,
+                "status": "open",
+            })
+
+        logger.info("checkov found %d IaC findings in %s", len(findings), app.name)
+        return findings
+
+    def run_grype_scan(self, app: Application, container_image: str) -> list[dict[str, Any]]:
+        """Run Grype against a container image and return container findings."""
+        if not container_image:
+            return []
+
+        from app.services.cicd_normaliser import normalise_grype
+
+        try:
+            result = subprocess.run(
+                ["grype", container_image, "-o", "json", "--quiet"],
+                capture_output=True,
+                text=True,
+                timeout=300,
+            )
+        except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+            logger.error("grype failed for %s image %s: %s", app.name, container_image, e)
+            return []
+
+        if result.returncode != 0:
+            logger.error(
+                "grype error (exit %d) for %s image %s:\nstderr: %s",
+                result.returncode, app.name, container_image,
+                result.stderr[:2000] if result.stderr else "",
+            )
+            return []
+
+        stdout = (result.stdout or "").strip()
+        if not stdout:
+            return []
+
+        try:
+            output = json.loads(stdout)
+        except json.JSONDecodeError as e:
+            logger.error("grype JSON parse error for %s image %s: %s", app.name, container_image, e)
+            return []
+
+        findings = normalise_grype(output)
+        logger.info("grype found %d container findings for %s image %s", len(findings), app.name, container_image)
+        return findings
+
     def run_gitleaks_scan(
         self,
         app: Application,
@@ -409,16 +547,25 @@ class RealScannerService:
         app: Application,
         scan_type: str = "all",
         custom_secret_patterns: list[dict] | None = None,
+        container_image: str | None = None,
     ) -> list[dict[str, Any]]:
         """Clone the repo once and run only the scanner(s) requested by *scan_type*.
 
-        Supported values: ``"all"``, ``"semgrep"``, ``"trivy"``, ``"govulncheck"``, ``"gitleaks"``.
+        Supported values: ``"all"``, ``"semgrep"``, ``"trivy"``, ``"govulncheck"``,
+        ``"gitleaks"``, ``"checkov"``, ``"grype"``.
         Unknown values fall back to ``"all"`` so callers are never silently broken.
+
+        ``container_image`` is required for ``"grype"`` scans. If not provided and
+        ``scan_type`` includes grype, the grype step is skipped.
         """
-        _KNOWN_TYPES = {"all", "semgrep", "trivy", "govulncheck", "gitleaks"}
+        _KNOWN_TYPES = {"all", "semgrep", "trivy", "govulncheck", "gitleaks", "checkov", "grype"}
         if scan_type not in _KNOWN_TYPES:
             logger.warning("Unknown scan_type %r — running all scanners", scan_type)
             scan_type = "all"
+
+        # Grype scans do not require a repo clone — run early and return if grype-only
+        if scan_type == "grype":
+            return self.run_grype_scan(app, container_image or "")
 
         with tempfile.TemporaryDirectory(prefix="snitch-scan-") as tmp:
             repo_path = Path(tmp) / "repo"
@@ -434,6 +581,10 @@ class RealScannerService:
                 findings += self.run_govulncheck_scan(app, repo_path)
             if scan_type in ("all", "gitleaks"):
                 findings += self.run_gitleaks_scan(app, repo_path, custom_secret_patterns)
+            if scan_type in ("all", "checkov"):
+                findings += self.run_checkov_scan(app, repo_path)
+            if scan_type in ("all", "grype"):
+                findings += self.run_grype_scan(app, container_image or "")
 
         return findings
 

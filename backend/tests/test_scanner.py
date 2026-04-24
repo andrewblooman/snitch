@@ -456,6 +456,253 @@ def test_govulncheck_falls_back_to_osv_id_when_no_cve_alias(tmp_path):
     assert findings[0]["cve_id"] == "GO-2023-7777"
 
 
+# ---------------------------------------------------------------------------
+# RealScannerService — checkov output parsing
+# ---------------------------------------------------------------------------
+
+CHECKOV_OUTPUT_SINGLE = {
+    "results": {
+        "failed_checks": [
+            {
+                "check_id": "CKV_AWS_18",
+                "check": "Ensure the S3 bucket has access logging enabled",
+                "check_type": "terraform",
+                "resource": "aws_s3_bucket.my_bucket",
+                "file_path": "/tmp/repo/main.tf",
+                "repo_file_path": "/tmp/repo/main.tf",
+                "file_line_range": [10, 25],
+                "severity": "MEDIUM",
+            }
+        ],
+        "passed_checks": [],
+    }
+}
+
+CHECKOV_OUTPUT_LIST = [
+    {
+        "results": {
+            "failed_checks": [
+                {
+                    "check_id": "CKV_AWS_18",
+                    "check": "Ensure the S3 bucket has access logging enabled",
+                    "check_type": "terraform",
+                    "resource": "aws_s3_bucket.my_bucket",
+                    "file_path": "/tmp/repo/main.tf",
+                    "repo_file_path": "/tmp/repo/main.tf",
+                    "file_line_range": [10, 25],
+                    "severity": "HIGH",
+                }
+            ],
+            "passed_checks": [],
+        }
+    },
+    {
+        "results": {
+            "failed_checks": [
+                {
+                    "check_id": "CKV_AWS_2",
+                    "check": "ALB HTTPS check",
+                    "check_type": "cloudformation",
+                    "resource": "AWS::ElasticLoadBalancingV2::Listener",
+                    "file_path": "/tmp/repo/template.yaml",
+                    "repo_file_path": "/tmp/repo/template.yaml",
+                    "file_line_range": [5, 10],
+                    "severity": "CRITICAL",
+                }
+            ],
+            "passed_checks": [],
+        }
+    },
+]
+
+
+def test_run_checkov_scan_single_dict():
+    """Checkov returns a single dict — check field mapping."""
+    import json
+    from pathlib import Path
+
+    svc = RealScannerService()
+    app = _make_app("terraform-app")
+
+    with patch("subprocess.run") as mock_run:
+        mock_run.return_value = MagicMock(
+            returncode=1,  # checkov exits 1 when findings found
+            stdout=json.dumps(CHECKOV_OUTPUT_SINGLE),
+            stderr="",
+        )
+        findings = svc.run_checkov_scan(app, Path("/tmp/repo"))
+
+    assert len(findings) == 1
+    f = findings[0]
+    assert f["rule_id"] == "CKV_AWS_18"
+    assert f["finding_type"] == "IaC"
+    assert f["scanner"] == "checkov"
+    assert f["severity"] == "medium"
+    assert f["line_number"] == 10
+    assert f["status"] == "open"
+    assert "CKV_AWS_18" in f["title"]
+
+
+def test_run_checkov_scan_list_format():
+    """Checkov returns a list (one section per framework) — both sections parsed."""
+    import json
+    from pathlib import Path
+
+    svc = RealScannerService()
+    app = _make_app("tf-app")
+
+    with patch("subprocess.run") as mock_run:
+        mock_run.return_value = MagicMock(
+            returncode=1,
+            stdout=json.dumps(CHECKOV_OUTPUT_LIST),
+            stderr="",
+        )
+        findings = svc.run_checkov_scan(app, Path("/tmp/repo"))
+
+    assert len(findings) == 2
+    check_ids = {f["rule_id"] for f in findings}
+    assert check_ids == {"CKV_AWS_18", "CKV_AWS_2"}
+    # Severities mapped correctly
+    severities = {f["rule_id"]: f["severity"] for f in findings}
+    assert severities["CKV_AWS_18"] == "high"
+    assert severities["CKV_AWS_2"] == "critical"
+
+
+def test_run_checkov_scan_exit_zero_no_findings():
+    """Checkov exits 0 when all checks pass — should return empty list, not error."""
+    import json
+    from pathlib import Path
+
+    svc = RealScannerService()
+    app = _make_app()
+
+    with patch("subprocess.run") as mock_run:
+        mock_run.return_value = MagicMock(
+            returncode=0,
+            stdout=json.dumps({"results": {"failed_checks": [], "passed_checks": []}}),
+            stderr="",
+        )
+        findings = svc.run_checkov_scan(app, Path("/tmp/repo"))
+
+    assert findings == []
+
+
+def test_run_checkov_scan_returns_empty_on_not_found():
+    """If checkov binary is missing, return empty list."""
+    import subprocess
+    from pathlib import Path
+
+    svc = RealScannerService()
+    app = _make_app()
+
+    with patch("subprocess.run", side_effect=FileNotFoundError("checkov not found")):
+        findings = svc.run_checkov_scan(app, Path("/tmp/repo"))
+
+    assert findings == []
+
+
+# ---------------------------------------------------------------------------
+# RealScannerService — grype output parsing
+# ---------------------------------------------------------------------------
+
+GRYPE_OUTPUT = {
+    "matches": [
+        {
+            "vulnerability": {
+                "id": "CVE-2021-44228",
+                "description": "Log4Shell remote code execution",
+                "severity": "Critical",
+                "fix": {"versions": ["2.15.0"]},
+                "cvss": [
+                    {"version": "3.1", "metrics": {"baseScore": 10.0}}
+                ],
+            },
+            "artifact": {
+                "name": "log4j-core",
+                "version": "2.14.1",
+            },
+        },
+        {
+            "vulnerability": {
+                "id": "CVE-2022-22965",
+                "description": "Spring4Shell",
+                "severity": "High",
+                "fix": {"versions": []},
+                "cvss": [],
+            },
+            "artifact": {
+                "name": "spring-webmvc",
+                "version": "5.3.17",
+            },
+        },
+    ]
+}
+
+
+def test_run_grype_scan_parses_findings():
+    """Grype output should map to container findings."""
+    import json
+    from pathlib import Path
+
+    svc = RealScannerService()
+    app = _make_app("nginx-app")
+    app.container_image = "nginx:1.24"
+
+    with patch("subprocess.run") as mock_run:
+        mock_run.return_value = MagicMock(
+            returncode=0,
+            stdout=json.dumps(GRYPE_OUTPUT),
+            stderr="",
+        )
+        findings = svc.run_grype_scan(app, "nginx:1.24")
+
+    assert len(findings) == 2
+
+    log4shell = findings[0]
+    assert log4shell["cve_id"] == "CVE-2021-44228"
+    assert log4shell["package_name"] == "log4j-core"
+    assert log4shell["package_version"] == "2.14.1"
+    assert log4shell["fixed_version"] == "2.15.0"
+    assert log4shell["severity"] == "critical"
+    assert log4shell["cvss_score"] == 10.0
+    assert log4shell["finding_type"] == "container"
+    assert log4shell["scanner"] == "grype"
+
+    spring = findings[1]
+    assert spring["severity"] == "high"
+    assert spring["fixed_version"] is None
+    assert spring["cvss_score"] is None
+
+
+def test_run_grype_scan_returns_empty_for_no_image():
+    """If container_image is empty/None, grype is skipped."""
+    from pathlib import Path
+
+    svc = RealScannerService()
+    app = _make_app()
+
+    findings = svc.run_grype_scan(app, "")
+    assert findings == []
+
+    findings = svc.run_grype_scan(app, None)
+    assert findings == []
+
+
+def test_run_grype_scan_returns_empty_on_nonzero_exit():
+    """Non-zero grype exit (e.g. image not found) returns empty list."""
+    import json
+    from pathlib import Path
+
+    svc = RealScannerService()
+    app = _make_app()
+
+    with patch("subprocess.run") as mock_run:
+        mock_run.return_value = MagicMock(returncode=2, stdout="", stderr="image not found")
+        findings = svc.run_grype_scan(app, "does-not-exist:latest")
+
+    assert findings == []
+
+
 def test_govulncheck_no_findings_on_returncode_zero(tmp_path):
     (tmp_path / "go.mod").write_text("module x\ngo 1.21\n")
     svc = RealScannerService()
@@ -469,3 +716,4 @@ def test_govulncheck_no_findings_on_returncode_zero(tmp_path):
     with patch("subprocess.run", return_value=mock_result):
         findings = svc.run_govulncheck_scan(app, tmp_path)
     assert findings == []
+

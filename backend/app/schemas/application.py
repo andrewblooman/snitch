@@ -14,6 +14,7 @@ class ApplicationBase(BaseModel):
     team_name: str
     language: Optional[str] = None
     scan_schedule: str = "none"
+    container_image: Optional[str] = None
 
 
 class ApplicationCreate(ApplicationBase):
@@ -27,6 +28,7 @@ class ApplicationUpdate(BaseModel):
     language: Optional[str] = None
     repo_url: Optional[str] = None
     scan_schedule: Optional[str] = None
+    container_image: Optional[str] = None
 
 
 class ApplicationResponse(ApplicationBase):

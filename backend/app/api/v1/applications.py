@@ -179,7 +179,7 @@ async def delete_application(app_id: uuid.UUID, db: AsyncSession = Depends(get_d
 @router.post("/{app_id}/scan", response_model=ScanResponse)
 async def trigger_scan(
     app_id: uuid.UUID,
-    scan_type: Literal["semgrep", "trivy", "all"] = Query("all"),
+    scan_type: Literal["semgrep", "trivy", "checkov", "grype", "gitleaks", "govulncheck", "all"] = Query("all"),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(select(Application).where(Application.id == app_id))

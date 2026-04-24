@@ -31,7 +31,9 @@ def _match_key(raw: dict) -> tuple:
     if raw.get("rule_id") and raw.get("file_path"):
         return ("sast", raw["rule_id"], raw["file_path"])
     if raw.get("cve_id") and raw.get("package_name"):
-        return ("sca", raw["cve_id"], raw["package_name"])
+        # Distinguish container (grype) from SCA (trivy/govulncheck) to prevent overwrites
+        key_prefix = "container" if ftype == "container" else "sca"
+        return (key_prefix, raw["cve_id"], raw["package_name"])
     return ("generic", raw.get("scanner", ""), raw.get("title", "")[:255])
 
 

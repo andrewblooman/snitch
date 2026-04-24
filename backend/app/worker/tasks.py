@@ -79,7 +79,9 @@ def _upsert_findings_sync(
         if rule_id and file_path:
             return ("sast", rule_id, file_path)
         if cve_id and package_name:
-            return ("sca", cve_id, package_name)
+            # Distinguish container (grype) from SCA (trivy/govulncheck) to prevent overwrites
+            key_prefix = "container" if ftype == "container" else "sca"
+            return (key_prefix, cve_id, package_name)
         return ("generic", scanner, str(title)[:255])
 
     existing_by_key = {_key(f): f for f in existing}
@@ -87,6 +89,12 @@ def _upsert_findings_sync(
     seen_ids: set[uuid.UUID] = set()
     created = 0
     updated = 0
+
+    # Track which scanners actually produced findings in this run so that
+    # the "disappeared → fixed" step only applies to those scanners.
+    # This prevents partial scans (e.g. checkov-only) from incorrectly
+    # auto-fixing findings from scanners that didn't run.
+    scanners_run: set[str] = {r.get("scanner", "") for r in raw_findings if r.get("scanner")}
 
     for raw in raw_findings:
         raw.pop("id", None)
@@ -115,9 +123,10 @@ def _upsert_findings_sync(
             existing_by_key[key] = finding
             created += 1
 
-    # Mark disappeared open findings as fixed
+    # Mark disappeared open findings as fixed — only for scanners that ran in this scan.
+    # Findings from scanners that didn't run are left untouched.
     for f in existing:
-        if f.id not in seen_ids and f.status == "open":
+        if f.id not in seen_ids and f.status == "open" and f.scanner in scanners_run:
             f.status = "fixed"
             f.fixed_at = now
 
@@ -209,7 +218,12 @@ def scan_application_task(self, app_id: str, scan_type: str = "all") -> dict:
             ]
 
             svc = RealScannerService()
-            raw_findings = svc.run_scan(app, scan_type, custom_secret_patterns=custom_secret_patterns)
+            raw_findings = svc.run_scan(
+                app,
+                scan_type,
+                custom_secret_patterns=custom_secret_patterns,
+                container_image=getattr(app, "container_image", None),
+            )
 
             created, updated = _upsert_findings_sync(db, application_id, scan_id, raw_findings)
 
@@ -223,9 +237,12 @@ def scan_application_task(self, app_id: str, scan_type: str = "all") -> dict:
 
             _recalculate_risk(db, app)
 
-            # Only evaluate policies on full scans — partial scans produce incomplete
-            # finding sets and would cause false negatives in policy results.
-            if scan_type == "all":
+            # Evaluate policies after every complete or targeted scan.
+            # "all" → all 5 scanner types; "checkov"/"grype" → single full IaC/container scan.
+            # Partial runs (e.g. "semgrep" or "trivy" alone) are skipped to avoid false
+            # negatives from incomplete finding sets.
+            _FULL_SCAN_TYPES = {"all", "checkov", "grype"}
+            if scan_type in _FULL_SCAN_TYPES:
                 policy_summary = _evaluate_policies_sync(db, application_id)
             else:
                 policy_summary = {"skipped": True, "reason": f"partial scan ({scan_type})"}
@@ -283,7 +300,9 @@ def _upsert_cicd_findings_sync(
         if rule_id and file_path:
             return ("sast", rule_id, file_path)
         if cve_id and package_name:
-            return ("sca", cve_id, package_name)
+            # Distinguish container (grype) from SCA (trivy/govulncheck) to prevent overwrites
+            key_prefix = "container" if ftype == "container" else "sca"
+            return (key_prefix, cve_id, package_name)
         return ("generic", scanner, str(title)[:255])
 
     existing_by_key = {_key(f): f for f in existing}
