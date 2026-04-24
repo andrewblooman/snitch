@@ -97,7 +97,7 @@
     ].join(';');
 
     return '<a href="' + item.href + '"'
-      + (item.external ? ' target="_blank" rel="noopener"' : '')
+      + (item.external ? ' target="_blank" rel="noopener noreferrer"' : '')
       + ' class="nav-link' + (active ? ' active' : '') + '" style="' + styleStr + '">'
       + '<i data-lucide="' + item.icon + '" style="width:18px;height:18px;flex-shrink:0;"></i> '
       + item.label

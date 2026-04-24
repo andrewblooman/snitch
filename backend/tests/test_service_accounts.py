@@ -6,8 +6,6 @@ import uuid as uuid_mod
 import pytest
 from httpx import AsyncClient
 
-from app.core.auth import hash_token
-
 
 @pytest.fixture
 def sa_payload():

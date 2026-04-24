@@ -275,10 +275,9 @@
                 <span class="release-version">v1.0</span>
                 <span class="release-tag tag-feature">Feature</span>
               </div>
-              <p class="release-title">CI/CD Scan Ingestion via SQS/S3</p>
+              <p class="release-title">CI/CD Direct Push Ingestion</p>
               <ul class="change-list">
-                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>CI/CD scan push endpoint (<code>POST /api/v1/cicd-scans/push</code>) for ingesting scanner JSON</li>
-                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>SQS/S3 polling worker for asynchronous scan result delivery from AWS pipelines</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>CI/CD scan push endpoint (<code>POST /api/v1/cicd-scans/push</code>) for ingesting scanner JSON directly from GitHub Actions</li>
                 <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Automatic format detection (Semgrep, Grype, Checkov) in <code>cicd_normaliser</code></li>
                 <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Celery Beat periodic scanning tasks</li>
               </ul>

@@ -65,7 +65,9 @@ async def push_cicd_scan(
     await db.flush()
 
     try:
-        findings, created, updated = await upsert_findings(db, application_id, scan.id, raw_findings)
+        findings, created, updated = await upsert_findings(
+            db, application_id, None, raw_findings, cicd_scan_id=scan.id
+        )
         scan.findings_count = len(raw_findings)
         scan.critical_count = sum(1 for f in raw_findings if f.get("severity") == "critical")
         scan.high_count = sum(1 for f in raw_findings if f.get("severity") == "high")
@@ -79,6 +81,10 @@ async def push_cicd_scan(
 
     await db.commit()
     await db.refresh(scan)
+
+    if scan.status == "failed":
+        raise HTTPException(status_code=500, detail=f"Ingestion failed: {scan.error_message}")
+
     return scan
 
 

@@ -42,16 +42,20 @@ async def upsert_findings(
     application_id,
     scan_id,
     raw_findings: list[dict],
+    cicd_scan_id=None,
 ) -> tuple[list[Finding], int, int]:
     """
     Upsert findings for an application scan.
+
+    Pass ``cicd_scan_id`` for CI/CD push findings so they are linked to the
+    correct FK (``Finding.cicd_scan_id``) instead of the repository scan FK.
 
     Returns:
         (all_findings_after_upsert, created_count, updated_count)
 
     Side effects:
         - Creates new Finding rows for genuinely new findings
-        - Updates last_seen_at (and scan_id) for existing matches
+        - Updates last_seen_at (and scan_id/cicd_scan_id) for existing matches
         - Marks open findings NOT seen in this scan as 'fixed'
     """
     result = await db.execute(
@@ -68,6 +72,7 @@ async def upsert_findings(
             "package_name": f.package_name,
             "scanner": f.scanner,
             "title": f.title,
+            "finding_type": f.finding_type,
         })
         existing_by_key[key] = f
 
@@ -81,7 +86,10 @@ async def upsert_findings(
         if key in existing_by_key:
             match = existing_by_key[key]
             match.last_seen_at = now
-            match.scan_id = scan_id
+            if cicd_scan_id is not None:
+                match.cicd_scan_id = cicd_scan_id
+            else:
+                match.scan_id = scan_id
             # Refresh volatile fields that may change between scans
             match.severity = raw.get("severity", match.severity)
             match.package_version = raw.get("package_version", match.package_version)
@@ -94,11 +102,18 @@ async def upsert_findings(
             seen_ids.add(match.id)
             updated += 1
         else:
-            finding = Finding(
-                application_id=application_id,
-                scan_id=scan_id,
-                **raw,
-            )
+            if cicd_scan_id is not None:
+                finding = Finding(
+                    application_id=application_id,
+                    cicd_scan_id=cicd_scan_id,
+                    **raw,
+                )
+            else:
+                finding = Finding(
+                    application_id=application_id,
+                    scan_id=scan_id,
+                    **raw,
+                )
             db.add(finding)
             seen_ids.add(id(finding))  # placeholder; real id after flush
             existing_by_key[key] = finding
