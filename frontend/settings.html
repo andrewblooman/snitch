@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snitch — Settings</title>
+  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
+  <link rel="stylesheet" href="/static/css/theme.css">
+  <style>/* Inter font fallback */ body { font-family: "Inter", system-ui, -apple-system, sans-serif; }</style>
+  <script src="/static/js/lucide.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    @keyframes fadeInUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .card { background:rgba(13,17,23,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:16px;backdrop-filter:blur(20px); }
+    .section-card { padding:28px;margin-bottom:20px;animation:fadeInUp 0.4s ease both; }
+    .section-title { font-size:16px;font-weight:700;color:#f1f5f9;margin:0 0 4px; }
+    .section-sub { font-size:13px;color:#475569;margin:0 0 24px; }
+    .pref-row { display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.05); }
+    .pref-row:last-child { border-bottom:none; }
+    .pref-label { font-size:14px;font-weight:500;color:#f1f5f9; }
+    .pref-desc { font-size:12px;color:#475569;margin-top:2px; }
+    .field-group { margin-bottom:20px; }
+    .field-group:last-child { margin-bottom:0; }
+    .field-label { font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px; }
+    .token-row { display:flex;gap:10px;align-items:center; }
+    .status-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+    .status-dot-green { background:#10b981;box-shadow:0 0 6px #10b981; }
+    .status-dot-red { background:#ef4444;box-shadow:0 0 6px #ef4444; }
+    .status-dot-yellow { background:#f59e0b;box-shadow:0 0 6px #f59e0b; }
+    [data-theme="light"] .section-title { color:#0f172a; }
+    [data-theme="light"] .pref-label { color:#0f172a; }
+    [data-theme="light"] .pref-row { border-bottom-color:rgba(0,0,0,0.06); }
+  </style>
+</head>
+<body style="font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
+
+  <!-- Sidebar -->
+  <div id="sidebar-mount"></div>
+  <script src="/static/js/sidebar.js"></script>
+  <script src="/static/js/header.js"></script>
+
+  <!-- Main -->
+  <div id="main-content" style="margin-left:260px;min-height:100vh;">
+    <header style="background:rgba(8,12,24,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
+      <div>
+        <h1 style="font-size:22px;font-weight:700;color:#f1f5f9;margin:0;">Settings</h1>
+        <p style="font-size:13px;color:#475569;margin:2px 0 0;">Platform administration and configuration</p>
+      </div>
+      <div id="header-user-slot" style="display:flex;align-items:center;gap:8px;"></div>
+    </header>
+
+    <main style="padding:32px;max-width:900px;">
+
+      <!-- ── Integrations ── -->
+      <div class="card section-card" style="animation-delay:0s;">
+        <p class="section-title">Integrations</p>
+        <p class="section-sub">Configure external service credentials. Values are stored as presence flags only — raw secrets are never persisted in the browser.</p>
+
+        <!-- GitHub Token -->
+        <div class="field-group">
+          <label class="field-label">GitHub Token</label>
+          <p style="font-size:12px;color:#475569;margin:0 0 10px;">Required for repository discovery and GitHub code scanning sync. Needs <code style="background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:4px;font-size:11px;">repo</code> and <code style="background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:4px;font-size:11px;">security_events</code> scopes.</p>
+          <div class="token-row">
+            <input type="password" id="github-token-input" class="dark-input" placeholder="ghp_••••••••••••••••••••••••••••••••••••••" style="font-family:monospace;font-size:13px;flex:1;" autocomplete="off">
+            <button class="btn-secondary" id="github-toggle-btn" onclick="toggleVisibility('github-token-input','github-toggle-btn')" style="padding:10px 14px;flex-shrink:0;">
+              <i data-lucide="eye" style="width:16px;height:16px;"></i>
+            </button>
+            <button class="btn-primary" onclick="saveToken('github')" style="flex-shrink:0;white-space:nowrap;">
+              <i data-lucide="save" style="width:16px;height:16px;"></i> Save
+            </button>
+          </div>
+          <div id="github-token-status" style="margin-top:8px;font-size:12px;color:#475569;"></div>
+        </div>
+
+        <!-- Anthropic API Key -->
+        <div class="field-group">
+          <label class="field-label">Anthropic API Key</label>
+          <p style="font-size:12px;color:#475569;margin:0 0 10px;">Required for AI-powered remediation suggestions via Claude. Without this key the platform falls back to a mock remediation plan.</p>
+          <div class="token-row">
+            <input type="password" id="anthropic-token-input" class="dark-input" placeholder="sk-ant-••••••••••••••••••••••••••••••••••••••••••••••••" style="font-family:monospace;font-size:13px;flex:1;" autocomplete="off">
+            <button class="btn-secondary" id="anthropic-toggle-btn" onclick="toggleVisibility('anthropic-token-input','anthropic-toggle-btn')" style="padding:10px 14px;flex-shrink:0;">
+              <i data-lucide="eye" style="width:16px;height:16px;"></i>
+            </button>
+            <button class="btn-primary" onclick="saveToken('anthropic')" style="flex-shrink:0;white-space:nowrap;">
+              <i data-lucide="save" style="width:16px;height:16px;"></i> Save
+            </button>
+          </div>
+          <div id="anthropic-token-status" style="margin-top:8px;font-size:12px;color:#475569;"></div>
+        </div>
+      </div>
+
+      <!-- ── Platform Defaults ── -->
+      <div class="card section-card" style="animation-delay:0.08s;">
+        <p class="section-title">Platform Defaults</p>
+        <p class="section-sub">Default values used when creating new applications or triggering scans.</p>
+
+        <div class="pref-row">
+          <div>
+            <div class="pref-label">Default scan schedule</div>
+            <div class="pref-desc">Pre-selected schedule when adding a new application</div>
+          </div>
+          <select class="dark-select" id="pref-scan-schedule" onchange="savePlatformPref('scanSchedule', this.value)" style="width:180px;">
+            <option value="none">Manual only</option>
+            <option value="weekly">Weekly</option>
+            <option value="daily">Daily</option>
+          </select>
+        </div>
+
+        <div class="pref-row">
+          <div>
+            <div class="pref-label">Default scan type</div>
+            <div class="pref-desc">Pre-selected scanner when triggering a new scan</div>
+          </div>
+          <select class="dark-select" id="pref-scan-type" onchange="savePlatformPref('scanType', this.value)" style="width:180px;">
+            <option value="all">All scanners</option>
+            <option value="semgrep">SAST (Semgrep)</option>
+            <option value="trivy">SCA (Trivy)</option>
+            <option value="gitleaks">Secrets (Gitleaks)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ── System Information ── -->
+      <div class="card section-card" style="animation-delay:0.16s;">
+        <p class="section-title">System Information</p>
+        <p class="section-sub">Read-only platform status and version details.</p>
+
+        <div class="pref-row">
+          <div>
+            <div class="pref-label">Platform version</div>
+            <div class="pref-desc">Current release of the Snitch platform</div>
+          </div>
+          <span style="font-family:monospace;font-size:13px;color:#00d4ff;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);padding:4px 12px;border-radius:8px;">v0.1.0</span>
+        </div>
+
+        <div class="pref-row">
+          <div>
+            <div class="pref-label">Environment</div>
+            <div class="pref-desc">Deployment context</div>
+          </div>
+          <span style="font-family:monospace;font-size:13px;color:#f59e0b;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);padding:4px 12px;border-radius:8px;">Development</span>
+        </div>
+
+        <div class="pref-row" style="border-bottom:none;">
+          <div>
+            <div class="pref-label">API status</div>
+            <div class="pref-desc">Backend reachability check</div>
+          </div>
+          <div id="api-status" style="display:flex;align-items:center;gap:8px;font-size:13px;color:#475569;">
+            <div style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00d4ff;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+            Checking…
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+<script>
+// ── Token visibility toggle ───────────────────────────────────────────────────
+
+function toggleVisibility(inputId, btnId) {
+  var input = document.getElementById(inputId);
+  var btn   = document.getElementById(btnId);
+  if (!input) return;
+  var isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  btn.innerHTML = '<i data-lucide="' + (isHidden ? 'eye-off' : 'eye') + '" style="width:16px;height:16px;"></i>';
+  lucide.createIcons();
+}
+
+// ── Token save (presence flag only — raw value never persisted) ──────────────
+
+function saveToken(service) {
+  var inputId  = service + '-token-input';
+  var statusId = service + '-token-status';
+  var input    = document.getElementById(inputId);
+  var status   = document.getElementById(statusId);
+  if (!input || !input.value.trim()) {
+    status.textContent = 'Please enter a token value.';
+    status.style.color = '#ef4444';
+    return;
+  }
+  localStorage.setItem('has_' + service + '_token', '1');
+  input.value = '';
+  input.type  = 'password';
+  document.getElementById(service + '-toggle-btn').innerHTML = '<i data-lucide="eye" style="width:16px;height:16px;"></i>';
+  lucide.createIcons();
+  status.innerHTML = '<i data-lucide="check-circle" style="width:13px;height:13px;display:inline;vertical-align:middle;color:#10b981;margin-right:4px;"></i>Token saved — note: this value is not sent to the server and will need to be configured via environment variable.';
+  status.style.color = '#10b981';
+  lucide.createIcons();
+}
+
+// ── Platform preferences ─────────────────────────────────────────────────────
+
+function savePlatformPref(key, value) {
+  var prefs = JSON.parse(localStorage.getItem('platformPrefs') || '{}');
+  prefs[key] = value;
+  localStorage.setItem('platformPrefs', JSON.stringify(prefs));
+}
+
+function loadPlatformPrefs() {
+  var prefs = JSON.parse(localStorage.getItem('platformPrefs') || '{}');
+  if (prefs.scanSchedule) document.getElementById('pref-scan-schedule').value = prefs.scanSchedule;
+  if (prefs.scanType)     document.getElementById('pref-scan-type').value     = prefs.scanType;
+}
+
+// ── API status check ─────────────────────────────────────────────────────────
+
+async function checkApiStatus() {
+  var el = document.getElementById('api-status');
+  try {
+    var res = await fetch('/api/v1/applications?page=1&page_size=1');
+    if (res.ok) {
+      el.innerHTML = '<div class="status-dot status-dot-green"></div><span style="color:#10b981;font-size:13px;">Reachable</span>';
+    } else {
+      el.innerHTML = '<div class="status-dot status-dot-yellow"></div><span style="color:#f59e0b;font-size:13px;">Degraded (HTTP ' + res.status + ')</span>';
+    }
+  } catch (e) {
+    el.innerHTML = '<div class="status-dot status-dot-red"></div><span style="color:#ef4444;font-size:13px;">Unreachable</span>';
+  }
+}
+
+// ── Token presence indicators ────────────────────────────────────────────────
+
+function loadTokenStatuses() {
+  var services = ['github', 'anthropic'];
+  services.forEach(function(s) {
+    if (localStorage.getItem('has_' + s + '_token')) {
+      var el = document.getElementById(s + '-token-status');
+      if (el) {
+        el.textContent = 'A token is already saved. Enter a new value to replace it.';
+        el.style.color = '#475569';
+      }
+    }
+  });
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+
+(function init() {
+  applyTheme(localStorage.getItem('theme') || 'dark');
+  loadPlatformPrefs();
+  loadTokenStatuses();
+  checkApiStatus();
+  lucide.createIcons();
+})();
+</script>
+</body>
+</html>

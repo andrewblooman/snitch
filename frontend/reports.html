@@ -30,6 +30,7 @@
   <!-- Sidebar -->
   <div id="sidebar-mount"></div>
   <script src="/static/js/sidebar.js"></script>
+  <script src="/static/js/header.js"></script>
 
   <!-- Main -->
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
@@ -38,12 +39,14 @@
         <h1 style="font-size:22px;font-weight:700;color:#f1f5f9;margin:0;">Security Reports</h1>
         <p style="font-size:13px;color:#475569;margin:2px 0 0;">Analytics and insights across your application portfolio</p>
       </div>
-      <!-- Date Range Buttons -->
-      <div style="display:flex;gap:4px;background:rgba(0,0,0,0.3);padding:4px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);">
-        <button class="range-btn" id="range-7" onclick="setRange(7)">7d</button>
-        <button class="range-btn" id="range-30" onclick="setRange(30)">30d</button>
-        <button class="range-btn" id="range-60" onclick="setRange(60)">60d</button>
-        <button class="range-btn active" id="range-90" onclick="setRange(90)">90d</button>
+      <!-- Date Range Buttons + user widget -->
+      <div id="header-user-slot" style="display:flex;align-items:center;gap:12px;">
+        <div style="display:flex;gap:4px;background:rgba(0,0,0,0.3);padding:4px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);">
+          <button class="range-btn" id="range-7" onclick="setRange(7)">7d</button>
+          <button class="range-btn" id="range-30" onclick="setRange(30)">30d</button>
+          <button class="range-btn" id="range-60" onclick="setRange(60)">60d</button>
+          <button class="range-btn active" id="range-90" onclick="setRange(90)">90d</button>
+        </div>
       </div>
     </header>
 

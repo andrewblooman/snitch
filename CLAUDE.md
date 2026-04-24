@@ -15,6 +15,14 @@ Snitch is an AppSec platform that aggregates security findings from Semgrep (SAS
 
 The sidebar is a shared JS component defined in `frontend/static/js/sidebar.js`. Each HTML page uses `<div id="sidebar-mount"></div>` followed by `<script src="/static/js/sidebar.js"></script>` — the script renders the full sidebar, auto-detects the active nav link, and defines `window.applyTheme()`. Do not duplicate sidebar HTML across pages; edit `sidebar.js` for any sidebar changes.
 
+The header user widget is a shared JS component defined in `frontend/static/js/header.js`. Each HTML page includes `<script src="/static/js/header.js"></script>` after the sidebar script and adds `id="header-user-slot"` to the right-side container inside `<header>`. The script injects a circular user avatar button with a dropdown (Profile link + disabled Logout placeholder) into that slot. Do not duplicate the widget HTML across pages; edit `header.js` for any user-menu changes.
+
+The sidebar nav is structured into three sections: **Overview** (Dashboard, Applications, Reports, Secrets), **Config** (Policies, Rules), **Admin** (Settings, Repositories). The Profile link has been removed from the sidebar — it is only accessible via the header user widget dropdown.
+
+The `/settings.html` page is the admin configuration page for platform integrations (GitHub token, Anthropic API key), scan defaults, and read-only system info. It stores token presence flags in `localStorage` only — raw secrets are never persisted client-side.
+
+The applications page (`/applications.html`) uses a sortable list/table view instead of a card grid. Default sort is risk score descending. Clicking any column header toggles ascending/descending sort.
+
 ## Commands
 
 ```bash
