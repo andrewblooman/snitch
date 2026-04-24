@@ -5,5 +5,6 @@ from app.models.policy import Policy
 from app.models.remediation import Remediation
 from app.models.scan import Scan
 from app.models.secret_pattern import SecretPattern
+from app.models.service_account import ServiceAccount
 
-__all__ = ["Application", "Scan", "Finding", "Remediation", "CiCdScan", "Policy", "SecretPattern"]
+__all__ = ["Application", "Scan", "Finding", "Remediation", "CiCdScan", "Policy", "SecretPattern", "ServiceAccount"]

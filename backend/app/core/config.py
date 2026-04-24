@@ -17,12 +17,10 @@ class Settings(BaseSettings):
 
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000", "*"]
 
-    # AWS — required only when CI/CD scan ingestion is enabled
+    # AWS — not used; retained for backwards compatibility if env vars are set
     AWS_REGION: str = "us-east-1"
     AWS_ACCESS_KEY_ID: Optional[str] = None
     AWS_SECRET_ACCESS_KEY: Optional[str] = None
-    S3_CICD_BUCKET: Optional[str] = None
-    SQS_CICD_QUEUE_URL: Optional[str] = None
 
 
 settings = Settings()

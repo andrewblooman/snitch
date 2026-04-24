@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snitch — Documentation</title>
+  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
+  <style>/* Inter font fallback */ body { font-family: "Inter", system-ui, -apple-system, sans-serif; }</style>
+  <link rel="stylesheet" href="/static/css/theme.css">
+  <script src="/static/js/lucide.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    @keyframes fadeInUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    .card { background:rgba(13,17,35,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:16px;backdrop-filter:blur(20px); }
+
+    /* Tab bar */
+    .tab-bar { display:flex;gap:4px;background:rgba(8,12,24,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:4px;margin-bottom:28px; }
+    .tab-btn { flex:1;padding:10px 16px;border:none;background:transparent;color:#64748b;font-size:13px;font-weight:600;border-radius:8px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap; }
+    .tab-btn.active { background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(99,102,241,0.15));color:#00d4ff;border:1px solid rgba(0,212,255,0.2); }
+    .tab-btn:hover:not(.active) { color:#94a3b8;background:rgba(255,255,255,0.04); }
+    .tab-panel { display:none;animation:fadeInUp 0.3s ease; }
+    .tab-panel.active { display:block; }
+
+    /* Typography */
+    .doc-h2 { font-size:22px;font-weight:700;color:#f1f5f9;margin:0 0 6px; }
+    .doc-h3 { font-size:15px;font-weight:700;color:#f1f5f9;margin:24px 0 8px; }
+    .doc-h4 { font-size:13px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin:20px 0 8px; }
+    .doc-lead { font-size:14px;color:#64748b;margin:0 0 24px;line-height:1.6; }
+    .doc-p { font-size:14px;color:#94a3b8;line-height:1.7;margin:0 0 16px; }
+
+    /* Step badges */
+    .step-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px; }
+    .step-card { background:rgba(0,212,255,0.04);border:1px solid rgba(0,212,255,0.12);border-radius:12px;padding:16px; }
+    .step-num { display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:linear-gradient(135deg,#00d4ff,#6366f1);border-radius:50%;font-size:12px;font-weight:700;color:#fff;margin-bottom:10px; }
+    .step-title { font-size:13px;font-weight:600;color:#f1f5f9;margin:0 0 4px; }
+    .step-desc { font-size:12px;color:#64748b;margin:0;line-height:1.5; }
+
+    /* Code blocks */
+    .code-block { background:#060a14;border:1px solid rgba(255,255,255,0.08);border-radius:10px;overflow:hidden;margin:0 0 20px; }
+    .code-header { display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,0.03);border-bottom:1px solid rgba(255,255,255,0.06); }
+    .code-lang { font-size:11px;font-weight:600;color:#6366f1;letter-spacing:0.5px;text-transform:uppercase; }
+    .code-file { font-size:11px;color:#475569; }
+    .code-body { padding:16px;overflow-x:auto; }
+    .code-body pre { margin:0;font-family:'JetBrains Mono','Fira Code','Cascadia Code',monospace;font-size:12px;line-height:1.7;color:#e2e8f0; }
+    .code-body .cm { color:#475569; }  /* comments */
+    .code-body .kw { color:#00d4ff; }  /* keywords / keys */
+    .code-body .st { color:#10b981; }  /* strings */
+    .code-body .va { color:#f59e0b; }  /* variables/env */
+
+    /* Callout */
+    .callout { display:flex;gap:12px;padding:14px 16px;border-radius:10px;margin:0 0 20px;font-size:13px;line-height:1.6; }
+    .callout-info { background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);color:#a5b4fc; }
+    .callout-tip  { background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);color:#6ee7b7; }
+    .callout-warn { background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:#fcd34d; }
+
+    /* Feature grid */
+    .feature-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:24px; }
+    .feature-card { background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px; }
+    .feature-icon { width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px; }
+    .feature-title { font-size:14px;font-weight:600;color:#f1f5f9;margin:0 0 6px; }
+    .feature-desc { font-size:12px;color:#64748b;margin:0;line-height:1.5; }
+
+    /* Endpoint table */
+    .ep-table { width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px; }
+    .ep-table th { text-align:left;padding:8px 12px;background:rgba(255,255,255,0.04);color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid rgba(255,255,255,0.08); }
+    .ep-table td { padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:top; }
+    .ep-table tr:last-child td { border-bottom:none; }
+    .method { display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;font-family:monospace; }
+    .method-get  { background:rgba(16,185,129,0.15);color:#10b981; }
+    .method-post { background:rgba(99,102,241,0.15);color:#818cf8; }
+    .method-del  { background:rgba(239,68,68,0.15);color:#f87171; }
+    .ep-path { font-family:monospace;color:#00d4ff;font-size:12px; }
+    .ep-desc { color:#94a3b8; }
+
+    [data-theme="light"] .doc-h2 { color:#0f172a; }
+    [data-theme="light"] .doc-h3 { color:#0f172a; }
+    [data-theme="light"] .step-title { color:#0f172a; }
+    [data-theme="light"] .feature-title { color:#0f172a; }
+    [data-theme="light"] .code-block { background:#f8fafc;border-color:rgba(0,0,0,0.08); }
+    [data-theme="light"] .code-body pre { color:#1e293b; }
+    [data-theme="light"] .code-header { background:rgba(0,0,0,0.03);border-bottom-color:rgba(0,0,0,0.06); }
+    [data-theme="light"] .ep-table th { background:rgba(0,0,0,0.04); }
+    [data-theme="light"] .ep-table td { border-bottom-color:rgba(0,0,0,0.05); }
+  </style>
+</head>
+<body style="font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
+
+  <!-- Sidebar -->
+  <div id="sidebar-mount"></div>
+  <script src="/static/js/sidebar.js"></script>
+  <script src="/static/js/header.js"></script>
+
+  <!-- Main -->
+  <div id="main-content" style="margin-left:260px;min-height:100vh;">
+    <header style="background:rgba(8,12,24,0.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.06);box-shadow:0 1px 0 0 rgba(0,212,255,0.12),0 4px 24px rgba(0,0,0,0.4);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
+      <div>
+        <h1 style="font-size:22px;font-weight:700;color:#f1f5f9;margin:0;">Documentation</h1>
+        <p style="font-size:13px;color:#475569;margin:2px 0 0;">Developer guides and platform reference</p>
+      </div>
+      <div id="header-user-slot" style="display:flex;align-items:center;gap:8px;"></div>
+    </header>
+
+    <main style="padding:32px;max-width:1100px;">
+
+      <!-- Tab bar -->
+      <div class="tab-bar" role="tablist">
+        <button class="tab-btn active" onclick="switchTab('quickstart', this)" role="tab" aria-selected="true" aria-controls="tab-quickstart" id="tab-btn-quickstart">
+          <i data-lucide="zap" style="width:14px;height:14px;"></i> Quick Start
+        </button>
+        <button class="tab-btn" onclick="switchTab('cicd', this)" role="tab" aria-selected="false" aria-controls="tab-cicd" id="tab-btn-cicd">
+          <i data-lucide="git-branch" style="width:14px;height:14px;"></i> GitHub Actions
+        </button>
+        <button class="tab-btn" onclick="switchTab('usage', this)" role="tab" aria-selected="false" aria-controls="tab-usage" id="tab-btn-usage">
+          <i data-lucide="layout-dashboard" style="width:14px;height:14px;"></i> General Usage
+        </button>
+        <button class="tab-btn" onclick="switchTab('api', this)" role="tab" aria-selected="false" aria-controls="tab-api" id="tab-btn-api">
+          <i data-lucide="code-2" style="width:14px;height:14px;"></i> API Reference
+        </button>
+      </div>
+
+      <!-- ── Tab: Quick Start ──────────────────────────────────────────────── -->
+      <div id="tab-quickstart" class="tab-panel active" role="tabpanel" aria-labelledby="tab-btn-quickstart">
+        <div class="card" style="padding:28px;margin-bottom:20px;">
+          <div class="doc-h2">Getting Started with Snitch</div>
+          <p class="doc-lead">Snitch is an AppSec platform that aggregates security findings from multiple scanners, calculates per-application risk scores, and provides AI-powered remediation guidance.</p>
+
+          <div class="step-grid">
+            <div class="step-card">
+              <div class="step-num">1</div>
+              <div class="step-title">Register an Application</div>
+              <p class="step-desc">Add your app in the Applications page. Provide a name, repository URL, and optional container image for scanning.</p>
+            </div>
+            <div class="step-card">
+              <div class="step-num">2</div>
+              <div class="step-title">Run a Scan</div>
+              <p class="step-desc">Trigger a scan manually from the app detail page, or push results automatically from your CI/CD pipeline.</p>
+            </div>
+            <div class="step-card">
+              <div class="step-num">3</div>
+              <div class="step-title">Review Findings</div>
+              <p class="step-desc">Triage findings by severity. Mark items as fixed, accepted, or false positive. The risk score updates automatically.</p>
+            </div>
+            <div class="step-card">
+              <div class="step-num">4</div>
+              <div class="step-title">Get AI Remediation</div>
+              <p class="step-desc">Click "AI Remediation" on any finding to get a step-by-step fix plan generated by Anthropic Claude.</p>
+            </div>
+          </div>
+
+          <div class="callout callout-info">
+            <i data-lucide="info" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;"></i>
+            <span>AI remediation requires an <strong>ANTHROPIC_API_KEY</strong> set as a server environment variable (or in <code>.env</code>). Without it, a mock plan is returned — no error is raised.</span>
+          </div>
+        </div>
+
+        <div class="card" style="padding:28px;margin-bottom:20px;">
+          <div class="doc-h3">Supported Scanners</div>
+          <div class="feature-grid">
+            <div class="feature-card">
+              <div class="feature-icon" style="background:rgba(239,68,68,0.12);"><i data-lucide="shield" style="width:18px;height:18px;color:#ef4444;"></i></div>
+              <div class="feature-title">Semgrep — SAST</div>
+              <p class="feature-desc">Static analysis for code vulnerabilities. Runs on cloned repositories. Findings stored as <code>finding_type=SAST</code>.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon" style="background:rgba(245,158,11,0.12);"><i data-lucide="package" style="width:18px;height:18px;color:#f59e0b;"></i></div>
+              <div class="feature-title">Trivy — SCA</div>
+              <p class="feature-desc">Software composition analysis for dependency CVEs. Stored as <code>finding_type=SCA</code>.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon" style="background:rgba(99,102,241,0.12);"><i data-lucide="box" style="width:18px;height:18px;color:#818cf8;"></i></div>
+              <div class="feature-title">Grype — Container</div>
+              <p class="feature-desc">Container image vulnerability scanning. Set a <code>container_image</code> on your application to enable. Stored as <code>finding_type=container</code>.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon" style="background:rgba(16,185,129,0.12);"><i data-lucide="server" style="width:18px;height:18px;color:#10b981;"></i></div>
+              <div class="feature-title">Checkov — IaC</div>
+              <p class="feature-desc">Infrastructure-as-code scanning for Terraform, CloudFormation, ARM, and Bicep. Stored as <code>finding_type=IaC</code>.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon" style="background:rgba(0,212,255,0.12);"><i data-lucide="key" style="width:18px;height:18px;color:#00d4ff;"></i></div>
+              <div class="feature-title">Gitleaks — Secrets</div>
+              <p class="feature-desc">Detects leaked credentials and secrets in source code. Secret values are masked before storage. Stored as <code>finding_type=secrets</code>.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon" style="background:rgba(139,92,246,0.12);"><i data-lucide="search" style="width:18px;height:18px;color:#a78bfa;"></i></div>
+              <div class="feature-title">Govulncheck — Go</div>
+              <p class="feature-desc">Go-specific vulnerability scanning using the official Go vulnerability database. Stored as <code>finding_type=SCA</code>.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:28px;">
+          <div class="doc-h3">Risk Score Formula</div>
+          <p class="doc-p">Each application's risk score is calculated from open findings only:</p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">formula</span></div>
+            <div class="code-body"><pre>score = (critical × 25) + (high × 10) + (medium × 3) + (low × 1)
+score = min(score, 100)
+
+Risk levels:
+  0          → info
+  1  – 24   → low
+  25 – 49   → medium
+  50 – 74   → high
+  75 – 100  → critical</pre></div>
+          </div>
+          <div class="callout callout-tip">
+            <i data-lucide="lightbulb" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;"></i>
+            <span>Marking findings as <strong>fixed</strong>, <strong>accepted</strong>, or <strong>false_positive</strong> immediately removes them from the score calculation.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Tab: GitHub Actions ───────────────────────────────────────────── -->
+      <div id="tab-cicd" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-cicd">
+        <div class="card" style="padding:28px;margin-bottom:20px;">
+          <div class="doc-h2">GitHub Actions Integration</div>
+          <p class="doc-lead">Push scan results directly to Snitch from your CI/CD pipeline using the <code>POST /api/v1/cicd-scans/push</code> endpoint. Results are normalised and deduplicated automatically.</p>
+
+          <div class="callout callout-tip">
+            <i data-lucide="check-circle" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;"></i>
+            <span><strong>No GitHub App required.</strong> Integration uses plain HTTP — your workflow just runs scanners and calls a <code>curl</code> command to push results to Snitch. You need three configuration values stored as GitHub Actions repository secrets (not a GitHub App, not OAuth).</span>
+          </div>
+
+          <div class="doc-h3">Before you start</div>
+          <p class="doc-p">Three values need to be available in your workflow:</p>
+          <ol style="font-size:14px;color:#94a3b8;line-height:1.8;padding-left:20px;margin:0 0 16px;">
+            <li><strong>Snitch URL</strong> — the base URL where your Snitch instance is running (e.g. <code>https://snitch.example.com</code>)</li>
+            <li><strong>Snitch Application ID</strong> — the UUID of the application you registered in Snitch. Find it on the <a href="/applications.html" style="color:#00d4ff;">Applications page</a>: open any app and copy the ID from the URL or detail view.</li>
+            <li><strong>Snitch Token</strong> — a service account token. Create one in <a href="/service-accounts.html" style="color:#00d4ff;">Admin → Service Accounts</a>. The token is shown once on creation — copy it and add it as a secret.</li>
+          </ol>
+
+          <div class="doc-h3">Add Repository Secrets</div>
+          <p class="doc-p">Store all three values as GitHub Actions secrets in your repository (<strong>Settings → Secrets and variables → Actions → New repository secret</strong>):</p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">secrets</span><span class="code-file">GitHub → Settings → Secrets and variables → Actions</span></div>
+            <div class="code-body"><pre><span class="kw">SNITCH_URL</span>                <span class="cm"># Base URL of your Snitch instance, e.g. https://snitch.example.com</span>
+<span class="kw">SNITCH_APPLICATION_ID</span>     <span class="cm"># UUID of the app in Snitch (from the Applications page)</span>
+<span class="kw">SNITCH_TOKEN</span>              <span class="cm"># Service account token (format: snitch_xxxxx) from Admin → Service Accounts</span></pre></div>
+          </div>
+          <div class="callout callout-info">
+            <i data-lucide="info" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;"></i>
+            <span>These secrets are plain configuration values passed to <code>curl</code>. <code>SNITCH_TOKEN</code> authenticates your CI/CD push — it is <em>not</em> a GitHub credential.</span>
+          </div>
+
+          <div class="doc-h3">2-Stage Debug Workflow</div>
+          <p class="doc-p">Use the two-stage pattern in CI/CD to quickly isolate auth vs. scan failures:</p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">yaml</span><span class="code-file">Stage 1 — verify token before running scanners</span></div>
+            <div class="code-body"><pre>      - <span class="kw">name</span>: <span class="st">Stage 1 — Verify Snitch credentials</span>
+        <span class="kw">run</span>: |
+          echo "Verifying Snitch service account token..."
+          curl -sf <span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/auth/verify \
+            -H "Authorization: Bearer <span class="va">${{ secrets.SNITCH_TOKEN }}</span>" | jq .
+          echo "✅ Token valid — proceeding to scan"</pre></div>
+          </div>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">yaml</span><span class="code-file">Stage 2 — push scanner results</span></div>
+            <div class="code-body"><pre>      - <span class="kw">name</span>: <span class="st">Stage 2 — Push results to Snitch</span>
+        <span class="kw">run</span>: |
+          curl -sf -X POST \
+            "<span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push?application_id=<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>&amp;branch=<span class="va">${{ github.ref_name }}</span>&amp;commit_sha=<span class="va">${{ github.sha }}</span>" \
+            -H "Authorization: Bearer <span class="va">${{ secrets.SNITCH_TOKEN }}</span>" \
+            -H "Content-Type: application/json" \
+            --data-binary @semgrep-results.json</pre></div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:28px;margin-bottom:20px;">
+          <div class="doc-h3">Complete Workflow — All Scanners</div>
+          <p class="doc-p">The workflow below runs all supported scanners and pushes each result set to Snitch. Adjust steps to match your project's language and infrastructure.</p>
+
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">yaml</span><span class="code-file">.github/workflows/snitch-scan.yml</span></div>
+            <div class="code-body"><pre><span class="kw">name</span>: <span class="st">Snitch Security Scan</span>
+
+<span class="kw">on</span>:
+  <span class="kw">push</span>:
+    <span class="kw">branches</span>: [<span class="st">main</span>, <span class="st">master</span>]
+  <span class="kw">pull_request</span>:
+    <span class="kw">branches</span>: [<span class="st">main</span>, <span class="st">master</span>]
+  <span class="kw">schedule</span>:
+    - <span class="kw">cron</span>: <span class="st">'0 2 * * 1'</span>  <span class="cm"># Weekly Monday 02:00 UTC</span>
+
+<span class="kw">jobs</span>:
+  <span class="kw">snitch</span>:
+    <span class="kw">runs-on</span>: <span class="st">ubuntu-latest</span>
+    <span class="kw">permissions</span>:
+      <span class="kw">contents</span>: <span class="st">read</span>
+
+    <span class="kw">steps</span>:
+      - <span class="kw">uses</span>: <span class="st">actions/checkout@v4</span>
+        <span class="kw">with</span>:
+          <span class="kw">fetch-depth</span>: <span class="st">0</span>
+
+      <span class="cm"># ── Semgrep (SAST) ────────────────────────────────────────────</span>
+      - <span class="kw">name</span>: <span class="st">Run Semgrep</span>
+        <span class="kw">uses</span>: <span class="st">returntocorp/semgrep-action@v1</span>
+        <span class="kw">with</span>:
+          <span class="kw">config</span>: <span class="st">p/default</span>
+          <span class="kw">generateSarif</span>: <span class="st">"false"</span>
+        <span class="kw">env</span>:
+          <span class="kw">SEMGREP_RULES</span>: <span class="st">p/default</span>
+
+      - <span class="kw">name</span>: <span class="st">Run Semgrep (JSON output)</span>
+        <span class="kw">run</span>: |
+          pip install semgrep --quiet
+          semgrep --config p/default --json --output semgrep-results.json . || true
+
+      - <span class="kw">name</span>: <span class="st">Push Semgrep results to Snitch</span>
+        <span class="kw">run</span>: |
+          curl -sf -X POST \
+            "<span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push?application_id=<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>&branch=<span class="va">${{ github.ref_name }}</span>&commit_sha=<span class="va">${{ github.sha }}</span>" \
+            -H "Authorization: Bearer <span class="va">${{ secrets.SNITCH_TOKEN }}</span>" \
+            -H "Content-Type: application/json" \
+            --data-binary @semgrep-results.json
+
+      <span class="cm"># ── Checkov (IaC) ─────────────────────────────────────────────</span>
+      - <span class="kw">name</span>: <span class="st">Run Checkov</span>
+        <span class="kw">uses</span>: <span class="st">bridgecrewio/checkov-action@v12</span>
+        <span class="kw">with</span>:
+          <span class="kw">directory</span>: <span class="st">.</span>
+          <span class="kw">framework</span>: <span class="st">terraform,cloudformation,arm,bicep</span>
+          <span class="kw">output_format</span>: <span class="st">json</span>
+          <span class="kw">output_file_path</span>: <span class="st">checkov-results.json</span>
+          <span class="kw">soft_fail</span>: <span class="st">true</span>
+
+      - <span class="kw">name</span>: <span class="st">Push Checkov results to Snitch</span>
+        <span class="kw">run</span>: |
+          curl -sf -X POST \
+            "<span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push?application_id=<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>&branch=<span class="va">${{ github.ref_name }}</span>&commit_sha=<span class="va">${{ github.sha }}</span>" \
+            -H "Authorization: Bearer <span class="va">${{ secrets.SNITCH_TOKEN }}</span>" \
+            -H "Content-Type: application/json" \
+            --data-binary @checkov-results.json</pre></div>
+          </div>
+          <div class="callout callout-info">
+            <i data-lucide="info" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;"></i>
+            <span>The push endpoint auto-detects the scanner format. <strong>Supported formats: Semgrep JSON, Grype JSON, Checkov JSON.</strong> Trivy and Gitleaks are server-side scanners — trigger them via <code>POST /api/v1/applications/{id}/scan?scan_type=trivy</code> (or <code>gitleaks</code>) from your pipeline instead.</span>
+          </div>
+        </div>
+
+        <div class="card" style="padding:28px;margin-bottom:20px;">
+          <div class="doc-h3">Container Scanning with Grype</div>
+          <p class="doc-p">To scan a container image, add the Grype step and ensure the <code>container_image</code> field is set on your Snitch application. Grype expects a JSON output from the <code>--output json</code> flag.</p>
+
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">yaml</span><span class="code-file">.github/workflows/snitch-scan.yml (Grype snippet)</span></div>
+            <div class="code-body"><pre>      <span class="cm"># ── Grype (Container) ─────────────────────────────────────────</span>
+      - <span class="kw">name</span>: <span class="st">Install Grype</span>
+        <span class="kw">run</span>: <span class="st">curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin</span>
+
+      - <span class="kw">name</span>: <span class="st">Run Grype</span>
+        <span class="kw">run</span>: <span class="st">grype ${{ secrets.CONTAINER_IMAGE }} --output json --file grype-results.json || true</span>
+
+      - <span class="kw">name</span>: <span class="st">Push Grype results to Snitch</span>
+        <span class="kw">run</span>: |
+          curl -sf -X POST \
+            "<span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push?application_id=<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>&branch=<span class="va">${{ github.ref_name }}</span>&commit_sha=<span class="va">${{ github.sha }}</span>" \
+            -H "Authorization: Bearer <span class="va">${{ secrets.SNITCH_TOKEN }}</span>" \
+            -H "Content-Type: application/json" \
+            --data-binary @grype-results.json</pre></div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:28px;">
+          <div class="doc-h3">Minimal Semgrep-Only Workflow</div>
+          <p class="doc-p">If you only need SAST scanning, this minimal workflow is a good starting point:</p>
+
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">yaml</span><span class="code-file">.github/workflows/snitch-sast.yml</span></div>
+            <div class="code-body"><pre><span class="kw">name</span>: <span class="st">Snitch SAST</span>
+<span class="kw">on</span>: [<span class="st">push</span>, <span class="st">pull_request</span>]
+
+<span class="kw">jobs</span>:
+  <span class="kw">sast</span>:
+    <span class="kw">runs-on</span>: <span class="st">ubuntu-latest</span>
+    <span class="kw">steps</span>:
+      - <span class="kw">uses</span>: <span class="st">actions/checkout@v4</span>
+
+      - <span class="kw">name</span>: <span class="st">Semgrep scan</span>
+        <span class="kw">run</span>: |
+          pip install semgrep --quiet
+          semgrep --config auto --json --output semgrep-results.json . || true
+
+      - <span class="kw">name</span>: <span class="st">Push to Snitch</span>
+        <span class="kw">run</span>: |
+          curl -sf -X POST \
+            "<span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push?application_id=<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>&branch=<span class="va">${{ github.ref_name }}</span>&commit_sha=<span class="va">${{ github.sha }}</span>" \
+            -H "Authorization: Bearer <span class="va">${{ secrets.SNITCH_TOKEN }}</span>" \
+            -H "Content-Type: application/json" \
+            --data-binary @semgrep-results.json</pre></div>
+          </div>
+
+          <div class="callout callout-warn">
+            <i data-lucide="alert-triangle" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;"></i>
+            <span>Always use <code>|| true</code> (or <code>exit-code: '0'</code>) on scanner steps so that findings don't fail the workflow before the push step runs. Let Snitch policies decide whether to block a build.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Tab: General Usage ───────────────────────────────────────────── -->
+      <div id="tab-usage" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-usage">
+        <div class="card" style="padding:28px;margin-bottom:20px;">
+          <div class="doc-h2">Platform Walkthrough</div>
+          <p class="doc-lead">A guide to the main Snitch features and how to use them effectively.</p>
+
+          <div class="doc-h3">Applications</div>
+          <p class="doc-p">The <strong>Applications</strong> page lists all registered apps sorted by risk score (highest first). Click any column header to re-sort. Click an application row to open its detail page.</p>
+          <p class="doc-p">When creating an application you can optionally provide a <strong>repository URL</strong> (for on-demand cloning during scans) and a <strong>container image</strong> (for Grype container scanning). Leave the container image blank to skip that step.</p>
+
+          <div class="doc-h3">Findings</div>
+          <p class="doc-p">Findings are organised by severity: <strong>critical → high → medium → low → info</strong>. Each finding shows the scanner, file path, rule ID, and CVE (for dependency findings).</p>
+          <p class="doc-p">Status transitions:</p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">status flow</span></div>
+            <div class="code-body"><pre>open  →  fixed          (vulnerability has been remediated)
+open  →  accepted       (risk accepted, won't fix)
+open  →  false_positive (not a real vulnerability)</pre></div>
+          </div>
+          <p class="doc-p">Only <code>open</code> findings contribute to the risk score.</p>
+
+          <div class="doc-h3">Policies</div>
+          <p class="doc-p">Policies let you define automated rules that run after every scan. A policy specifies:</p>
+          <ul style="font-size:14px;color:#94a3b8;line-height:1.8;padding-left:20px;">
+            <li><strong>Minimum severity</strong> — findings below this threshold are ignored by the policy</li>
+            <li><strong>Scan types</strong> — which scanner results to evaluate (sast, sca, container, secrets, iac)</li>
+            <li><strong>Rule blocklist / allowlist</strong> — specific Semgrep/Checkov rule IDs to include or exclude</li>
+            <li><strong>Action</strong> — <code>inform</code> (log only) or <code>block</code> (marks the scan as blocked)</li>
+          </ul>
+          <div class="callout callout-tip">
+            <i data-lucide="lightbulb" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;"></i>
+            <span>Use <strong>block</strong> policies in combination with CI/CD to gate deployments: check the scan result status via <code>GET /api/v1/cicd-scans/{id}</code> and fail the pipeline if <code>blocked=true</code>.</span>
+          </div>
+
+          <div class="doc-h3">Rules Library</div>
+          <p class="doc-p">The Rules page provides a searchable catalog of ~37 built-in detection rules across Semgrep (SAST), Checkov (IaC), and Gitleaks (secrets). Each rule shows its ID, severity, and description. Use these IDs when configuring policy blocklists and allowlists.</p>
+
+          <div class="doc-h3">Secrets</div>
+          <p class="doc-p">The Secrets page manages custom <strong>SecretPattern</strong> rows. Active patterns are loaded at scan time and passed to Gitleaks as a TOML config file. Raw secret values are never stored — only the last 4 characters are retained (<code>****{last4}</code>).</p>
+
+          <div class="doc-h3">Reports</div>
+          <p class="doc-p">The Reports page provides aggregate views: findings by severity, risk score trends, scanner coverage, and top vulnerable applications. Data is computed from the live database and requires no separate ETL.</p>
+
+          <div class="doc-h3">Repositories</div>
+          <p class="doc-p">If a <strong>GitHub Token</strong> is set as a server environment variable (<code>GITHUB_TOKEN</code> in <code>.env</code>), the Repositories page can sync GitHub code scanning alerts directly into Snitch findings, and create fix branches or pull requests for findings with AI remediation plans.</p>
+
+          <div class="doc-h3">Settings</div>
+          <p class="doc-p">The Settings page shows platform integration status (GitHub Token, Anthropic API Key) and scan defaults. It reads presence flags from <code>localStorage</code> — raw secrets are never stored client-side. To configure backend integrations, set the relevant environment variables in <code>.env</code> or your deployment config.</p>
+        </div>
+
+        <div class="card" style="padding:28px;">
+          <div class="doc-h3">Dark / Light Mode</div>
+          <p class="doc-p">The theme toggle is available in the header user menu (top right). Your preference is persisted in <code>localStorage.theme</code> and applied on every page load without flash.</p>
+
+          <div class="doc-h3">AI Remediation</div>
+          <p class="doc-p">On any finding's detail view, click <strong>"Get AI Remediation"</strong> to request a step-by-step fix plan. The plan is generated by Anthropic Claude (model: <code>claude-3-5-sonnet-20241022</code>) with extended thinking enabled. Plans are cached in the database and can be retrieved via <code>GET /api/v1/remediations/{finding_id}</code>.</p>
+        </div>
+      </div>
+
+      <!-- ── Tab: API Reference ───────────────────────────────────────────── -->
+      <div id="tab-api" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-api">
+        <div class="card" style="padding:28px;margin-bottom:20px;">
+          <div class="doc-h2">REST API Reference</div>
+          <p class="doc-lead">All endpoints are prefixed <code>/api/v1/</code>. The interactive Swagger UI is available at <a href="/docs" target="_blank" rel="noopener noreferrer" style="color:#00d4ff;">/docs</a>.</p>
+
+          <div class="doc-h4">Applications</div>
+          <table class="ep-table">
+            <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="method method-get">GET</span></td><td class="ep-path">/api/v1/applications</td><td class="ep-desc">List all applications (paginated, sortable)</td></tr>
+              <tr><td><span class="method method-post">POST</span></td><td class="ep-path">/api/v1/applications</td><td class="ep-desc">Create a new application</td></tr>
+              <tr><td><span class="method method-get">GET</span></td><td class="ep-path">/api/v1/applications/{id}</td><td class="ep-desc">Get application detail with findings summary</td></tr>
+              <tr><td><span class="method method-del">DELETE</span></td><td class="ep-path">/api/v1/applications/{id}</td><td class="ep-desc">Delete application and all its findings</td></tr>
+              <tr><td><span class="method method-post">POST</span></td><td class="ep-path">/api/v1/applications/{id}/scan</td><td class="ep-desc">Trigger an async scan (Celery task)</td></tr>
+            </tbody>
+          </table>
+
+          <div class="doc-h4">Findings</div>
+          <table class="ep-table">
+            <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="method method-get">GET</span></td><td class="ep-path">/api/v1/findings</td><td class="ep-desc">List findings with filters (severity, status, scanner, application_id)</td></tr>
+              <tr><td><span class="method method-get">GET</span></td><td class="ep-path">/api/v1/findings/{id}</td><td class="ep-desc">Get a single finding</td></tr>
+              <tr><td><span class="method method-post">POST</span></td><td class="ep-path">/api/v1/findings/{id}/status</td><td class="ep-desc">Update finding status (open/fixed/accepted/false_positive)</td></tr>
+            </tbody>
+          </table>
+
+          <div class="doc-h4">CI/CD Scan Push <span style="font-size:11px;background:rgba(239,68,68,0.15);color:#f87171;padding:2px 7px;border-radius:10px;font-weight:600;margin-left:6px;">🔒 Requires Bearer token</span></div>
+          <table class="ep-table">
+            <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="method method-get">GET</span></td><td class="ep-path">/api/v1/auth/verify</td><td class="ep-desc">Stage 1: verify Bearer token and return service account info</td></tr>
+              <tr><td><span class="method method-post">POST</span></td><td class="ep-path">/api/v1/cicd-scans/push</td><td class="ep-desc">Stage 2: ingest scanner JSON output — application_id, branch, commit_sha as query params</td></tr>
+              <tr><td><span class="method method-get">GET</span></td><td class="ep-path">/api/v1/cicd-scans</td><td class="ep-desc">List CI/CD scan records (filterable by application, status, scan_type)</td></tr>
+              <tr><td><span class="method method-get">GET</span></td><td class="ep-path">/api/v1/cicd-scans/{id}</td><td class="ep-desc">Get a specific CI/CD scan record (check blocked status)</td></tr>
+            </tbody>
+          </table>
+
+          <div class="doc-h4">Service Accounts</div>
+          <table class="ep-table">
+            <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="method method-post">POST</span></td><td class="ep-path">/api/v1/service-accounts</td><td class="ep-desc">Create a service account — returns token once</td></tr>
+              <tr><td><span class="method method-get">GET</span></td><td class="ep-path">/api/v1/service-accounts</td><td class="ep-desc">List all service accounts (token never returned)</td></tr>
+              <tr><td><span class="method method-post">POST</span></td><td class="ep-path">/api/v1/service-accounts/{id}/rotate</td><td class="ep-desc">Rotate token — returns new token once, old token immediately revoked</td></tr>
+              <tr><td><span class="method method-del">DELETE</span></td><td class="ep-path">/api/v1/service-accounts/{id}</td><td class="ep-desc">Revoke (soft-delete) a service account</td></tr>
+            </tbody>
+          </table>
+
+          <div class="doc-h4">Remediations</div>
+          <table class="ep-table">
+            <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="method method-post">POST</span></td><td class="ep-path">/api/v1/remediations/{finding_id}</td><td class="ep-desc">Generate (or retrieve cached) AI remediation plan</td></tr>
+              <tr><td><span class="method method-get">GET</span></td><td class="ep-path">/api/v1/remediations/{finding_id}</td><td class="ep-desc">Get existing remediation plan for a finding</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card" style="padding:28px;margin-bottom:20px;">
+          <div class="doc-h3">Example: Create an Application</div>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">bash</span><span class="code-file">curl</span></div>
+            <div class="code-body"><pre>curl -X POST http://snitch.example.com/api/v1/applications \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "my-api",
+    "github_org": "myorg",
+    "github_repo": "my-api",
+    "repo_url": "https://github.com/myorg/my-api",
+    "team_name": "platform",
+    "container_image": "ghcr.io/myorg/my-api:latest"
+  }'</pre></div>
+          </div>
+
+          <div class="doc-h3">Example: Verify a Service Account Token</div>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">bash</span><span class="code-file">curl — Stage 1</span></div>
+            <div class="code-body"><pre>curl http://snitch.example.com/api/v1/auth/verify \
+  -H "Authorization: Bearer snitch_your_token_here"
+
+# Response: {"authenticated": true, "service_account": {"name": "ci-pipeline", ...}}</pre></div>
+          </div>
+
+          <div class="doc-h3">Example: Push Semgrep Results</div>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">bash</span><span class="code-file">curl — Stage 2 (pipe raw scanner JSON output directly)</span></div>
+            <div class="code-body"><pre>curl -X POST \
+  "http://snitch.example.com/api/v1/cicd-scans/push?application_id=3fa85f64-5717-4562-b3fc-2c963f66afa6&branch=main&commit_sha=abc123" \
+  -H "Authorization: Bearer snitch_your_token_here" \
+  -H "Content-Type: application/json" \
+  --data-binary @semgrep-results.json</pre></div>
+          </div>
+
+          <div class="doc-h3">Example: Check if a Scan was Blocked</div>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">bash</span><span class="code-file">curl (use in CI/CD gating)</span></div>
+            <div class="code-body"><pre>SCAN_ID="&lt;id from push response&gt;"
+
+BLOCKED=$(curl -sf http://snitch.example.com/api/v1/cicd-scans/$SCAN_ID \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['blocked'])")
+
+if [ "$BLOCKED" = "True" ]; then
+  echo "❌ Snitch policy blocked this build"
+  exit 1
+fi</pre></div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:28px;">
+          <div class="doc-h3">Push Endpoint</div>
+          <p style="font-size:13px;color:#64748b;margin:0 0 16px;">All parameters are passed as query strings; the request body is the raw JSON output from the scanner.</p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">http</span><span class="code-file">POST /api/v1/cicd-scans/push</span></div>
+            <div class="code-body"><pre><span class="cm">// Query parameters</span>
+<span class="kw">application_id</span>    uuid     <span class="cm">required — UUID of the Snitch application</span>
+<span class="kw">branch</span>            string   <span class="cm">optional — git branch name</span>
+<span class="kw">commit_sha</span>        string   <span class="cm">optional — git commit SHA</span>
+<span class="kw">workflow_run_id</span>   string   <span class="cm">optional — CI run ID for traceability</span>
+<span class="kw">ci_provider</span>       string   <span class="cm">optional — defaults to "github-actions"</span>
+
+<span class="cm">// Headers</span>
+<span class="kw">Authorization</span>: Bearer &lt;snitch_token&gt;   <span class="cm">required</span>
+<span class="kw">Content-Type</span>: application/json         <span class="cm">required</span>
+
+<span class="cm">// Body: raw JSON output from Semgrep, Grype, or Checkov (auto-detected)</span></pre></div>
+          </div>
+          <div class="callout callout-info">
+            <i data-lucide="info" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;"></i>
+            <span>The scanner format is auto-detected from the JSON structure — Semgrep (<code>results</code> array), Grype (<code>matches</code> array), or Checkov (<code>results.failed_checks</code>).</span>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    function switchTab(name, btn) {
+      document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+      document.querySelectorAll('.tab-btn').forEach(function(b) {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      document.getElementById('tab-' + name).classList.add('active');
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+    }
+    lucide.createIcons();
+  </script>
+</body>
+</html>
