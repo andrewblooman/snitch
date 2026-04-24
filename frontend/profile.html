@@ -115,7 +115,7 @@
 
         <div id="token-warning" style="display:none;margin-top:14px;padding:12px 16px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:10px;font-size:13px;color:#f59e0b;">
           <i data-lucide="alert-triangle" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:6px;"></i>
-          Copy this token now — it remains available on this device until you generate a new one.
+          Copy this token now — it won't be shown again after you leave this page.
         </div>
       </div>
 
@@ -236,7 +236,8 @@ function generateToken() {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
   currentToken = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
-  localStorage.setItem('api_token', currentToken);
+  // Store only a presence flag — never the raw token value
+  localStorage.setItem('has_api_token', '1');
 
   const input = document.getElementById('token-input');
   input.type = 'text';
@@ -317,13 +318,10 @@ function savePref(key, value) {
   const theme = localStorage.getItem('theme') || 'dark';
   applyTheme(theme);
 
-  // Load existing token (masked)
-  const stored = localStorage.getItem('api_token');
-  if (stored) {
-    currentToken = stored;
+  // A token was previously generated — show a placeholder (raw value is never persisted)
+  if (localStorage.getItem('has_api_token')) {
     const input = document.getElementById('token-input');
-    input.type = 'password';
-    input.value = stored;
+    input.placeholder = 'Token exists — generate a new one to rotate';
     document.getElementById('token-note').textContent = 'Token exists — generate a new one to rotate.';
   }
 
