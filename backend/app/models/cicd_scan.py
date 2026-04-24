@@ -21,10 +21,7 @@ class CiCdScan(Base):
     status: Mapped[str] = mapped_column(String(50), default="processing", nullable=False)
     # processing / completed / failed
 
-    s3_bucket: Mapped[str] = mapped_column(String(255), nullable=False)
-    s3_key: Mapped[str] = mapped_column(String(1024), nullable=False)
-
-    # CI/CD context (populated from S3 object metadata or key path)
+    # CI/CD context
     commit_sha: Mapped[str | None] = mapped_column(String(255), nullable=True)
     branch: Mapped[str | None] = mapped_column(String(255), nullable=True)
     workflow_run_id: Mapped[str | None] = mapped_column(String(255), nullable=True)

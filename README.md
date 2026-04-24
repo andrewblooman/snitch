@@ -97,7 +97,7 @@ snitch/
 │   │   │   ├── scans.py        # Scan history
 │   │   │   ├── remediation.py  # AI plan + PR execution
 │   │   │   ├── reports.py      # Overview, leaderboard, trend, top CVEs
-│   │   │   ├── cicd_scans.py   # CI/CD scan results (S3/SQS ingestion)
+│   │   │   ├── cicd_scans.py   # CI/CD scan results (direct HTTP push)
 │   │   │   ├── policies.py     # Policy CRUD + evaluation
 │   │   │   ├── secrets.py      # Secrets findings + custom pattern CRUD
 │   │   │   └── seed.py         # Demo data seeder
@@ -186,7 +186,7 @@ Full interactive docs at `/docs` (Swagger UI) and `/redoc`.
 | `GET` | `/api/v1/reports/leaderboard` | Team security leaderboard |
 | `GET` | `/api/v1/reports/trend?days=90` | 90-day vulnerability trend |
 | `GET` | `/api/v1/reports/top-vulnerabilities` | Most common CVEs/rules |
-| `GET` | `/api/v1/cicd-scans` | List CI/CD scan results ingested via S3/SQS |
+| `GET` | `/api/v1/cicd-scans` | List CI/CD scan results |
 | `POST` | `/api/v1/cicd-scans/push` | Push scanner results directly (requires Bearer token) |
 | `GET` | `/api/v1/auth/verify` | Verify Bearer token — Stage 1 debug for CI/CD setup |
 | `POST` | `/api/v1/service-accounts` | Create service account (token returned once) |
@@ -305,45 +305,22 @@ curl -X POST http://localhost:8000/api/v1/applications \
 
 ### Mode 2 — Push model (your pipeline uploads scan results)
 
-Your CI/CD pipeline runs the scanner and uploads the JSON output to S3. Snitch polls an SQS queue, downloads the results, normalises them, and stores the findings — including CI context (commit SHA, branch, workflow run ID).
+Your CI/CD pipeline runs the scanner and pushes the JSON output directly to Snitch via HTTP.  
+**No AWS infrastructure required** — just a service account token.
 
-**Supported push formats:** Semgrep JSON, Grype JSON, Checkov JSON
+**Supported push formats:** Semgrep JSON, Grype JSON, Checkov JSON (auto-detected)
 
-#### Infrastructure setup
+#### Setup
 
-You need:
-- An **S3 bucket** with event notifications → **SQS queue**
-- Snitch configured with AWS credentials
+1. Create a service account in the Snitch UI under **Admin → Service Accounts**
+2. Copy the `snitch_...` token (shown once)
+3. Add three secrets to your GitHub repository (**Settings → Secrets and variables → Actions**):
 
-```bash
-# .env additions
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=AKIA...
-AWS_SECRET_ACCESS_KEY=...
-S3_CICD_BUCKET=my-snitch-scans
-SQS_CICD_QUEUE_URL=https://sqs.us-east-1.amazonaws.com/123456789/snitch-cicd
-```
-
-#### S3 key format
-
-Results must be uploaded to a key matching:
-
-```
-{github_org}/{github_repo}/{scan_type}/{YYYYMMDD}-{run_id}.json
-```
-
-Example: `myorg/my-api/semgrep/20260424-12345.json`
-
-Snitch uses the org/repo path to look up the registered application. The `scan_type` segment is informational — Snitch auto-detects the format from JSON content.
-
-#### S3 object metadata (optional but recommended)
-
-| Metadata key | Description |
+| Secret | Value |
 |---|---|
-| `commit-sha` | The commit SHA that was scanned |
-| `branch` | Branch name (e.g. `main`, `feature/xyz`) |
-| `workflow-run-id` | CI run ID for traceability |
-| `ci-provider` | e.g. `github-actions`, `gitlab-ci` (defaults to `github-actions`) |
+| `SNITCH_URL` | e.g. `https://snitch.example.com` |
+| `SNITCH_APPLICATION_ID` | UUID of the application in Snitch |
+| `SNITCH_TOKEN` | `snitch_...` token from the service accounts page |
 
 ---
 
@@ -364,18 +341,26 @@ jobs:
           pip install semgrep
           semgrep --config auto --json --quiet > semgrep-results.json || true
 
-      - name: Upload results to Snitch (S3)
-        if: always()
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-          S3_BUCKET: my-snitch-scans
+      - name: Stage 1 — verify Snitch auth
         run: |
-          DATE=$(date +%Y%m%d)
-          KEY="${{ github.repository_owner }}/${{ github.event.repository.name }}/semgrep/${DATE}-${{ github.run_id }}.json"
-          aws s3 cp semgrep-results.json "s3://${S3_BUCKET}/${KEY}" \
-            --metadata "commit-sha=${{ github.sha }},branch=${{ github.ref_name }},workflow-run-id=${{ github.run_id }},ci-provider=github-actions"
+          curl -sf "$SNITCH_URL/api/v1/auth/verify" \
+            -H "Authorization: Bearer $SNITCH_TOKEN"
+        env:
+          SNITCH_URL: ${{ secrets.SNITCH_URL }}
+          SNITCH_TOKEN: ${{ secrets.SNITCH_TOKEN }}
+
+      - name: Stage 2 — push results to Snitch
+        if: always()
+        run: |
+          curl -sf -X POST \
+            "$SNITCH_URL/api/v1/cicd-scans/push?application_id=$SNITCH_APPLICATION_ID&branch=${{ github.ref_name }}&commit_sha=${{ github.sha }}&workflow_run_id=${{ github.run_id }}" \
+            -H "Authorization: Bearer $SNITCH_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data-binary @semgrep-results.json
+        env:
+          SNITCH_URL: ${{ secrets.SNITCH_URL }}
+          SNITCH_TOKEN: ${{ secrets.SNITCH_TOKEN }}
+          SNITCH_APPLICATION_ID: ${{ secrets.SNITCH_APPLICATION_ID }}
 ```
 
 ---
@@ -397,18 +382,26 @@ jobs:
           curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
           grype ghcr.io/${{ github.repository }}:latest -o json > grype-results.json || true
 
-      - name: Upload results to Snitch (S3)
-        if: always()
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-          S3_BUCKET: my-snitch-scans
+      - name: Stage 1 — verify Snitch auth
         run: |
-          DATE=$(date +%Y%m%d)
-          KEY="${{ github.repository_owner }}/${{ github.event.repository.name }}/grype/${DATE}-${{ github.run_id }}.json"
-          aws s3 cp grype-results.json "s3://${S3_BUCKET}/${KEY}" \
-            --metadata "commit-sha=${{ github.sha }},branch=${{ github.ref_name }},workflow-run-id=${{ github.run_id }},ci-provider=github-actions"
+          curl -sf "$SNITCH_URL/api/v1/auth/verify" \
+            -H "Authorization: Bearer $SNITCH_TOKEN"
+        env:
+          SNITCH_URL: ${{ secrets.SNITCH_URL }}
+          SNITCH_TOKEN: ${{ secrets.SNITCH_TOKEN }}
+
+      - name: Stage 2 — push results to Snitch
+        if: always()
+        run: |
+          curl -sf -X POST \
+            "$SNITCH_URL/api/v1/cicd-scans/push?application_id=$SNITCH_APPLICATION_ID&branch=${{ github.ref_name }}&commit_sha=${{ github.sha }}&workflow_run_id=${{ github.run_id }}" \
+            -H "Authorization: Bearer $SNITCH_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data-binary @grype-results.json
+        env:
+          SNITCH_URL: ${{ secrets.SNITCH_URL }}
+          SNITCH_TOKEN: ${{ secrets.SNITCH_TOKEN }}
+          SNITCH_APPLICATION_ID: ${{ secrets.SNITCH_APPLICATION_ID }}
 ```
 
 ---
@@ -430,18 +423,26 @@ jobs:
           pip install checkov
           checkov --directory . --framework terraform,cloudformation,arm,bicep --output json --compact --quiet > checkov-results.json || true
 
-      - name: Upload results to Snitch (S3)
-        if: always()
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-          S3_BUCKET: my-snitch-scans
+      - name: Stage 1 — verify Snitch auth
         run: |
-          DATE=$(date +%Y%m%d)
-          KEY="${{ github.repository_owner }}/${{ github.event.repository.name }}/checkov/${DATE}-${{ github.run_id }}.json"
-          aws s3 cp checkov-results.json "s3://${S3_BUCKET}/${KEY}" \
-            --metadata "commit-sha=${{ github.sha }},branch=${{ github.ref_name }},workflow-run-id=${{ github.run_id }},ci-provider=github-actions"
+          curl -sf "$SNITCH_URL/api/v1/auth/verify" \
+            -H "Authorization: Bearer $SNITCH_TOKEN"
+        env:
+          SNITCH_URL: ${{ secrets.SNITCH_URL }}
+          SNITCH_TOKEN: ${{ secrets.SNITCH_TOKEN }}
+
+      - name: Stage 2 — push results to Snitch
+        if: always()
+        run: |
+          curl -sf -X POST \
+            "$SNITCH_URL/api/v1/cicd-scans/push?application_id=$SNITCH_APPLICATION_ID&branch=${{ github.ref_name }}&commit_sha=${{ github.sha }}&workflow_run_id=${{ github.run_id }}" \
+            -H "Authorization: Bearer $SNITCH_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data-binary @checkov-results.json
+        env:
+          SNITCH_URL: ${{ secrets.SNITCH_URL }}
+          SNITCH_TOKEN: ${{ secrets.SNITCH_TOKEN }}
+          SNITCH_APPLICATION_ID: ${{ secrets.SNITCH_APPLICATION_ID }}
 ```
 
 ---

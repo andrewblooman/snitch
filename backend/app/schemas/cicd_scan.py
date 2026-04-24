@@ -12,8 +12,6 @@ class CiCdScanResponse(BaseModel):
     application_id: uuid.UUID
     scan_type: str
     status: str
-    s3_bucket: str
-    s3_key: str
     commit_sha: Optional[str] = None
     branch: Optional[str] = None
     workflow_run_id: Optional[str] = None

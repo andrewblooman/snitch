@@ -56,8 +56,6 @@ async def push_cicd_scan(
         application_id=application_id,
         scan_type=detected_scan_type,
         status="processing",
-        s3_bucket="direct-push",
-        s3_key=f"direct/{uuid.uuid4()}",
         commit_sha=commit_sha,
         branch=branch,
         workflow_run_id=workflow_run_id,

@@ -70,7 +70,7 @@ backend/app/
 ├── api/v1/          # Route handlers; all mounted under /api/v1/ via router.py
 │   │                # includes: applications, findings, scans, remediation, reports,
 │   │                #           cicd_scans, policies, secrets, github, seed, rules
-├── worker/          # Celery task definitions (scans, periodic jobs, SQS polling)
+├── worker/          # Celery task definitions (scans, periodic scheduled jobs)
 └── services/
     ├── scanner.py         # Semgrep/Trivy/Govulncheck/Gitleaks/Checkov/Grype + MockScannerService
     ├── scoring.py         # Risk score calculator

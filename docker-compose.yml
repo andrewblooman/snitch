@@ -64,11 +64,6 @@ services:
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       REDIS_URL: redis://redis:6379/0
-      AWS_REGION: ${AWS_REGION:-us-east-1}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
-      S3_CICD_BUCKET: ${S3_CICD_BUCKET:-}
-      SQS_CICD_QUEUE_URL: ${SQS_CICD_QUEUE_URL:-}
     volumes:
       - ./backend:/app
       - trivy-cache:/root/.cache/trivy
@@ -88,11 +83,6 @@ services:
       DATABASE_URL: postgresql+psycopg2://snitch:snitch@db:5432/snitch
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
       REDIS_URL: redis://redis:6379/0
-      AWS_REGION: ${AWS_REGION:-us-east-1}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
-      S3_CICD_BUCKET: ${S3_CICD_BUCKET:-}
-      SQS_CICD_QUEUE_URL: ${SQS_CICD_QUEUE_URL:-}
     volumes:
       - ./backend:/app
     depends_on:
