@@ -7,7 +7,6 @@
   <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
   <style>/* Inter font fallback */ body { font-family: "Inter", system-ui, -apple-system, sans-serif; }</style>
   <link rel="stylesheet" href="/static/css/theme.css">
-  <script src="/static/js/chart.min.js"></script>
   <script src="/static/js/lucide.min.js"></script>
   <style>
     * { box-sizing: border-box; }
@@ -16,11 +15,19 @@
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
     @keyframes fadeInUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
     @keyframes spin { to{transform:rotate(360deg)} }
-    @keyframes glow { 0%,100%{box-shadow:0 0 20px rgba(0,212,255,0.3)} 50%{box-shadow:0 0 40px rgba(0,212,255,0.6)} }
-    .card-hover:hover { border-color:rgba(0,212,255,0.3) !important; transform:translateY(-2px); transition:all 0.3s; }
     .card { background:rgba(13,17,23,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:16px;backdrop-filter:blur(20px); }
     .dark-select option { background:#0d1117; }
     .modal-backdrop { position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:center;justify-content:center; }
+    .app-row { cursor:pointer;transition:background 0.15s; }
+    .app-row:hover { background:rgba(255,255,255,0.03) !important; }
+    .sort-btn { background:none;border:none;display:inline-flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;padding:0;white-space:nowrap;transition:color 0.15s; }
+    .sort-btn:hover { color:#94a3b8; }
+    .sort-btn.active { color:#00d4ff; }
+    .pill { display:inline-flex;align-items:center;justify-content:center;min-width:28px;padding:2px 7px;border-radius:6px;font-size:11px;font-weight:700; }
+    .pill-c { background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.2); }
+    .pill-h { background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.2); }
+    .pill-m { background:rgba(249,115,22,0.12);color:#f97316;border:1px solid rgba(249,115,22,0.2); }
+    .pill-l { background:rgba(59,130,246,0.12);color:#3b82f6;border:1px solid rgba(59,130,246,0.2); }
   </style>
 </head>
 <body style="font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
@@ -28,6 +35,7 @@
   <!-- Sidebar -->
   <div id="sidebar-mount"></div>
   <script src="/static/js/sidebar.js"></script>
+  <script src="/static/js/header.js"></script>
 
   <!-- Main -->
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
@@ -36,7 +44,7 @@
         <h1 style="font-size:22px;font-weight:700;color:#f1f5f9;margin:0;">Applications</h1>
         <p style="font-size:13px;color:#475569;margin:2px 0 0;">Manage and monitor your application portfolio</p>
       </div>
-      <div style="display:flex;align-items:center;gap:12px;">
+      <div id="header-user-slot" style="display:flex;align-items:center;gap:12px;">
         <!-- Search -->
         <div style="position:relative;">
           <i data-lucide="search" style="width:16px;height:16px;color:#475569;position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;"></i>
@@ -61,12 +69,88 @@
     </header>
 
     <main style="padding:32px;">
-      <div id="apps-count" style="font-size:13px;color:#475569;margin-bottom:20px;">Loading applications...</div>
-      <div id="apps-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
-        <!-- Skeletons -->
-        <div class="card" style="padding:24px;animation:pulse 1.5s infinite;"><div style="height:20px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:16px;width:70%;"></div><div style="height:120px;background:rgba(255,255,255,0.03);border-radius:50%;width:120px;margin:0 auto 16px;"></div><div style="height:14px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:8px;width:80%;margin:0 auto 8px;"></div><div style="height:14px;background:rgba(255,255,255,0.05);border-radius:6px;width:60%;margin:0 auto;"></div></div>
-        <div class="card" style="padding:24px;animation:pulse 1.5s infinite;"><div style="height:20px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:16px;width:70%;"></div><div style="height:120px;background:rgba(255,255,255,0.03);border-radius:50%;width:120px;margin:0 auto 16px;"></div><div style="height:14px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:8px;width:80%;margin:0 auto 8px;"></div><div style="height:14px;background:rgba(255,255,255,0.05);border-radius:6px;width:60%;margin:0 auto;"></div></div>
-        <div class="card" style="padding:24px;animation:pulse 1.5s infinite;"><div style="height:20px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:16px;width:70%;"></div><div style="height:120px;background:rgba(255,255,255,0.03);border-radius:50%;width:120px;margin:0 auto 16px;"></div><div style="height:14px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:8px;width:80%;margin:0 auto 8px;"></div><div style="height:14px;background:rgba(255,255,255,0.05);border-radius:6px;width:60%;margin:0 auto;"></div></div>
+      <div id="apps-count" style="font-size:13px;color:#475569;margin-bottom:16px;">Loading applications...</div>
+
+      <!-- Table -->
+      <div class="card" style="overflow:hidden;">
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+                <th style="padding:12px 16px;text-align:left;">
+                  <button class="sort-btn" id="sort-name" onclick="setSort('name')">
+                    Name <i data-lucide="chevrons-up-down" style="width:14px;height:14px;"></i>
+                  </button>
+                </th>
+                <th style="padding:12px 16px;text-align:left;">
+                  <button class="sort-btn" id="sort-team_name" onclick="setSort('team_name')">
+                    Team <i data-lucide="chevrons-up-down" style="width:14px;height:14px;"></i>
+                  </button>
+                </th>
+                <th style="padding:12px 16px;text-align:left;">
+                  <button class="sort-btn active" id="sort-risk_score" onclick="setSort('risk_score')">
+                    Risk Score <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
+                  </button>
+                </th>
+                <th style="padding:12px 16px;text-align:center;">
+                  <button class="sort-btn" id="sort-critical_count" onclick="setSort('critical_count')" title="Critical findings">
+                    C <i data-lucide="chevrons-up-down" style="width:14px;height:14px;"></i>
+                  </button>
+                </th>
+                <th style="padding:12px 16px;text-align:center;">
+                  <button class="sort-btn" id="sort-high_count" onclick="setSort('high_count')" title="High findings">
+                    H <i data-lucide="chevrons-up-down" style="width:14px;height:14px;"></i>
+                  </button>
+                </th>
+                <th style="padding:12px 16px;text-align:center;">
+                  <button class="sort-btn" id="sort-medium_count" onclick="setSort('medium_count')" title="Medium findings">
+                    M <i data-lucide="chevrons-up-down" style="width:14px;height:14px;"></i>
+                  </button>
+                </th>
+                <th style="padding:12px 16px;text-align:center;">
+                  <button class="sort-btn" id="sort-low_count" onclick="setSort('low_count')" title="Low findings">
+                    L <i data-lucide="chevrons-up-down" style="width:14px;height:14px;"></i>
+                  </button>
+                </th>
+                <th style="padding:12px 16px;text-align:left;">
+                  <button class="sort-btn" id="sort-language" onclick="setSort('language')">
+                    Language <i data-lucide="chevrons-up-down" style="width:14px;height:14px;"></i>
+                  </button>
+                </th>
+                <th style="padding:12px 16px;text-align:left;">
+                  <button class="sort-btn" id="sort-last_scan_at" onclick="setSort('last_scan_at')">
+                    Last Scan <i data-lucide="chevrons-up-down" style="width:14px;height:14px;"></i>
+                  </button>
+                </th>
+                <th style="padding:12px 16px;text-align:center;font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="apps-tbody">
+              <!-- Skeleton rows -->
+              <tr><td colspan="10" style="padding:0;">
+                <div style="padding:14px 16px;animation:pulse 1.5s infinite;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;gap:16px;align-items:center;">
+                  <div style="height:14px;background:rgba(255,255,255,0.06);border-radius:4px;flex:1;max-width:160px;"></div>
+                  <div style="height:12px;background:rgba(255,255,255,0.04);border-radius:4px;width:80px;"></div>
+                  <div style="height:22px;background:rgba(255,255,255,0.06);border-radius:6px;width:90px;"></div>
+                </div>
+              </td></tr>
+              <tr><td colspan="10" style="padding:0;">
+                <div style="padding:14px 16px;animation:pulse 1.5s infinite;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;gap:16px;align-items:center;">
+                  <div style="height:14px;background:rgba(255,255,255,0.06);border-radius:4px;flex:1;max-width:200px;"></div>
+                  <div style="height:12px;background:rgba(255,255,255,0.04);border-radius:4px;width:100px;"></div>
+                  <div style="height:22px;background:rgba(255,255,255,0.06);border-radius:6px;width:80px;"></div>
+                </div>
+              </td></tr>
+              <tr><td colspan="10" style="padding:0;">
+                <div style="padding:14px 16px;animation:pulse 1.5s infinite;display:flex;gap:16px;align-items:center;">
+                  <div style="height:14px;background:rgba(255,255,255,0.06);border-radius:4px;flex:1;max-width:140px;"></div>
+                  <div style="height:12px;background:rgba(255,255,255,0.04);border-radius:4px;width:90px;"></div>
+                  <div style="height:22px;background:rgba(255,255,255,0.06);border-radius:6px;width:100px;"></div>
+                </div>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </main>
   </div>
@@ -127,6 +211,8 @@
 
 <script>
 let allApps = [];
+let sortColumn = 'risk_score';
+let sortDir = 'desc';
 
 // ── Utilities ──────────────────────────────────────────────────────────────────
 function getRiskColor(score) {
@@ -169,82 +255,101 @@ function showToast(message, type='success') {
   setTimeout(() => { toast.style.animation='slideOutRight 0.3s ease forwards'; setTimeout(()=>toast.remove(),300); }, 3500);
 }
 
-// ── Gauge SVG ──────────────────────────────────────────────────────────────────
-function gaugeCircle(score) {
-  const r = 45, cx = 60, cy = 60;
-  const circ = 2 * Math.PI * r;
-  const offset = circ - (score / 100) * circ;
-  const color = getRiskColor(score);
-  const risk = getRiskLevel(score);
-  return `
-    <svg viewBox="0 0 120 120" width="120" height="120">
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="8"/>
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
-        stroke="${color}" stroke-width="8" stroke-linecap="round"
-        stroke-dasharray="${circ}" stroke-dashoffset="${offset}"
-        transform="rotate(-90 ${cx} ${cy})" style="transition:stroke-dashoffset 1s ease;"/>
-      <text x="${cx}" y="${cy-5}" text-anchor="middle" fill="${color}" font-size="22" font-weight="800" font-family="Inter,sans-serif">${score}</text>
-      <text x="${cx}" y="${cy+14}" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="10" font-family="Inter,sans-serif">/ 100</text>
-    </svg>
-  `;
+// ── Sorting ────────────────────────────────────────────────────────────────────
+function setSort(col) {
+  if (sortColumn === col) {
+    sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+  } else {
+    sortColumn = col;
+    sortDir = 'desc';
+  }
+  updateSortHeaders();
+  applyFilters();
 }
 
-// ── App Card ───────────────────────────────────────────────────────────────────
-function appCard(app, idx) {
+function updateSortHeaders() {
+  const cols = ['name','team_name','risk_score','critical_count','high_count','medium_count','low_count','language','last_scan_at'];
+  cols.forEach(col => {
+    const btn = document.getElementById('sort-' + col);
+    if (!btn) return;
+    const isActive = col === sortColumn;
+    btn.classList.toggle('active', isActive);
+    const icon = btn.querySelector('i[data-lucide]');
+    if (icon) {
+      if (isActive) {
+        icon.setAttribute('data-lucide', sortDir === 'desc' ? 'chevron-down' : 'chevron-up');
+      } else {
+        icon.setAttribute('data-lucide', 'chevrons-up-down');
+      }
+    }
+  });
+  lucide.createIcons();
+}
+
+function sortApps(apps) {
+  return [...apps].sort((a, b) => {
+    let va = a[sortColumn] ?? (typeof a[sortColumn] === 'number' ? -1 : '');
+    let vb = b[sortColumn] ?? (typeof b[sortColumn] === 'number' ? -1 : '');
+
+    // Map API field names to actual finding count fields
+    if (sortColumn === 'critical_count') { va = (a.findings_summary?.critical ?? a.critical_count ?? 0); vb = (b.findings_summary?.critical ?? b.critical_count ?? 0); }
+    if (sortColumn === 'high_count')     { va = (a.findings_summary?.high ?? a.high_count ?? 0);         vb = (b.findings_summary?.high ?? b.high_count ?? 0); }
+    if (sortColumn === 'medium_count')   { va = (a.findings_summary?.medium ?? a.medium_count ?? 0);     vb = (b.findings_summary?.medium ?? b.medium_count ?? 0); }
+    if (sortColumn === 'low_count')      { va = (a.findings_summary?.low ?? a.low_count ?? 0);           vb = (b.findings_summary?.low ?? b.low_count ?? 0); }
+    if (sortColumn === 'last_scan_at')   { va = va ? new Date(va).getTime() : 0; vb = vb ? new Date(vb).getTime() : 0; }
+
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+
+    if (va < vb) return sortDir === 'asc' ? -1 : 1;
+    if (va > vb) return sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+}
+
+// ── App Row ────────────────────────────────────────────────────────────────────
+function appRow(app) {
   const score = app.risk_score || 0;
-  const risk = getRiskLevel(score);
-  const fs = app.findings_summary || {};
+  const risk  = getRiskLevel(score);
+  const fs    = app.findings_summary || {};
   const c = fs.critical ?? app.critical_count ?? 0;
-  const h = fs.high ?? app.high_count ?? 0;
-  const m = fs.medium ?? app.medium_count ?? 0;
-  const l = fs.low ?? app.low_count ?? 0;
+  const h = fs.high     ?? app.high_count     ?? 0;
+  const m = fs.medium   ?? app.medium_count   ?? 0;
+  const l = fs.low      ?? app.low_count      ?? 0;
   const langColors = { Python:'#3b82f6', JavaScript:'#f59e0b', TypeScript:'#6366f1', Go:'#00d4ff', Java:'#f97316', Kotlin:'#a78bfa', Ruby:'#ef4444', PHP:'#8b5cf6', 'C#':'#10b981', 'C++':'#94a3b8', Rust:'#f97316' };
   const langColor = langColors[app.language] || '#475569';
 
   return `
-    <div class="card card-hover" style="padding:24px;cursor:pointer;animation:fadeInUp 0.4s ease both;animation-delay:${idx*0.05}s;display:flex;flex-direction:column;" onclick="location.href='/app-detail.html?id=${app.id}'">
-      <!-- Header -->
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:15px;font-weight:700;color:#f1f5f9;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${app.name||'—'}</div>
-          <span style="background:rgba(0,212,255,0.1);color:#00d4ff;border:1px solid rgba(0,212,255,0.2);padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;">${app.team_name||'No team'}</span>
-        </div>
-      </div>
-
-      <!-- Gauge -->
-      <div style="display:flex;justify-content:center;margin-bottom:12px;">
-        ${gaugeCircle(score)}
-      </div>
-
-      <!-- Risk Badge -->
-      <div style="text-align:center;margin-bottom:16px;">
-        <span style="background:${risk.bg};color:${risk.color};border:1px solid ${risk.color}44;padding:4px 14px;border-radius:8px;font-size:12px;font-weight:700;">${risk.label} Risk</span>
-      </div>
-
-      <!-- Finding Pills -->
-      <div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
-        <span style="background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;">${c} C</span>
-        <span style="background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;">${h} H</span>
-        <span style="background:rgba(249,115,22,0.12);color:#f97316;border:1px solid rgba(249,115,22,0.2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;">${m} M</span>
-        <span style="background:rgba(59,130,246,0.12);color:#3b82f6;border:1px solid rgba(59,130,246,0.2);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;">${l} L</span>
-      </div>
-
-      <!-- Footer -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06);">
-        <span style="background:${langColor}22;color:${langColor};border:1px solid ${langColor}33;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;">${app.language||'Unknown'}</span>
-        <span style="font-size:11px;color:#475569;">Scanned ${timeAgo(app.last_scan_at)}</span>
-      </div>
-
-      <!-- Action Buttons -->
-      <div style="display:flex;gap:8px;margin-top:12px;" onclick="event.stopPropagation()">
-        <button onclick="location.href='/app-detail.html?id=${app.id}'" class="btn-secondary" style="flex:1;padding:8px 12px;font-size:13px;">
-          <i data-lucide="eye" style="width:14px;height:14px;"></i> View Details
+    <tr class="app-row" onclick="location.href='/app-detail.html?id=${app.id}'" style="border-bottom:1px solid rgba(255,255,255,0.04);">
+      <td style="padding:14px 16px;">
+        <div style="font-size:14px;font-weight:600;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;">${app.name || '—'}</div>
+        ${app.github_org ? `<div style="font-size:11px;color:#475569;margin-top:1px;">${app.github_org}/${app.github_repo||''}</div>` : ''}
+      </td>
+      <td style="padding:14px 16px;">
+        <span style="background:rgba(0,212,255,0.08);color:#00d4ff;border:1px solid rgba(0,212,255,0.15);padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;white-space:nowrap;">${app.team_name || '—'}</span>
+      </td>
+      <td style="padding:14px 16px;white-space:nowrap;">
+        <span style="background:${risk.bg};color:${risk.color};border:1px solid ${risk.color}33;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:700;">
+          ${score} &nbsp;${risk.label}
+        </span>
+      </td>
+      <td style="padding:14px 8px;text-align:center;"><span class="pill pill-c">${c}</span></td>
+      <td style="padding:14px 8px;text-align:center;"><span class="pill pill-h">${h}</span></td>
+      <td style="padding:14px 8px;text-align:center;"><span class="pill pill-m">${m}</span></td>
+      <td style="padding:14px 8px;text-align:center;"><span class="pill pill-l">${l}</span></td>
+      <td style="padding:14px 16px;">
+        ${app.language ? `<span style="background:${langColor}22;color:${langColor};border:1px solid ${langColor}33;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;">${app.language}</span>` : '<span style="color:#475569;font-size:12px;">—</span>'}
+      </td>
+      <td style="padding:14px 16px;font-size:12px;color:#475569;white-space:nowrap;">${timeAgo(app.last_scan_at)}</td>
+      <td style="padding:14px 16px;text-align:center;white-space:nowrap;" onclick="event.stopPropagation()">
+        <button onclick="location.href='/app-detail.html?id=${app.id}'" class="btn-secondary" style="padding:6px 10px;font-size:12px;margin-right:4px;" title="View details">
+          <i data-lucide="eye" style="width:14px;height:14px;"></i>
         </button>
-        <button onclick="runScan(event,'${app.id}','${app.name||'app'}')" id="scan-btn-${app.id}" class="btn-secondary" style="padding:8px 12px;font-size:13px;">
+        <button onclick="runScan(event,'${app.id}','${app.name||'app'}')" id="scan-btn-${app.id}" class="btn-secondary" style="padding:6px 10px;font-size:12px;" title="Run scan">
           <i data-lucide="play" style="width:14px;height:14px;color:#00d4ff;"></i>
         </button>
-      </div>
-    </div>
+      </td>
+    </tr>
   `;
 }
 
@@ -270,46 +375,45 @@ async function runScan(e, id, name) {
 
 // ── Filters ────────────────────────────────────────────────────────────────────
 function applyFilters() {
-  const search = document.getElementById('search-input').value.toLowerCase();
-  const team = document.getElementById('team-filter').value;
+  const search    = document.getElementById('search-input').value.toLowerCase();
+  const team      = document.getElementById('team-filter').value;
   const riskFilter = document.getElementById('risk-filter').value;
 
   const filtered = allApps.filter(app => {
     const nameMatch = !search || (app.name||'').toLowerCase().includes(search);
-    const teamMatch = !team || app.team_name === team;
+    const teamMatch = !team   || app.team_name === team;
     const riskMatch = !riskFilter || getRiskLevel(app.risk_score||0).label.toLowerCase() === riskFilter;
     return nameMatch && teamMatch && riskMatch;
   });
 
-  renderGrid(filtered);
+  renderList(filtered);
 }
 
 function populateTeamFilter(apps) {
   const teams = [...new Set(apps.map(a => a.team_name).filter(Boolean))].sort();
-  const sel = document.getElementById('team-filter');
-  const current = sel.value;
-  sel.innerHTML = '<option value="">All Teams</option>' + teams.map(t => `<option value="${t}" ${t===current?'selected':''}>${t}</option>`).join('');
+  const sel   = document.getElementById('team-filter');
+  const cur   = sel.value;
+  sel.innerHTML = '<option value="">All Teams</option>' + teams.map(t => `<option value="${t}" ${t===cur?'selected':''}>${t}</option>`).join('');
 }
 
-function renderGrid(apps) {
-  const grid = document.getElementById('apps-grid');
+function renderList(apps) {
+  const tbody = document.getElementById('apps-tbody');
   const count = document.getElementById('apps-count');
   count.textContent = `Showing ${apps.length} of ${allApps.length} application${allApps.length !== 1 ? 's' : ''}`;
 
   if (apps.length === 0) {
-    grid.innerHTML = `
-      <div style="grid-column:1/-1;text-align:center;padding:80px 20px;">
+    tbody.innerHTML = `
+      <tr><td colspan="10" style="text-align:center;padding:80px 20px;">
         <i data-lucide="inbox" style="width:48px;height:48px;color:#475569;margin:0 auto 16px;display:block;"></i>
         <div style="font-size:18px;font-weight:600;color:#f1f5f9;margin-bottom:8px;">No applications found</div>
         <p style="color:#475569;margin-bottom:24px;">Try adjusting your filters or add your first application.</p>
         <button class="btn-primary" onclick="openAddModal()"><i data-lucide="plus" style="width:16px;height:16px;"></i> Add your first application</button>
-      </div>
-    `;
+      </td></tr>`;
     lucide.createIcons();
     return;
   }
 
-  grid.innerHTML = apps.map((app, i) => appCard(app, i)).join('');
+  tbody.innerHTML = sortApps(apps).map(appRow).join('');
   lucide.createIcons();
 }
 
@@ -335,11 +439,11 @@ async function submitAddApp(e) {
   btn.innerHTML = '<div style="animation:spin 1s linear infinite;display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;"></div> Adding...';
 
   const payload = {
-    name: document.getElementById('field-name').value.trim(),
-    github_org: document.getElementById('field-github-org').value.trim() || undefined,
+    name:        document.getElementById('field-name').value.trim(),
+    github_org:  document.getElementById('field-github-org').value.trim()  || undefined,
     github_repo: document.getElementById('field-github-repo').value.trim() || undefined,
-    team_name: document.getElementById('field-team').value.trim() || undefined,
-    language: document.getElementById('field-language').value || undefined,
+    team_name:   document.getElementById('field-team').value.trim()        || undefined,
+    language:    document.getElementById('field-language').value           || undefined,
     description: document.getElementById('field-description').value.trim() || undefined,
   };
 
@@ -376,16 +480,14 @@ async function loadApplications() {
     applyFilters();
   } catch(e) {
     allApps = [];
-    const _errorGrid = document.getElementById('apps-grid');
-    const _errContainer = document.createElement('div');
-    _errContainer.style.cssText = 'grid-column:1/-1;text-align:center;padding:80px 20px;';
-    _errContainer.innerHTML = '<i data-lucide="wifi-off" style="width:48px;height:48px;color:#ef4444;margin:0 auto 16px;display:block;opacity:0.5;"></i><div style="font-size:18px;font-weight:600;color:#f1f5f9;margin-bottom:8px;">Failed to load applications</div><button class="btn-secondary" onclick="loadApplications()"><i data-lucide="refresh-cw" style="width:16px;height:16px;"></i> Retry</button>';
-    const _errMsg = document.createElement('p');
-    _errMsg.style.cssText = 'color:#475569;margin-bottom:24px;';
-    _errMsg.textContent = e.message || 'An error occurred';
-    _errContainer.insertBefore(_errMsg, _errContainer.lastElementChild);
-    _errorGrid.innerHTML = '';
-    _errorGrid.appendChild(_errContainer);
+    const tbody = document.getElementById('apps-tbody');
+    tbody.innerHTML = `
+      <tr><td colspan="10" style="text-align:center;padding:80px 20px;">
+        <i data-lucide="wifi-off" style="width:48px;height:48px;color:#ef4444;margin:0 auto 16px;display:block;opacity:0.5;"></i>
+        <div style="font-size:18px;font-weight:600;color:#f1f5f9;margin-bottom:8px;">Failed to load applications</div>
+        <p style="color:#475569;margin-bottom:24px;">${e.message || 'An error occurred'}</p>
+        <button class="btn-secondary" onclick="loadApplications()"><i data-lucide="refresh-cw" style="width:16px;height:16px;"></i> Retry</button>
+      </td></tr>`;
     lucide.createIcons();
     showToast('Failed to load applications', 'error');
   }
@@ -398,6 +500,7 @@ document.addEventListener('keydown', e => {
 
 document.addEventListener('DOMContentLoaded', () => {
   applyTheme(localStorage.getItem('theme')||'dark');
+  updateSortHeaders();
   lucide.createIcons();
   loadApplications();
 });

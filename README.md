@@ -25,7 +25,9 @@
 | 🔗 **GitHub Integration** | Sync code-scanning alerts from GitHub Security; auto-create branches & PRs |
 | 🚦 **Policy Engine** | Define pass/fail gates by severity, scan type, and rule — evaluated on every scan |
 | 🌐 **REST API** | Full OpenAPI/Swagger docs at `/docs` |
-| 🎨 **Consistent UI** | Shared sidebar component (`sidebar.js`) and design tokens in `theme.css` — single source of truth for navigation and styles |
+| 🎨 **Consistent UI** | Shared sidebar (`sidebar.js`) and header (`header.js`) components with design tokens in `theme.css` — single source of truth for navigation and styles |
+| ⚙️ **Settings Page** | Admin configuration page for platform integrations (GitHub, Anthropic), scan defaults, and system status |
+| 📋 **Applications List View** | Sortable table view for the applications portfolio — click any column header to re-sort |
 
 ---
 

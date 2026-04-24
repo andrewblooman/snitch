@@ -38,6 +38,7 @@
   <!-- Sidebar -->
   <div id="sidebar-mount"></div>
   <script src="/static/js/sidebar.js"></script>
+  <script src="/static/js/header.js"></script>
 
   <!-- Main -->
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
@@ -52,7 +53,7 @@
         </div>
         <h1 id="page-title" style="font-size:22px;font-weight:700;color:#f1f5f9;margin:0;">Application Detail</h1>
       </div>
-      <div style="display:flex;gap:10px;">
+      <div id="header-user-slot" style="display:flex;gap:10px;align-items:center;">
         <button class="btn-secondary" onclick="openRemediationModal()">
           <i data-lucide="sparkles" style="width:16px;height:16px;color:#6366f1;"></i> Plan Remediation
         </button>

@@ -52,6 +52,7 @@
   <!-- Sidebar -->
   <div id="sidebar-mount"></div>
   <script src="/static/js/sidebar.js"></script>
+  <script src="/static/js/header.js"></script>
 
   <!-- Main -->
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
@@ -62,7 +63,7 @@
         <h1 style="font-size:22px;font-weight:700;color:#f1f5f9;margin:0;">Rules Library</h1>
         <p style="font-size:13px;color:#475569;margin:2px 0 0;">Browse security rules, understand what they check, and assign them to policies</p>
       </div>
-      <div style="display:flex;gap:10px;align-items:center;">
+      <div id="header-user-slot" style="display:flex;gap:10px;align-items:center;">
         <div id="rule-counts" style="display:flex;gap:16px;align-items:center;">
           <span style="font-size:13px;color:#64748b;" id="count-catalog"></span>
           <span style="font-size:13px;color:#64748b;" id="count-discovered"></span>

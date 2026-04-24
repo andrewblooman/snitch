@@ -23,21 +23,35 @@
     localStorage.setItem('theme', theme);
   };
 
-  // ── Nav items definition ─────────────────────────────────────────────────
-  var NAV_ITEMS = [
-    { href: '/',                icon: 'layout-dashboard', label: 'Dashboard',    matchPaths: ['/'] },
-    { href: '/applications.html', icon: 'layers',          label: 'Applications', matchPaths: ['/applications.html', '/app-detail.html'] },
-    { href: '/repositories.html', icon: 'git-branch',      label: 'Repositories', matchPaths: ['/repositories.html'] },
-    { href: '/reports.html',      icon: 'bar-chart-3',     label: 'Reports',      matchPaths: ['/reports.html'] },
-    { href: '/policies.html',     icon: 'shield-check',    label: 'Policies',     matchPaths: ['/policies.html'] },
-    { href: '/secrets.html',      icon: 'key',             label: 'Secrets',      matchPaths: ['/secrets.html'] },
-    { href: '/rules.html',        icon: 'book-open',       label: 'Rules',        matchPaths: ['/rules.html'] },
-    { href: '/profile.html',      icon: 'user',            label: 'Profile',      matchPaths: ['/profile.html'] },
+  // ── Nav sections ──────────────────────────────────────────────────────────
+  var NAV_SECTIONS = [
+    {
+      label: 'Overview',
+      items: [
+        { href: '/',                  icon: 'layout-dashboard', label: 'Dashboard',    matchPaths: ['/'] },
+        { href: '/applications.html', icon: 'layers',           label: 'Applications', matchPaths: ['/applications.html', '/app-detail.html'] },
+        { href: '/reports.html',      icon: 'bar-chart-3',      label: 'Reports',      matchPaths: ['/reports.html'] },
+        { href: '/secrets.html',      icon: 'key',              label: 'Secrets',      matchPaths: ['/secrets.html'] },
+      ]
+    },
+    {
+      label: 'Config',
+      items: [
+        { href: '/policies.html',     icon: 'shield-check',     label: 'Policies',     matchPaths: ['/policies.html'] },
+        { href: '/rules.html',        icon: 'book-open',        label: 'Rules',        matchPaths: ['/rules.html'] },
+      ]
+    },
+    {
+      label: 'Admin',
+      items: [
+        { href: '/settings.html',     icon: 'settings',         label: 'Settings',     matchPaths: ['/settings.html'] },
+        { href: '/repositories.html', icon: 'git-branch',       label: 'Repositories', matchPaths: ['/repositories.html'] },
+      ]
+    }
   ];
 
   // ── Active-link detection ────────────────────────────────────────────────
   var currentPath = window.location.pathname;
-  // Normalise: treat bare "/" and "/index.html" as the same
   if (currentPath === '/index.html') currentPath = '/';
 
   function isActive(item) {
@@ -56,7 +70,7 @@
 
   var INACTIVE_STYLE = 'color:#94a3b8';
 
-  // ── HTML builder ─────────────────────────────────────────────────────────
+  // ── HTML builders ─────────────────────────────────────────────────────────
   function navLink(item) {
     var active = isActive(item);
     var styleStr = [
@@ -79,6 +93,14 @@
       + '</a>';
   }
 
+  function sectionLabel(text) {
+    return '<div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:12px 8px 4px;">' + text + '</div>';
+  }
+
+  var navHTML = NAV_SECTIONS.map(function (section) {
+    return sectionLabel(section.label) + section.items.map(navLink).join('');
+  }).join('');
+
   var sidebarHTML = ''
     + '<aside id="sidebar" style="width:260px;min-height:100vh;background:#080c18;border-right:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;">'
     +   '<div style="padding:24px 20px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:12px;">'
@@ -90,10 +112,9 @@
     +       '<div style="font-size:11px;color:#00d4ff;font-weight:500;letter-spacing:1px;text-transform:uppercase;">AppSec Platform</div>'
     +     '</div>'
     +   '</div>'
-    +   '<nav style="flex:1;padding:16px 12px;overflow-y:auto;">'
-    +     '<div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:8px 8px 4px;">Main Menu</div>'
-    +     NAV_ITEMS.map(navLink).join('')
-    +     '<div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:16px 8px 4px;">Developer</div>'
+    +   '<nav style="flex:1;padding:8px 12px;overflow-y:auto;">'
+    +     navHTML
+    +     '<div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:12px 8px 4px;">Developer</div>'
     +     '<a href="/docs" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">'
     +       '<i data-lucide="code-2" style="width:18px;height:18px;flex-shrink:0;"></i> API Docs'
     +       '<i data-lucide="external-link" style="width:12px;height:12px;margin-left:auto;"></i>'
