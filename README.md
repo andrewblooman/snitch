@@ -28,6 +28,8 @@
 | 🎨 **Consistent UI** | Shared sidebar (`sidebar.js`) and header (`header.js`) components with design tokens in `theme.css` — single source of truth for navigation and styles |
 | ⚙️ **Settings Page** | Admin configuration page for platform integrations (GitHub, Anthropic), scan defaults, and system status |
 | 📋 **Applications List View** | Sortable table view for the applications portfolio — click any column header to re-sort |
+| 📚 **Developer Docs** | Built-in documentation page (`/help.html`) with Quick Start, GitHub Actions CI/CD guide, General Usage, and API Reference |
+| ℹ️ **About & Changelog** | About page (`/about.html`) with tech stack overview and release notes for all major versions |
 
 ---
 
@@ -59,6 +61,8 @@ The platform will be available at **http://localhost:8000**
 - 📱 Applications: http://localhost:8000/applications.html
 - 📊 Reports: http://localhost:8000/reports.html
 - 🔑 Secrets: http://localhost:8000/secrets.html
+- 📚 Documentation: http://localhost:8000/help.html
+- ℹ️  About: http://localhost:8000/about.html
 - 📖 API Docs: http://localhost:8000/docs
 
 ### 3. Seed demo data (optional)

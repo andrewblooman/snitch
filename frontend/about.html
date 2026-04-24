@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snitch — About</title>
+  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
+  <style>/* Inter font fallback */ body { font-family: "Inter", system-ui, -apple-system, sans-serif; }</style>
+  <link rel="stylesheet" href="/static/css/theme.css">
+  <script src="/static/js/lucide.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    @keyframes fadeInUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    .card { background:rgba(13,17,35,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:16px;backdrop-filter:blur(20px); }
+
+    /* Hero */
+    .hero { background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(99,102,241,0.06));border:1px solid rgba(0,212,255,0.15);border-radius:20px;padding:40px;margin-bottom:24px;display:flex;align-items:center;gap:28px;animation:fadeInUp 0.4s ease; }
+    .hero-logo { width:72px;height:72px;background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.2));border:1px solid rgba(0,212,255,0.45);border-radius:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 32px rgba(0,212,255,0.2);flex-shrink:0; }
+    .hero-title { font-size:32px;font-weight:800;color:#f1f5f9;letter-spacing:-1px;margin:0 0 4px; }
+    .hero-sub { font-size:14px;color:#00d4ff;font-weight:500;letter-spacing:1px;text-transform:uppercase;margin:0 0 12px; }
+    .hero-desc { font-size:15px;color:#64748b;line-height:1.7;margin:0;max-width:620px; }
+
+    /* Version badge */
+    .version-badge { display:inline-flex;align-items:center;gap:6px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.2);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600;color:#00d4ff;margin-bottom:16px; }
+
+    /* Stack grid */
+    .stack-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px; }
+    .stack-card { background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;transition:border-color 0.2s; }
+    .stack-card:hover { border-color:rgba(0,212,255,0.2); }
+    .stack-icon { width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+    .stack-name { font-size:13px;font-weight:600;color:#f1f5f9;margin:0 0 2px; }
+    .stack-role { font-size:11px;color:#475569;margin:0; }
+
+    /* Timeline / release notes */
+    .timeline { position:relative;padding-left:28px; }
+    .timeline::before { content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,rgba(0,212,255,0.4),rgba(99,102,241,0.1)); }
+    .tl-item { position:relative;margin-bottom:28px;animation:fadeInUp 0.4s ease both; }
+    .tl-dot { position:absolute;left:-28px;top:4px;width:16px;height:16px;border-radius:50%;border:2px solid rgba(0,212,255,0.5);background:#080c18;display:flex;align-items:center;justify-content:center; }
+    .tl-dot-inner { width:6px;height:6px;border-radius:50%;background:#00d4ff; }
+    .tl-dot.latest .tl-dot-inner { background:#10b981;box-shadow:0 0 8px #10b981; }
+    .tl-dot.latest { border-color:rgba(16,185,129,0.6); }
+    .release-card { background:rgba(13,17,35,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px; }
+    .release-header { display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap; }
+    .release-version { font-size:18px;font-weight:700;color:#f1f5f9; }
+    .release-tag { font-size:11px;font-weight:600;padding:2px 10px;border-radius:999px; }
+    .tag-latest  { background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.25); }
+    .tag-feature { background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.25); }
+    .tag-security { background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.2); }
+    .tag-fix     { background:rgba(245,158,11,0.12);color:#fcd34d;border:1px solid rgba(245,158,11,0.2); }
+    .release-title { font-size:14px;color:#64748b;margin:0 0 14px; }
+    .change-list { list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px; }
+    .change-item { display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#94a3b8;line-height:1.5; }
+    .change-icon { flex-shrink:0;margin-top:2px; }
+
+    /* Section labels */
+    .section-title { font-size:16px;font-weight:700;color:#f1f5f9;margin:0 0 4px; }
+    .section-sub   { font-size:13px;color:#475569;margin:0 0 20px; }
+
+    [data-theme="light"] .hero { background:linear-gradient(135deg,rgba(0,212,255,0.04),rgba(99,102,241,0.04)); }
+    [data-theme="light"] .hero-title { color:#0f172a; }
+    [data-theme="light"] .hero-desc  { color:#475569; }
+    [data-theme="light"] .stack-name { color:#0f172a; }
+    [data-theme="light"] .release-version { color:#0f172a; }
+    [data-theme="light"] .release-card { background:rgba(255,255,255,0.9); }
+    [data-theme="light"] .timeline::before { background:linear-gradient(to bottom,rgba(0,212,255,0.3),rgba(99,102,241,0.05)); }
+    [data-theme="light"] .tl-dot { background:#f8fafc; }
+    [data-theme="light"] .section-title { color:#0f172a; }
+  </style>
+</head>
+<body style="font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
+
+  <!-- Sidebar -->
+  <div id="sidebar-mount"></div>
+  <script src="/static/js/sidebar.js"></script>
+  <script src="/static/js/header.js"></script>
+
+  <!-- Main -->
+  <div id="main-content" style="margin-left:260px;min-height:100vh;">
+    <header style="background:rgba(8,12,24,0.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.06);box-shadow:0 1px 0 0 rgba(0,212,255,0.12),0 4px 24px rgba(0,0,0,0.4);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
+      <div>
+        <h1 style="font-size:22px;font-weight:700;color:#f1f5f9;margin:0;">About Snitch</h1>
+        <p style="font-size:13px;color:#475569;margin:2px 0 0;">Platform information and release history</p>
+      </div>
+      <div id="header-user-slot" style="display:flex;align-items:center;gap:8px;"></div>
+    </header>
+
+    <main style="padding:32px;max-width:900px;">
+
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-logo">
+          <i data-lucide="shield-alert" style="width:32px;height:32px;color:#00d4ff;"></i>
+        </div>
+        <div>
+          <div class="version-badge">
+            <i data-lucide="tag" style="width:12px;height:12px;"></i>
+            Current Release: v1.5
+          </div>
+          <div class="hero-title">Snitch</div>
+          <div class="hero-sub">AppSec Platform</div>
+          <p class="hero-desc">An open-source application security platform that aggregates findings from multiple scanners, calculates per-application risk scores, enforces security policies in CI/CD, and delivers AI-powered remediation guidance — all from a single dashboard.</p>
+        </div>
+      </div>
+
+      <!-- Tech Stack -->
+      <div class="card" style="padding:28px;margin-bottom:24px;">
+        <div class="section-title">Technology Stack</div>
+        <p class="section-sub">The tools and frameworks that power Snitch.</p>
+        <div class="stack-grid">
+          <div class="stack-card">
+            <div class="stack-icon" style="background:rgba(0,212,255,0.1);"><i data-lucide="zap" style="width:18px;height:18px;color:#00d4ff;"></i></div>
+            <div><p class="stack-name">FastAPI</p><p class="stack-role">Backend API</p></div>
+          </div>
+          <div class="stack-card">
+            <div class="stack-icon" style="background:rgba(99,102,241,0.1);"><i data-lucide="database" style="width:18px;height:18px;color:#818cf8;"></i></div>
+            <div><p class="stack-name">SQLAlchemy</p><p class="stack-role">Async ORM</p></div>
+          </div>
+          <div class="stack-card">
+            <div class="stack-icon" style="background:rgba(59,130,246,0.1);"><i data-lucide="hard-drive" style="width:18px;height:18px;color:#60a5fa;"></i></div>
+            <div><p class="stack-name">PostgreSQL</p><p class="stack-role">Database</p></div>
+          </div>
+          <div class="stack-card">
+            <div class="stack-icon" style="background:rgba(220,38,38,0.1);"><i data-lucide="activity" style="width:18px;height:18px;color:#f87171;"></i></div>
+            <div><p class="stack-name">Celery + Redis</p><p class="stack-role">Task queue</p></div>
+          </div>
+          <div class="stack-card">
+            <div class="stack-icon" style="background:rgba(16,185,129,0.1);"><i data-lucide="shield" style="width:18px;height:18px;color:#10b981;"></i></div>
+            <div><p class="stack-name">Semgrep</p><p class="stack-role">SAST scanner</p></div>
+          </div>
+          <div class="stack-card">
+            <div class="stack-icon" style="background:rgba(245,158,11,0.1);"><i data-lucide="package" style="width:18px;height:18px;color:#f59e0b;"></i></div>
+            <div><p class="stack-name">Trivy</p><p class="stack-role">SCA scanner</p></div>
+          </div>
+          <div class="stack-card">
+            <div class="stack-icon" style="background:rgba(139,92,246,0.1);"><i data-lucide="box" style="width:18px;height:18px;color:#a78bfa;"></i></div>
+            <div><p class="stack-name">Grype</p><p class="stack-role">Container scanner</p></div>
+          </div>
+          <div class="stack-card">
+            <div class="stack-icon" style="background:rgba(234,179,8,0.1);"><i data-lucide="server" style="width:18px;height:18px;color:#eab308;"></i></div>
+            <div><p class="stack-name">Checkov</p><p class="stack-role">IaC scanner</p></div>
+          </div>
+          <div class="stack-card">
+            <div class="stack-icon" style="background:rgba(0,212,255,0.1);"><i data-lucide="key" style="width:18px;height:18px;color:#00d4ff;"></i></div>
+            <div><p class="stack-name">Gitleaks</p><p class="stack-role">Secrets scanner</p></div>
+          </div>
+          <div class="stack-card">
+            <div class="stack-icon" style="background:rgba(251,146,60,0.1);"><i data-lucide="cpu" style="width:18px;height:18px;color:#fb923c;"></i></div>
+            <div><p class="stack-name">Claude (Anthropic)</p><p class="stack-role">AI remediation</p></div>
+          </div>
+          <div class="stack-card">
+            <div class="stack-icon" style="background:rgba(148,163,184,0.1);"><i data-lucide="github" style="width:18px;height:18px;color:#94a3b8;"></i></div>
+            <div><p class="stack-name">PyGitHub</p><p class="stack-role">GitHub integration</p></div>
+          </div>
+          <div class="stack-card">
+            <div class="stack-icon" style="background:rgba(20,184,166,0.1);"><i data-lucide="layout-dashboard" style="width:18px;height:18px;color:#2dd4bf;"></i></div>
+            <div><p class="stack-name">Vanilla JS</p><p class="stack-role">Frontend UI</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- License -->
+      <div class="card" style="padding:28px;margin-bottom:24px;display:flex;align-items:center;gap:16px;">
+        <div style="width:48px;height:48px;background:rgba(99,102,241,0.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i data-lucide="scale" style="width:22px;height:22px;color:#818cf8;"></i>
+        </div>
+        <div>
+          <div class="section-title" style="margin-bottom:2px;">License</div>
+          <p style="font-size:14px;color:#64748b;margin:0;">Snitch is released under the <strong style="color:#94a3b8;">Apache License 2.0</strong>. Contributions are welcome via pull request.</p>
+        </div>
+      </div>
+
+      <!-- Release Notes -->
+      <div class="card" style="padding:28px;">
+        <div class="section-title">Release Notes</div>
+        <p class="section-sub">Major changes and features by version.</p>
+
+        <div class="timeline">
+
+          <!-- v1.5 -->
+          <div class="tl-item" style="animation-delay:0.05s;">
+            <div class="tl-dot latest"><div class="tl-dot-inner"></div></div>
+            <div class="release-card">
+              <div class="release-header">
+                <span class="release-version">v1.5</span>
+                <span class="release-tag tag-latest">Latest</span>
+                <span class="release-tag tag-feature">Feature</span>
+              </div>
+              <p class="release-title">Checkov (IaC) &amp; Grype (Container) Scanner Integration</p>
+              <ul class="change-list">
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Checkov scanner for Terraform, CloudFormation, ARM, and Bicep IaC files</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Grype container image vulnerability scanning (set <code>container_image</code> on an application)</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>CI/CD push support for Checkov and Grype JSON output via <code>/api/v1/cicd-scans/push</code></li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Policy engine extended to evaluate <code>iac</code> and <code>container</code> scan types</li>
+                <li class="change-item"><i data-lucide="refresh-cw" class="change-icon" style="width:14px;height:14px;color:#818cf8;"></i>Deduplication keys updated for IaC (<code>checkov_id + file</code>) and container findings (<code>cve + package + version</code>)</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- v1.4 -->
+          <div class="tl-item" style="animation-delay:0.1s;">
+            <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+            <div class="release-card">
+              <div class="release-header">
+                <span class="release-version">v1.4</span>
+                <span class="release-tag tag-feature">Feature</span>
+              </div>
+              <p class="release-title">UI Overhaul — Sidebar Sections, Profile Widget, Settings, List View</p>
+              <ul class="change-list">
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Sidebar restructured into Overview / Config / Admin / Developer sections</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Header user avatar widget with dropdown (profile link, logout placeholder)</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Settings page for platform integration tokens (GitHub, Anthropic)</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Applications page switched to sortable list/table view (default: risk score desc)</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>User profile page with light/dark mode toggle (persisted in localStorage)</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- v1.3 -->
+          <div class="tl-item" style="animation-delay:0.15s;">
+            <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+            <div class="release-card">
+              <div class="release-header">
+                <span class="release-version">v1.3</span>
+                <span class="release-tag tag-security">Security</span>
+              </div>
+              <p class="release-title">Security Fixes — Cleartext Token Storage &amp; ReDoS</p>
+              <ul class="change-list">
+                <li class="change-item"><i data-lucide="shield-check" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Fixed CodeQL finding: GitHub tokens no longer stored in cleartext in localStorage (only presence flags)</li>
+                <li class="change-item"><i data-lucide="shield-check" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Fixed ReDoS vulnerability in secrets pattern validation regex</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- v1.2 -->
+          <div class="tl-item" style="animation-delay:0.2s;">
+            <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+            <div class="release-card">
+              <div class="release-header">
+                <span class="release-version">v1.2</span>
+                <span class="release-tag tag-feature">Feature</span>
+              </div>
+              <p class="release-title">Shared Sidebar Component</p>
+              <ul class="change-list">
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Extracted sidebar to <code>sidebar.js</code> shared component — eliminates cross-page style inconsistencies</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Active nav link detection based on current path with prefix matching</li>
+                <li class="change-item"><i data-lucide="refresh-cw" class="change-icon" style="width:14px;height:14px;color:#818cf8;"></i>All HTML pages migrated to use <code>&lt;div id="sidebar-mount"&gt;</code> pattern</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- v1.1 -->
+          <div class="tl-item" style="animation-delay:0.25s;">
+            <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+            <div class="release-card">
+              <div class="release-header">
+                <span class="release-version">v1.1</span>
+                <span class="release-tag tag-feature">Feature</span>
+              </div>
+              <p class="release-title">Secrets Scanning with Gitleaks</p>
+              <ul class="change-list">
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Gitleaks integration for detecting leaked credentials in source code</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Custom SecretPattern management via Secrets page and API</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Secret masking — raw values never stored, only last 4 chars retained (<code>****{last4}</code>)</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Deduplication for secrets findings by rule ID and file path</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- v1.0 -->
+          <div class="tl-item" style="animation-delay:0.3s;">
+            <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+            <div class="release-card">
+              <div class="release-header">
+                <span class="release-version">v1.0</span>
+                <span class="release-tag tag-feature">Feature</span>
+              </div>
+              <p class="release-title">CI/CD Scan Ingestion via SQS/S3</p>
+              <ul class="change-list">
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>CI/CD scan push endpoint (<code>POST /api/v1/cicd-scans/push</code>) for ingesting scanner JSON</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>SQS/S3 polling worker for asynchronous scan result delivery from AWS pipelines</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Automatic format detection (Semgrep, Grype, Checkov) in <code>cicd_normaliser</code></li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Celery Beat periodic scanning tasks</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- v0.9 -->
+          <div class="tl-item" style="animation-delay:0.35s;">
+            <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+            <div class="release-card">
+              <div class="release-header">
+                <span class="release-version">v0.9</span>
+                <span class="release-tag tag-feature">Feature</span>
+              </div>
+              <p class="release-title">Rules Library &amp; Policy Engine</p>
+              <ul class="change-list">
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Static catalog of ~37 rules across Semgrep, Checkov, and Gitleaks</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Policy model and evaluator — define rules that auto-run after every scan</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Policy actions: <code>inform</code> (log) or <code>block</code> (gates CI/CD deployments)</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>GitHub Repositories page for code scanning alert sync and fix PR creation</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- v0.8 -->
+          <div class="tl-item" style="animation-delay:0.4s;margin-bottom:0;">
+            <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+            <div class="release-card">
+              <div class="release-header">
+                <span class="release-version">v0.8</span>
+                <span class="release-tag tag-feature">Feature</span>
+              </div>
+              <p class="release-title">User Profile &amp; Light Mode</p>
+              <ul class="change-list">
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>User profile page with avatar, display name, and role</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Light / dark theme toggle with FOUC prevention via inline script</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>CSS design tokens in <code>theme.css</code> — severity palette, gradient, glow variables</li>
+                <li class="change-item"><i data-lucide="plus-circle" class="change-icon" style="width:14px;height:14px;color:#10b981;"></i>Vibrant dark theme as default with full light mode support across all pages</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

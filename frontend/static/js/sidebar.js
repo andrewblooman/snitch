@@ -47,6 +47,14 @@
         { href: '/settings.html',     icon: 'settings',         label: 'Settings',     matchPaths: ['/settings.html'] },
         { href: '/repositories.html', icon: 'git-branch',       label: 'Repositories', matchPaths: ['/repositories.html'] },
       ]
+    },
+    {
+      label: 'Help',
+      items: [
+        { href: '/help.html',         icon: 'book-open',        label: 'Documentation', matchPaths: ['/help.html'] },
+        { href: '/about.html',        icon: 'info',             label: 'About',        matchPaths: ['/about.html'] },
+        { href: '/docs',              icon: 'code-2',           label: 'API Docs',     matchPaths: ['/docs'], external: true },
+      ]
     }
   ];
 
@@ -87,9 +95,12 @@
       active ? ACTIVE_STYLE : INACTIVE_STYLE,
     ].join(';');
 
-    return '<a href="' + item.href + '" class="nav-link' + (active ? ' active' : '') + '" style="' + styleStr + '">'
+    return '<a href="' + item.href + '"'
+      + (item.external ? ' target="_blank" rel="noopener"' : '')
+      + ' class="nav-link' + (active ? ' active' : '') + '" style="' + styleStr + '">'
       + '<i data-lucide="' + item.icon + '" style="width:18px;height:18px;flex-shrink:0;"></i> '
       + item.label
+      + (item.external ? '<i data-lucide="external-link" style="width:12px;height:12px;margin-left:auto;"></i>' : '')
       + '</a>';
   }
 
@@ -114,11 +125,6 @@
     +   '</div>'
     +   '<nav style="flex:1;padding:8px 12px;overflow-y:auto;">'
     +     navHTML
-    +     '<div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:12px 8px 4px;">Developer</div>'
-    +     '<a href="/docs" class="nav-link" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#94a3b8;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:2px;transition:all 0.2s;">'
-    +       '<i data-lucide="code-2" style="width:18px;height:18px;flex-shrink:0;"></i> API Docs'
-    +       '<i data-lucide="external-link" style="width:12px;height:12px;margin-left:auto;"></i>'
-    +     '</a>'
     +   '</nav>'
     +   '<div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,0.08);">'
     +     '<div style="display:flex;align-items:center;gap:8px;">'
