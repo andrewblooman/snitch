@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SecretPatternBase(BaseModel):
@@ -34,8 +34,8 @@ class SecretPatternResponse(SecretPatternBase):
 
 
 class SecretPatternTest(BaseModel):
-    pattern: str
-    sample_text: str
+    pattern: str = Field(..., max_length=500)
+    sample_text: str = Field(..., max_length=100_000)
 
 
 class SecretPatternTestResult(BaseModel):

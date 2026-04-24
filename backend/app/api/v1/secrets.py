@@ -1,3 +1,4 @@
+import asyncio
 import math
 import re
 import uuid
@@ -224,13 +225,26 @@ async def delete_pattern(pattern_id: uuid.UUID, db: AsyncSession = Depends(get_d
     await db.flush()
 
 
+def _compile_and_match(pattern: str, sample_text: str) -> list:
+    compiled = re.compile(pattern)
+    return compiled.findall(sample_text)
+
+
 @router.post("/patterns/test", response_model=SecretPatternTestResult)
 async def test_pattern(payload: SecretPatternTest):
+    loop = asyncio.get_running_loop()
     try:
-        compiled = re.compile(payload.pattern)
+        matches = await asyncio.wait_for(
+            loop.run_in_executor(None, _compile_and_match, payload.pattern, payload.sample_text),
+            timeout=5.0,
+        )
     except re.error as e:
         return SecretPatternTestResult(matches=[], match_count=0, valid=False, error=str(e))
+    except asyncio.TimeoutError:
+        return SecretPatternTestResult(
+            matches=[], match_count=0, valid=False,
+            error="Pattern evaluation timed out — the pattern may cause catastrophic backtracking",
+        )
 
-    matches = compiled.findall(payload.sample_text)
     str_matches = [m if isinstance(m, str) else str(m) for m in matches]
     return SecretPatternTestResult(matches=str_matches, match_count=len(str_matches), valid=True)
