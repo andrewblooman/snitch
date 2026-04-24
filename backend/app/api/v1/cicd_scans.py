@@ -1,19 +1,87 @@
 import math
 import uuid
-from typing import Optional
+from datetime import datetime, timezone
+from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.auth import get_service_account
 from app.db.session import get_db
 from app.models.application import Application
 from app.models.cicd_scan import CiCdScan
 from app.models.finding import Finding
+from app.models.service_account import ServiceAccount
 from app.schemas.cicd_scan import CiCdScanResponse, PaginatedCiCdScans
 from app.schemas.finding import PaginatedFindings
+from app.services.cicd_normaliser import normalise
+from app.services.deduplication import upsert_findings
 
 router = APIRouter(tags=["cicd-scans"])
+
+
+@router.post("/cicd-scans/push", response_model=CiCdScanResponse, status_code=201)
+async def push_cicd_scan(
+    payload: Any = Body(...),
+    application_id: uuid.UUID = Query(..., description="UUID of the Snitch application"),
+    commit_sha: Optional[str] = Query(None),
+    branch: Optional[str] = Query(None),
+    workflow_run_id: Optional[str] = Query(None),
+    ci_provider: Optional[str] = Query("github-actions"),
+    sa: ServiceAccount = Depends(get_service_account),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Stage 2 — Ingest scanner JSON output directly from a CI/CD pipeline.
+
+    Requires a valid Bearer token (service account). Accepts raw Semgrep, Grype, or Checkov
+    JSON output; format is auto-detected. Findings are deduplicated automatically.
+    """
+    app_result = await db.execute(select(Application).where(Application.id == application_id))
+    app = app_result.scalar_one_or_none()
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found.")
+
+    try:
+        raw_findings, detected_scan_type = normalise(payload)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Could not parse scanner output: {exc}. Supported formats: semgrep, grype, checkov.",
+        )
+
+    scan = CiCdScan(
+        id=uuid.uuid4(),
+        application_id=application_id,
+        scan_type=detected_scan_type,
+        status="processing",
+        s3_bucket="direct-push",
+        s3_key=f"direct/{uuid.uuid4()}",
+        commit_sha=commit_sha,
+        branch=branch,
+        workflow_run_id=workflow_run_id,
+        ci_provider=ci_provider,
+    )
+    db.add(scan)
+    await db.flush()
+
+    try:
+        findings, created, updated = await upsert_findings(db, application_id, scan.id, raw_findings)
+        scan.findings_count = len(raw_findings)
+        scan.critical_count = sum(1 for f in raw_findings if f.get("severity") == "critical")
+        scan.high_count = sum(1 for f in raw_findings if f.get("severity") == "high")
+        scan.medium_count = sum(1 for f in raw_findings if f.get("severity") == "medium")
+        scan.low_count = sum(1 for f in raw_findings if f.get("severity") == "low")
+        scan.status = "completed"
+        scan.completed_at = datetime.now(timezone.utc)
+    except Exception as exc:
+        scan.status = "failed"
+        scan.error_message = str(exc)
+
+    await db.commit()
+    await db.refresh(scan)
+    return scan
 
 
 @router.get("/cicd-scans", response_model=PaginatedCiCdScans)

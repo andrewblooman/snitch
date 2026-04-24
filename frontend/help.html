@@ -224,22 +224,46 @@ Risk levels:
           </div>
 
           <div class="doc-h3">Before you start</div>
-          <p class="doc-p">Two values need to be available in your workflow:</p>
+          <p class="doc-p">Three values need to be available in your workflow:</p>
           <ol style="font-size:14px;color:#94a3b8;line-height:1.8;padding-left:20px;margin:0 0 16px;">
             <li><strong>Snitch URL</strong> — the base URL where your Snitch instance is running (e.g. <code>https://snitch.example.com</code>)</li>
             <li><strong>Snitch Application ID</strong> — the UUID of the application you registered in Snitch. Find it on the <a href="/applications.html" style="color:#00d4ff;">Applications page</a>: open any app and copy the ID from the URL or detail view.</li>
+            <li><strong>Snitch Token</strong> — a service account token. Create one in <a href="/service-accounts.html" style="color:#00d4ff;">Admin → Service Accounts</a>. The token is shown once on creation — copy it and add it as a secret.</li>
           </ol>
 
           <div class="doc-h3">Add Repository Secrets</div>
-          <p class="doc-p">Store both values as GitHub Actions secrets in your repository (<strong>Settings → Secrets and variables → Actions → New repository secret</strong>):</p>
+          <p class="doc-p">Store all three values as GitHub Actions secrets in your repository (<strong>Settings → Secrets and variables → Actions → New repository secret</strong>):</p>
           <div class="code-block">
             <div class="code-header"><span class="code-lang">secrets</span><span class="code-file">GitHub → Settings → Secrets and variables → Actions</span></div>
             <div class="code-body"><pre><span class="kw">SNITCH_URL</span>                <span class="cm"># Base URL of your Snitch instance, e.g. https://snitch.example.com</span>
-<span class="kw">SNITCH_APPLICATION_ID</span>     <span class="cm"># UUID of the app in Snitch (from the Applications page, NOT a GitHub App ID)</span></pre></div>
+<span class="kw">SNITCH_APPLICATION_ID</span>     <span class="cm"># UUID of the app in Snitch (from the Applications page)</span>
+<span class="kw">SNITCH_TOKEN</span>              <span class="cm"># Service account token (format: snitch_xxxxx) from Admin → Service Accounts</span></pre></div>
           </div>
           <div class="callout callout-info">
             <i data-lucide="info" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;"></i>
-            <span>These secrets are just configuration values passed to <code>curl</code> inside your workflow steps. They are not credentials for GitHub itself.</span>
+            <span>These secrets are plain configuration values passed to <code>curl</code>. <code>SNITCH_TOKEN</code> authenticates your CI/CD push — it is <em>not</em> a GitHub credential.</span>
+          </div>
+
+          <div class="doc-h3">2-Stage Debug Workflow</div>
+          <p class="doc-p">Use the two-stage pattern in CI/CD to quickly isolate auth vs. scan failures:</p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">yaml</span><span class="code-file">Stage 1 — verify token before running scanners</span></div>
+            <div class="code-body"><pre>      - <span class="kw">name</span>: <span class="st">Stage 1 — Verify Snitch credentials</span>
+        <span class="kw">run</span>: |
+          echo "Verifying Snitch service account token..."
+          curl -sf <span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/auth/verify \
+            -H "Authorization: Bearer <span class="va">${{ secrets.SNITCH_TOKEN }}</span>" | jq .
+          echo "✅ Token valid — proceeding to scan"</pre></div>
+          </div>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">yaml</span><span class="code-file">Stage 2 — push scanner results</span></div>
+            <div class="code-body"><pre>      - <span class="kw">name</span>: <span class="st">Stage 2 — Push results to Snitch</span>
+        <span class="kw">run</span>: |
+          curl -sf -X POST \
+            "<span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push?application_id=<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>&amp;branch=<span class="va">${{ github.ref_name }}</span>&amp;commit_sha=<span class="va">${{ github.sha }}</span>" \
+            -H "Authorization: Bearer <span class="va">${{ secrets.SNITCH_TOKEN }}</span>" \
+            -H "Content-Type: application/json" \
+            --data-binary @semgrep-results.json</pre></div>
           </div>
         </div>
 
@@ -286,15 +310,11 @@ Risk levels:
 
       - <span class="kw">name</span>: <span class="st">Push Semgrep results to Snitch</span>
         <span class="kw">run</span>: |
-          curl -sf -X POST <span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push \
+          curl -sf -X POST \
+            "<span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push?application_id=<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>&branch=<span class="va">${{ github.ref_name }}</span>&commit_sha=<span class="va">${{ github.sha }}</span>" \
+            -H "Authorization: Bearer <span class="va">${{ secrets.SNITCH_TOKEN }}</span>" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"application_id\": \"<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>\",
-              \"scan_type\": \"semgrep\",
-              \"branch\": \"<span class="va">${{ github.ref_name }}</span>\",
-              \"commit_sha\": \"<span class="va">${{ github.sha }}</span>\",
-              \"results\": $(cat semgrep-results.json)
-            }"
+            --data-binary @semgrep-results.json
 
       <span class="cm"># ── Trivy (SCA) ───────────────────────────────────────────────</span>
       - <span class="kw">name</span>: <span class="st">Run Trivy (filesystem / SCA)</span>
@@ -307,15 +327,11 @@ Risk levels:
 
       - <span class="kw">name</span>: <span class="st">Push Trivy results to Snitch</span>
         <span class="kw">run</span>: |
-          curl -sf -X POST <span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push \
+          curl -sf -X POST \
+            "<span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push?application_id=<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>&branch=<span class="va">${{ github.ref_name }}</span>&commit_sha=<span class="va">${{ github.sha }}</span>" \
+            -H "Authorization: Bearer <span class="va">${{ secrets.SNITCH_TOKEN }}</span>" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"application_id\": \"<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>\",
-              \"scan_type\": \"trivy\",
-              \"branch\": \"<span class="va">${{ github.ref_name }}</span>\",
-              \"commit_sha\": \"<span class="va">${{ github.sha }}</span>\",
-              \"results\": $(cat trivy-results.json)
-            }"
+            --data-binary @trivy-results.json
 
       <span class="cm"># ── Checkov (IaC) ─────────────────────────────────────────────</span>
       - <span class="kw">name</span>: <span class="st">Run Checkov</span>
@@ -329,15 +345,11 @@ Risk levels:
 
       - <span class="kw">name</span>: <span class="st">Push Checkov results to Snitch</span>
         <span class="kw">run</span>: |
-          curl -sf -X POST <span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push \
+          curl -sf -X POST \
+            "<span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push?application_id=<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>&branch=<span class="va">${{ github.ref_name }}</span>&commit_sha=<span class="va">${{ github.sha }}</span>" \
+            -H "Authorization: Bearer <span class="va">${{ secrets.SNITCH_TOKEN }}</span>" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"application_id\": \"<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>\",
-              \"scan_type\": \"checkov\",
-              \"branch\": \"<span class="va">${{ github.ref_name }}</span>\",
-              \"commit_sha\": \"<span class="va">${{ github.sha }}</span>\",
-              \"results\": $(cat checkov-results.json)
-            }"
+            --data-binary @checkov-results.json
 
       <span class="cm"># ── Gitleaks (Secrets) ────────────────────────────────────────</span>
       - <span class="kw">name</span>: <span class="st">Run Gitleaks</span>
@@ -351,15 +363,11 @@ Risk levels:
       - <span class="kw">name</span>: <span class="st">Push Gitleaks results to Snitch</span>
         <span class="kw">if</span>: <span class="st">always()</span>
         <span class="kw">run</span>: |
-          curl -sf -X POST <span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push \
+          curl -sf -X POST \
+            "<span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push?application_id=<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>&branch=<span class="va">${{ github.ref_name }}</span>&commit_sha=<span class="va">${{ github.sha }}</span>" \
+            -H "Authorization: Bearer <span class="va">${{ secrets.SNITCH_TOKEN }}</span>" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"application_id\": \"<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>\",
-              \"scan_type\": \"gitleaks\",
-              \"branch\": \"<span class="va">${{ github.ref_name }}</span>\",
-              \"commit_sha\": \"<span class="va">${{ github.sha }}</span>\",
-              \"results\": $(cat gitleaks-results.json)
-            }"</pre></div>
+            --data-binary @gitleaks-results.json</pre></div>
           </div>
         </div>
 
@@ -378,15 +386,11 @@ Risk levels:
 
       - <span class="kw">name</span>: <span class="st">Push Grype results to Snitch</span>
         <span class="kw">run</span>: |
-          curl -sf -X POST <span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push \
+          curl -sf -X POST \
+            "<span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push?application_id=<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>&branch=<span class="va">${{ github.ref_name }}</span>&commit_sha=<span class="va">${{ github.sha }}</span>" \
+            -H "Authorization: Bearer <span class="va">${{ secrets.SNITCH_TOKEN }}</span>" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"application_id\": \"<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>\",
-              \"scan_type\": \"grype\",
-              \"branch\": \"<span class="va">${{ github.ref_name }}</span>\",
-              \"commit_sha\": \"<span class="va">${{ github.sha }}</span>\",
-              \"results\": $(cat grype-results.json)
-            }"</pre></div>
+            --data-binary @grype-results.json</pre></div>
           </div>
         </div>
 
@@ -412,15 +416,11 @@ Risk levels:
 
       - <span class="kw">name</span>: <span class="st">Push to Snitch</span>
         <span class="kw">run</span>: |
-          curl -sf -X POST <span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push \
+          curl -sf -X POST \
+            "<span class="va">${{ secrets.SNITCH_URL }}</span>/api/v1/cicd-scans/push?application_id=<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>&branch=<span class="va">${{ github.ref_name }}</span>&commit_sha=<span class="va">${{ github.sha }}</span>" \
+            -H "Authorization: Bearer <span class="va">${{ secrets.SNITCH_TOKEN }}</span>" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"application_id\": \"<span class="va">${{ secrets.SNITCH_APPLICATION_ID }}</span>\",
-              \"scan_type\": \"semgrep\",
-              \"branch\": \"<span class="va">${{ github.ref_name }}</span>\",
-              \"commit_sha\": \"<span class="va">${{ github.sha }}</span>\",
-              \"results\": $(cat semgrep-results.json)
-            }"</pre></div>
+            --data-binary @semgrep-results.json</pre></div>
           </div>
 
           <div class="callout callout-warn">
@@ -517,13 +517,25 @@ open  →  false_positive (not a real vulnerability)</pre></div>
             </tbody>
           </table>
 
-          <div class="doc-h4">CI/CD Scan Push</div>
+          <div class="doc-h4">CI/CD Scan Push <span style="font-size:11px;background:rgba(239,68,68,0.15);color:#f87171;padding:2px 7px;border-radius:10px;font-weight:600;margin-left:6px;">🔒 Requires Bearer token</span></div>
           <table class="ep-table">
             <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
             <tbody>
-              <tr><td><span class="method method-post">POST</span></td><td class="ep-path">/api/v1/cicd-scans/push</td><td class="ep-desc">Ingest scanner JSON output from CI/CD pipeline</td></tr>
+              <tr><td><span class="method method-get">GET</span></td><td class="ep-path">/api/v1/auth/verify</td><td class="ep-desc">Stage 1: verify Bearer token and return service account info</td></tr>
+              <tr><td><span class="method method-post">POST</span></td><td class="ep-path">/api/v1/cicd-scans/push</td><td class="ep-desc">Stage 2: ingest scanner JSON output — application_id, branch, commit_sha as query params</td></tr>
               <tr><td><span class="method method-get">GET</span></td><td class="ep-path">/api/v1/cicd-scans</td><td class="ep-desc">List CI/CD scan records (filterable by application, status, scan_type)</td></tr>
               <tr><td><span class="method method-get">GET</span></td><td class="ep-path">/api/v1/cicd-scans/{id}</td><td class="ep-desc">Get a specific CI/CD scan record (check blocked status)</td></tr>
+            </tbody>
+          </table>
+
+          <div class="doc-h4">Service Accounts</div>
+          <table class="ep-table">
+            <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="method method-post">POST</span></td><td class="ep-path">/api/v1/service-accounts</td><td class="ep-desc">Create a service account — returns token once</td></tr>
+              <tr><td><span class="method method-get">GET</span></td><td class="ep-path">/api/v1/service-accounts</td><td class="ep-desc">List all service accounts (token never returned)</td></tr>
+              <tr><td><span class="method method-post">POST</span></td><td class="ep-path">/api/v1/service-accounts/{id}/rotate</td><td class="ep-desc">Rotate token — returns new token once, old token immediately revoked</td></tr>
+              <tr><td><span class="method method-del">DELETE</span></td><td class="ep-path">/api/v1/service-accounts/{id}</td><td class="ep-desc">Revoke (soft-delete) a service account</td></tr>
             </tbody>
           </table>
 
@@ -551,18 +563,23 @@ open  →  false_positive (not a real vulnerability)</pre></div>
   }'</pre></div>
           </div>
 
+          <div class="doc-h3">Example: Verify a Service Account Token</div>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">bash</span><span class="code-file">curl — Stage 1</span></div>
+            <div class="code-body"><pre>curl http://snitch.example.com/api/v1/auth/verify \
+  -H "Authorization: Bearer snitch_your_token_here"
+
+# Response: {"authenticated": true, "service_account": {"name": "ci-pipeline", ...}}</pre></div>
+          </div>
+
           <div class="doc-h3">Example: Push Semgrep Results</div>
           <div class="code-block">
-            <div class="code-header"><span class="code-lang">bash</span><span class="code-file">curl</span></div>
-            <div class="code-body"><pre>curl -X POST http://snitch.example.com/api/v1/cicd-scans/push \
+            <div class="code-header"><span class="code-lang">bash</span><span class="code-file">curl — Stage 2 (pipe raw scanner JSON output directly)</span></div>
+            <div class="code-body"><pre>curl -X POST \
+  "http://snitch.example.com/api/v1/cicd-scans/push?application_id=3fa85f64-5717-4562-b3fc-2c963f66afa6&branch=main&commit_sha=abc123" \
+  -H "Authorization: Bearer snitch_your_token_here" \
   -H "Content-Type: application/json" \
-  -d '{
-    "application_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "scan_type": "semgrep",
-    "branch": "main",
-    "commit_sha": "abc123def456",
-    "results": { ...semgrep JSON output... }
-  }'</pre></div>
+  --data-binary @semgrep-results.json</pre></div>
           </div>
 
           <div class="doc-h3">Example: Check if a Scan was Blocked</div>
@@ -581,20 +598,26 @@ fi</pre></div>
         </div>
 
         <div class="card" style="padding:28px;">
-          <div class="doc-h3">Push Payload Schema</div>
+          <div class="doc-h3">Push Endpoint</div>
+          <p style="font-size:13px;color:#64748b;margin:0 0 16px;">All parameters are passed as query strings; the request body is the raw JSON output from the scanner.</p>
           <div class="code-block">
-            <div class="code-header"><span class="code-lang">json</span><span class="code-file">POST /api/v1/cicd-scans/push</span></div>
-            <div class="code-body"><pre>{
-  <span class="kw">"application_id"</span>: <span class="st">"uuid"</span>,          <span class="cm">// required</span>
-  <span class="kw">"scan_type"</span>:      <span class="st">"semgrep"</span>,         <span class="cm">// semgrep | trivy | grype | checkov | gitleaks</span>
-  <span class="kw">"branch"</span>:         <span class="st">"main"</span>,            <span class="cm">// optional</span>
-  <span class="kw">"commit_sha"</span>:     <span class="st">"abc123"</span>,          <span class="cm">// optional</span>
-  <span class="kw">"results"</span>:        { <span class="cm">/* raw JSON output from the scanner */</span> }
-}</pre></div>
+            <div class="code-header"><span class="code-lang">http</span><span class="code-file">POST /api/v1/cicd-scans/push</span></div>
+            <div class="code-body"><pre><span class="cm">// Query parameters</span>
+<span class="kw">application_id</span>    uuid     <span class="cm">required — UUID of the Snitch application</span>
+<span class="kw">branch</span>            string   <span class="cm">optional — git branch name</span>
+<span class="kw">commit_sha</span>        string   <span class="cm">optional — git commit SHA</span>
+<span class="kw">workflow_run_id</span>   string   <span class="cm">optional — CI run ID for traceability</span>
+<span class="kw">ci_provider</span>       string   <span class="cm">optional — defaults to "github-actions"</span>
+
+<span class="cm">// Headers</span>
+<span class="kw">Authorization</span>: Bearer &lt;snitch_token&gt;   <span class="cm">required</span>
+<span class="kw">Content-Type</span>: application/json         <span class="cm">required</span>
+
+<span class="cm">// Body: raw JSON output from Semgrep, Grype, or Checkov (auto-detected)</span></pre></div>
           </div>
           <div class="callout callout-info">
             <i data-lucide="info" style="width:16px;height:16px;flex-shrink:0;margin-top:1px;"></i>
-            <span>Snitch auto-detects the scanner format from the JSON structure, so you can also use <code>"scan_type": "auto"</code> and let the normaliser figure it out.</span>
+            <span>The scanner format is auto-detected from the JSON structure — Semgrep (<code>results</code> array), Grype (<code>matches</code> array), or Checkov (<code>results.failed_checks</code>).</span>
           </div>
         </div>
       </div>

@@ -44,8 +44,9 @@
     {
       label: 'Admin',
       items: [
-        { href: '/settings.html',     icon: 'settings',         label: 'Settings',     matchPaths: ['/settings.html'] },
-        { href: '/repositories.html', icon: 'git-branch',       label: 'Repositories', matchPaths: ['/repositories.html'] },
+        { href: '/settings.html',          icon: 'settings',     label: 'Settings',          matchPaths: ['/settings.html'] },
+        { href: '/repositories.html',      icon: 'git-branch',   label: 'Repositories',      matchPaths: ['/repositories.html'] },
+        { href: '/service-accounts.html',  icon: 'bot',          label: 'Service Accounts',  matchPaths: ['/service-accounts.html'] },
       ]
     },
     {

@@ -24,11 +24,12 @@
 | 📈 **90-Day Trends** | Management reporting with vulnerability trends, team leaderboard, and MTTR |
 | 🔗 **GitHub Integration** | Sync code-scanning alerts from GitHub Security; auto-create branches & PRs |
 | 🚦 **Policy Engine** | Define pass/fail gates by severity, scan type, and rule — evaluated on every scan |
+| 🔑 **Service Accounts** | Machine identities for CI/CD pipelines — Bearer token auth (`snitch_<32chars>`) for the push endpoint; token shown once, SHA-256 hash stored |
 | 🌐 **REST API** | Full OpenAPI/Swagger docs at `/docs` |
 | 🎨 **Consistent UI** | Shared sidebar (`sidebar.js`) and header (`header.js`) components with design tokens in `theme.css` — single source of truth for navigation and styles |
 | ⚙️ **Settings Page** | Admin configuration page for platform integrations (GitHub, Anthropic), scan defaults, and system status |
 | 📋 **Applications List View** | Sortable table view for the applications portfolio — click any column header to re-sort |
-| 📚 **Developer Docs** | Built-in documentation page (`/help.html`) with Quick Start, GitHub Actions CI/CD guide, General Usage, and API Reference |
+| 📚 **Developer Docs** | Built-in documentation page (`/help.html`) with Quick Start, GitHub Actions CI/CD guide (2-stage auth+push), General Usage, and API Reference |
 | ℹ️ **About & Changelog** | About page (`/about.html`) with tech stack overview and release notes for all major versions |
 
 ---
@@ -186,6 +187,12 @@ Full interactive docs at `/docs` (Swagger UI) and `/redoc`.
 | `GET` | `/api/v1/reports/trend?days=90` | 90-day vulnerability trend |
 | `GET` | `/api/v1/reports/top-vulnerabilities` | Most common CVEs/rules |
 | `GET` | `/api/v1/cicd-scans` | List CI/CD scan results ingested via S3/SQS |
+| `POST` | `/api/v1/cicd-scans/push` | Push scanner results directly (requires Bearer token) |
+| `GET` | `/api/v1/auth/verify` | Verify Bearer token — Stage 1 debug for CI/CD setup |
+| `POST` | `/api/v1/service-accounts` | Create service account (token returned once) |
+| `GET` | `/api/v1/service-accounts` | List service accounts |
+| `DELETE` | `/api/v1/service-accounts/{id}` | Revoke a service account |
+| `POST` | `/api/v1/service-accounts/{id}/rotate` | Rotate token (old token immediately invalidated) |
 | `POST` | `/api/v1/seed` | Seed demo data |
 
 ---
