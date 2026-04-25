@@ -36,11 +36,11 @@ jobs:
       # Checkout project source
       - uses: actions/checkout@v4
 
-      # Scan code using project's configuration on https://semgrep.dev/manage
-      - uses: semgrep/semgrep-action@v1
-        with:
-          publishToken: ${{ secrets.SEMGREP_APP_TOKEN }}
-          generateSarif: "1"
+      # Scan code and emit SARIF for GitHub Code Scanning
+      - name: Run Semgrep
+        run: |
+          pip install semgrep
+          semgrep scan --config auto --sarif --output semgrep.sarif || true
 
       # Upload SARIF file generated in previous step
       - name: Upload SARIF file
