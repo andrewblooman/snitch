@@ -58,6 +58,8 @@ cd backend && alembic revision --autogenerate -m "description"
 
 **Backend:** FastAPI + async SQLAlchemy (PostgreSQL). Celery workers handle async scan tasks; Celery Beat runs periodic jobs. Redis is the broker.
 
+**GitHub Code Scanning:** `.github/workflows/semgrep.yml` uses `semgrep/semgrep-action@v1` (current org, not the old `returntocorp` org) + `github/codeql-action/upload-sarif@v4`. Job sets `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true` to opt-in to Node.js 24 ahead of GitHub's forced migration (June 2026). `publishDeployment` is not a valid input and must not be added.
+
 **Frontend:** Plain HTML/CSS/JS (`frontend/`) served as static files mounted at `/` by FastAPI. No build step required.
 
 ```

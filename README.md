@@ -473,6 +473,26 @@ Use the Snitch API to evaluate active policies after uploading results. This let
 
 ---
 
+### GitHub Code Scanning (native GitHub integration)
+
+The repository ships a `.github/workflows/semgrep.yml` that uploads Semgrep results to [GitHub Code Scanning](https://docs.github.com/en/code-security/code-scanning) using the official SARIF upload action. This is independent of the Snitch push integration above.
+
+```yaml
+- uses: semgrep/semgrep-action@v1      # semgrep org (not the old returntocorp org)
+  with:
+    publishToken: ${{ secrets.SEMGREP_APP_TOKEN }}
+    generateSarif: "1"
+
+- uses: github/codeql-action/upload-sarif@v4
+  with:
+    sarif_file: semgrep.sarif
+  if: always()
+```
+
+Requires `SEMGREP_APP_TOKEN` set in repository secrets (optional — Semgrep runs with default rules if token is absent).
+
+---
+
 ## Screenshots
 
 | Dashboard | Applications |
