@@ -25,9 +25,9 @@
   --accent-safe-dim: rgba(0,200,83,0.15);
   --accent-threat: #ff3333;
   --accent-threat-dim: rgba(255,51,51,0.15);
-  /* ── Typography ── */
-  --font-mono: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', ui-monospace, monospace;
-  --font-body: 'Fira Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  /* ── Typography (system-first: no external network requests) ── */
+  --font-mono: ui-monospace, 'Cascadia Code', 'Fira Code', 'SF Mono', monospace;
+  --font-body: system-ui, -apple-system, 'Segoe UI', sans-serif;
   /* ── Severity palette ── */
   --sev-critical: #ff3333;
   --sev-critical-bg: rgba(255,51,51,0.18);

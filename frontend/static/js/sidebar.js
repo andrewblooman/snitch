@@ -17,26 +17,6 @@
  * window.applyTheme = applyTheme to override this shared version.
  */
 (function () {
-  // ── Inject Fira Code + Fira Sans from Google Fonts (loads on every page) ──
-  if (!document.getElementById('snitch-fonts')) {
-    var preconnect1 = document.createElement('link');
-    preconnect1.rel = 'preconnect';
-    preconnect1.href = 'https://fonts.googleapis.com';
-    document.head.appendChild(preconnect1);
-
-    var preconnect2 = document.createElement('link');
-    preconnect2.rel = 'preconnect';
-    preconnect2.href = 'https://fonts.gstatic.com';
-    preconnect2.crossOrigin = 'anonymous';
-    document.head.appendChild(preconnect2);
-
-    var fontLink = document.createElement('link');
-    fontLink.id = 'snitch-fonts';
-    fontLink.rel = 'stylesheet';
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap';
-    document.head.appendChild(fontLink);
-  }
-
   // ── Default applyTheme (may be overridden by individual pages) ───────────
   window.applyTheme = function (theme) {
     document.documentElement.setAttribute('data-theme', theme);
