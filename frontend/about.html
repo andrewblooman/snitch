@@ -5,42 +5,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snitch — About</title>
   <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
-  <style>/* Inter font fallback */ body { font-family: "Inter", system-ui, -apple-system, sans-serif; }</style>
+  <style>/* Inter font fallback */ body { font-family: var(--font-body); }</style>
   <link rel="stylesheet" href="/static/css/theme.css">
   <script src="/static/js/lucide.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     @keyframes fadeInUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
 
-    .card { background:rgba(13,17,35,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:16px;backdrop-filter:blur(20px); }
+    .card { background:linear-gradient(145deg,#0f1b34 0%,#080f1d 100%);border:1px solid rgba(0,229,255,0.14);border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,.55),inset 0 1px 0 rgba(0,229,255,.06); }
 
     /* Hero */
-    .hero { background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(99,102,241,0.06));border:1px solid rgba(0,212,255,0.15);border-radius:20px;padding:40px;margin-bottom:24px;display:flex;align-items:center;gap:28px;animation:fadeInUp 0.4s ease; }
-    .hero-logo { width:72px;height:72px;background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.2));border:1px solid rgba(0,212,255,0.45);border-radius:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 32px rgba(0,212,255,0.2);flex-shrink:0; }
+    .hero { background:linear-gradient(135deg,rgba(0,229,255,0.06),rgba(99,102,241,0.06));border:1px solid rgba(0,229,255,0.15);border-radius:20px;padding:40px;margin-bottom:24px;display:flex;align-items:center;gap:28px;animation:fadeInUp 0.4s ease; }
+    .hero-logo { width:72px;height:72px;background:linear-gradient(135deg,rgba(0,229,255,0.2),rgba(99,102,241,0.2));border:1px solid rgba(0,229,255,0.45);border-radius:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 32px rgba(0,229,255,0.2);flex-shrink:0; }
     .hero-title { font-size:32px;font-weight:800;color:#f1f5f9;letter-spacing:-1px;margin:0 0 4px; }
-    .hero-sub { font-size:14px;color:#00d4ff;font-weight:500;letter-spacing:1px;text-transform:uppercase;margin:0 0 12px; }
+    .hero-sub { font-size:14px;color:#00e5ff;font-weight:500;letter-spacing:1px;text-transform:uppercase;margin:0 0 12px; }
     .hero-desc { font-size:15px;color:#64748b;line-height:1.7;margin:0;max-width:620px; }
 
     /* Version badge */
-    .version-badge { display:inline-flex;align-items:center;gap:6px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.2);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600;color:#00d4ff;margin-bottom:16px; }
+    .version-badge { display:inline-flex;align-items:center;gap:6px;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.2);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600;color:#00e5ff;margin-bottom:16px; }
 
     /* Stack grid */
     .stack-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px; }
     .stack-card { background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;transition:border-color 0.2s; }
-    .stack-card:hover { border-color:rgba(0,212,255,0.2); }
+    .stack-card:hover { border-color:rgba(0,229,255,0.2); }
     .stack-icon { width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
     .stack-name { font-size:13px;font-weight:600;color:#f1f5f9;margin:0 0 2px; }
     .stack-role { font-size:11px;color:#475569;margin:0; }
 
     /* Timeline / release notes */
     .timeline { position:relative;padding-left:28px; }
-    .timeline::before { content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,rgba(0,212,255,0.4),rgba(99,102,241,0.1)); }
+    .timeline::before { content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,rgba(0,229,255,0.4),rgba(99,102,241,0.1)); }
     .tl-item { position:relative;margin-bottom:28px;animation:fadeInUp 0.4s ease both; }
-    .tl-dot { position:absolute;left:-28px;top:4px;width:16px;height:16px;border-radius:50%;border:2px solid rgba(0,212,255,0.5);background:#080c18;display:flex;align-items:center;justify-content:center; }
-    .tl-dot-inner { width:6px;height:6px;border-radius:50%;background:#00d4ff; }
+    .tl-dot { position:absolute;left:-28px;top:4px;width:16px;height:16px;border-radius:50%;border:2px solid rgba(0,229,255,0.5);background:#080c18;display:flex;align-items:center;justify-content:center; }
+    .tl-dot-inner { width:6px;height:6px;border-radius:50%;background:#00e5ff; }
     .tl-dot.latest .tl-dot-inner { background:#10b981;box-shadow:0 0 8px #10b981; }
     .tl-dot.latest { border-color:rgba(16,185,129,0.6); }
-    .release-card { background:rgba(13,17,35,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px; }
+    .release-card { background:linear-gradient(145deg,#0f1b34 0%,#080f1d 100%);border:1px solid rgba(0,229,255,0.12);border-radius:12px;padding:20px;box-shadow:0 2px 16px rgba(0,0,0,0.4); }
     .release-header { display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap; }
     .release-version { font-size:18px;font-weight:700;color:#f1f5f9; }
     .release-tag { font-size:11px;font-weight:600;padding:2px 10px;border-radius:999px; }
@@ -57,18 +57,18 @@
     .section-title { font-size:16px;font-weight:700;color:#f1f5f9;margin:0 0 4px; }
     .section-sub   { font-size:13px;color:#475569;margin:0 0 20px; }
 
-    [data-theme="light"] .hero { background:linear-gradient(135deg,rgba(0,212,255,0.04),rgba(99,102,241,0.04)); }
+    [data-theme="light"] .hero { background:linear-gradient(135deg,rgba(0,229,255,0.04),rgba(99,102,241,0.04)); }
     [data-theme="light"] .hero-title { color:#0f172a; }
     [data-theme="light"] .hero-desc  { color:#475569; }
     [data-theme="light"] .stack-name { color:#0f172a; }
     [data-theme="light"] .release-version { color:#0f172a; }
     [data-theme="light"] .release-card { background:rgba(255,255,255,0.9); }
-    [data-theme="light"] .timeline::before { background:linear-gradient(to bottom,rgba(0,212,255,0.3),rgba(99,102,241,0.05)); }
+    [data-theme="light"] .timeline::before { background:linear-gradient(to bottom,rgba(0,229,255,0.3),rgba(99,102,241,0.05)); }
     [data-theme="light"] .tl-dot { background:#f8fafc; }
     [data-theme="light"] .section-title { color:#0f172a; }
   </style>
 </head>
-<body style="font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
+<body style="font-family:var(--font-body,'Fira Sans',system-ui,sans-serif);background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
 
   <!-- Sidebar -->
   <div id="sidebar-mount"></div>
@@ -77,7 +77,7 @@
 
   <!-- Main -->
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
-    <header style="background:rgba(8,12,24,0.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.06);box-shadow:0 1px 0 0 rgba(0,212,255,0.12),0 4px 24px rgba(0,0,0,0.4);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
+    <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 0 rgba(0,229,255,0.12),0 4px 24px rgba(0,0,0,0.4);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
       <div>
         <h1 style="font-size:22px;font-weight:700;color:#f1f5f9;margin:0;">About Snitch</h1>
         <p style="font-size:13px;color:#475569;margin:2px 0 0;">Platform information and release history</p>
@@ -90,7 +90,7 @@
       <!-- Hero -->
       <div class="hero">
         <div class="hero-logo">
-          <i data-lucide="shield-alert" style="width:32px;height:32px;color:#00d4ff;"></i>
+          <i data-lucide="shield-alert" style="width:32px;height:32px;color:#00e5ff;"></i>
         </div>
         <div>
           <div class="version-badge">
@@ -109,7 +109,7 @@
         <p class="section-sub">The tools and frameworks that power Snitch.</p>
         <div class="stack-grid">
           <div class="stack-card">
-            <div class="stack-icon" style="background:rgba(0,212,255,0.1);"><i data-lucide="zap" style="width:18px;height:18px;color:#00d4ff;"></i></div>
+            <div class="stack-icon" style="background:rgba(0,229,255,0.1);"><i data-lucide="zap" style="width:18px;height:18px;color:#00e5ff;"></i></div>
             <div><p class="stack-name">FastAPI</p><p class="stack-role">Backend API</p></div>
           </div>
           <div class="stack-card">
@@ -141,7 +141,7 @@
             <div><p class="stack-name">Checkov</p><p class="stack-role">IaC scanner</p></div>
           </div>
           <div class="stack-card">
-            <div class="stack-icon" style="background:rgba(0,212,255,0.1);"><i data-lucide="key" style="width:18px;height:18px;color:#00d4ff;"></i></div>
+            <div class="stack-icon" style="background:rgba(0,229,255,0.1);"><i data-lucide="key" style="width:18px;height:18px;color:#00e5ff;"></i></div>
             <div><p class="stack-name">Gitleaks</p><p class="stack-role">Secrets scanner</p></div>
           </div>
           <div class="stack-card">

@@ -13,7 +13,7 @@
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
     @keyframes slideInRight { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
     @keyframes slideOutRight { from{transform:translateX(0);opacity:1} to{transform:translateX(100%);opacity:0} }
-    .card { background:rgba(13,17,23,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:16px;backdrop-filter:blur(20px); }
+    .card { background:linear-gradient(145deg,#0f1b34 0%,#080f1d 100%);border:1px solid rgba(0,229,255,0.14);border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,.55),inset 0 1px 0 rgba(0,229,255,.06); }
     .dark-select option { background:#0d1117; }
     .modal-backdrop { position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:center;justify-content:center; }
     .tag { display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px; }
@@ -30,13 +30,13 @@
     .sev-info { color:#64748b; }
     .sev-badge { display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px; }
     .tab-btn { background:none;border:none;cursor:pointer;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;color:#64748b;transition:all 0.2s;white-space:nowrap; }
-    .tab-btn.active { background:rgba(0,212,255,0.12);color:#00d4ff; }
+    .tab-btn.active { background:rgba(0,229,255,0.12);color:#00e5ff; }
     .tab-btn:hover:not(.active) { background:rgba(255,255,255,0.05);color:#94a3b8; }
-    .rule-card { background:rgba(13,17,23,0.6);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:18px 20px;transition:all 0.2s;animation:fadeInUp 0.3s ease; }
-    .rule-card:hover { border-color:rgba(255,255,255,0.14);background:rgba(13,17,23,0.9); }
-    .rule-id { font-family:'SF Mono','Fira Code','Fira Mono','Consolas',monospace;font-size:12px;color:#00d4ff;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:3px 8px;display:inline-block;cursor:pointer;transition:all 0.15s; }
-    .rule-id:hover { background:rgba(0,212,255,0.15); }
-    .source-badge-catalog { background:rgba(0,212,255,0.1);color:#00d4ff;border:1px solid rgba(0,212,255,0.25);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600; }
+    .rule-card { background:linear-gradient(145deg,#0f1b34 0%,#080f1d 100%);border:1px solid rgba(0,229,255,0.12);border-radius:12px;padding:18px 20px;transition:all 0.2s;animation:fadeInUp 0.3s ease;box-shadow:0 2px 16px rgba(0,0,0,0.4); }
+    .rule-card:hover { border-color:rgba(0,229,255,0.28);box-shadow:0 4px 24px rgba(0,229,255,0.07); }
+    .rule-id { font-family:'SF Mono','Fira Code','Fira Mono','Consolas',monospace;font-size:12px;color:#00e5ff;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:6px;padding:3px 8px;display:inline-block;cursor:pointer;transition:all 0.15s; }
+    .rule-id:hover { background:rgba(0,229,255,0.15); }
+    .source-badge-catalog { background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid rgba(0,229,255,0.25);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600; }
     .source-badge-discovered { background:rgba(245,158,11,0.1);color:#fbbf24;border:1px solid rgba(245,158,11,0.25);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600; }
     .member-chip { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;transition:all 0.15s;user-select:none; }
     .member-chip-blocklist { background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.2); }
@@ -47,7 +47,7 @@
     .dark-label { display:block;font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px; }
   </style>
 </head>
-<body style="font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
+<body style="font-family:var(--font-body,'Fira Sans',system-ui,sans-serif);background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
 
   <!-- Sidebar -->
   <div id="sidebar-mount"></div>
@@ -58,10 +58,10 @@
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
 
     <!-- Header -->
-    <header style="background:rgba(8,12,24,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
+    <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
       <div>
-        <h1 style="font-size:22px;font-weight:700;color:#f1f5f9;margin:0;">Rules Library</h1>
-        <p style="font-size:13px;color:#475569;margin:2px 0 0;">Browse security rules, understand what they check, and assign them to policies</p>
+        <h1 style="font-size:18px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Rules Library</h1>
+        <p style="font-size:11px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// rules.library · detection</p>
       </div>
       <div id="header-user-slot" style="display:flex;gap:10px;align-items:center;">
         <div id="rule-counts" style="display:flex;gap:16px;align-items:center;">
@@ -74,7 +74,7 @@
     <main style="padding:24px 32px;">
 
       <!-- Scan type tabs -->
-      <div style="display:flex;gap:4px;margin-bottom:20px;background:rgba(255,255,255,0.03);padding:4px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);width:fit-content;">
+      <div style="display:flex;gap:4px;margin-bottom:20px;background:rgba(0,229,255,0.04);padding:4px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);width:fit-content;">
         <button class="tab-btn active" id="tab-all" onclick="setTab('')">All</button>
         <button class="tab-btn" id="tab-sast" onclick="setTab('sast')">SAST</button>
         <button class="tab-btn" id="tab-sca" onclick="setTab('sca')">SCA</button>
@@ -180,7 +180,7 @@
   <!-- Rule Detail Drawer -->
   <div id="detail-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:250;" onclick="closeDrawer()"></div>
   <div class="drawer" id="detail-drawer" style="display:none;">
-    <div style="padding:24px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+    <div style="padding:24px;border-bottom:1px solid rgba(0,229,255,0.1);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
       <div style="flex:1;">
         <span class="rule-id" id="drawer-rule-id" style="cursor:default;font-size:13px;"></span>
         <h2 id="drawer-rule-name" style="font-size:18px;font-weight:700;color:#f1f5f9;margin:10px 0 0;line-height:1.35;"></h2>
@@ -373,22 +373,22 @@
           <p style="font-size:14px;color:#94a3b8;line-height:1.65;margin:0;">${escHtml(rule.description)}</p>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px;">
+          <div style="background:rgba(0,229,255,0.04);border-radius:10px;padding:14px;">
             <div class="dark-label">Severity</div>
             <span class="sev-badge ${sevClass(rule.severity)}" style="font-size:14px;">
               <i data-lucide="${sevIcon(rule.severity)}" style="width:14px;height:14px;"></i>
               ${escHtml(rule.severity)}
             </span>
           </div>
-          <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px;">
+          <div style="background:rgba(0,229,255,0.04);border-radius:10px;padding:14px;">
             <div class="dark-label">Scan Type</div>
             ${scanTypeTag(rule.scan_type)}
           </div>
-          <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px;">
+          <div style="background:rgba(0,229,255,0.04);border-radius:10px;padding:14px;">
             <div class="dark-label">Scanner</div>
             <span style="font-size:13px;color:#e2e8f0;">${escHtml(rule.scanner)}</span>
           </div>
-          <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:14px;">
+          <div style="background:rgba(0,229,255,0.04);border-radius:10px;padding:14px;">
             <div class="dark-label">Category</div>
             <span style="font-size:13px;color:#e2e8f0;">${escHtml(rule.category)}</span>
           </div>
@@ -403,7 +403,7 @@
         ${rule.reference_url ? `
         <div>
           <div class="dark-label">Reference</div>
-          <a href="${escHtml(rule.reference_url)}" target="_blank" style="font-size:13px;color:#00d4ff;text-decoration:none;word-break:break-all;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+          <a href="${escHtml(rule.reference_url)}" target="_blank" style="font-size:13px;color:#00e5ff;text-decoration:none;word-break:break-all;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
             ${escHtml(rule.reference_url)}
           </a>
         </div>` : ''}
@@ -522,7 +522,7 @@
 
     // ── Toast ─────────────────────────────────────────────────────────────────
     function showToast(message, type='success') {
-      const colors = {success:'#10b981', error:'#ef4444', warning:'#f59e0b', info:'#00d4ff'};
+      const colors = {success:'#10b981', error:'#ef4444', warning:'#f59e0b', info:'#00e5ff'};
       const icons = {success:'check-circle', error:'alert-circle', warning:'alert-triangle', info:'info'};
       const toast = document.createElement('div');
       toast.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(13,17,23,0.95);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:#f1f5f9;font-size:14px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.5);`;

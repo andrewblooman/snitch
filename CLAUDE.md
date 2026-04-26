@@ -9,11 +9,26 @@ ALWAYS update README.md before pushing any code to GitHub
 ALWAYS update API Docs / swagger before pushing any code to GitHub
 ALWAYS push the branch to GitHub and open a PR
 
+## Claude Code Skills
+
+This project uses the **ui-ux-pro-max** Claude Code skill for UI/UX design work. The skill provides a searchable database of 67 styles, 96 colour palettes, 57 font pairings, and 25 chart types with opinionated recommendations for product type, stack, and accessibility.
+
+- **Skill source:** https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
+- **Installed at:** `.claude/skills/ui-ux-pro-max/`
+- **Invoke via:** `/ui-ux-pro-max <your design request>` inside Claude Code
+
+When making frontend changes, run the design-system generator first:
+```bash
+python3.14 .claude/skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system -p "Snitch AppSec Platform"
+```
+
 ## What This Is
 
-Snitch is an AppSec platform that aggregates security findings from Semgrep (SAST), Grype (container CVEs), Trivy (SCA), Checkov (IaC/Terraform), and Gitleaks (secrets), calculates per-app risk scores, and provides AI-powered remediation via Anthropic Claude. Includes a User Profile page with light/dark mode toggle (stored in localStorage). UI uses a vibrant dark theme with CSS design tokens in `frontend/static/css/theme.css` (severity palette, gradient, glow variables).
+Snitch is an AppSec platform that aggregates security findings from Semgrep (SAST), Grype (container CVEs), Trivy (SCA), Checkov (IaC/Terraform), and Gitleaks (secrets), calculates per-app risk scores, and provides AI-powered remediation via Anthropic Claude. Includes a User Profile page with light/dark mode toggle (stored in localStorage). UI uses a cybersecurity dark theme with CSS design tokens in `frontend/static/css/theme.css` (severity palette, gradient, glow variables).
 
-The sidebar is a shared JS component defined in `frontend/static/js/sidebar.js`. Each HTML page uses `<div id="sidebar-mount"></div>` followed by `<script src="/static/js/sidebar.js"></script>` — the script renders the full sidebar, auto-detects the active nav link, and defines `window.applyTheme()`. Do not duplicate sidebar HTML across pages; edit `sidebar.js` for any sidebar changes.
+**Design System:** The UI follows a cybersecurity HUD aesthetic — near-black page background (`#03040c`), cards with `linear-gradient(145deg, #0f1b34, #080f1d)` and a `rgba(0,229,255,0.14)` cyan border, electric cyan accent `#00e5ff`, and **Fira Code** monospace font for all metric numbers, labels, and headings. These are injected globally via `sidebar.js`. The dashboard and app-detail pages use a "Threat Intelligence Strip" (horizontal panel) instead of four stat tiles — severity counts in 52px Fira Code with a dynamic threat-level indicator and SVG arc gauge. Do not revert to generic SaaS tile layouts. Design tokens live in `frontend/static/css/theme.css`; new cybersecurity utility classes (`.mono-id`, `.terminal-label`, `.card-threat-c/h/m/l`, `.threat-pulse`, `.scan-line`, `.glitch-hover`) are defined there too.
+
+The sidebar is a shared JS component defined in `frontend/static/js/sidebar.js`. Each HTML page uses `<div id="sidebar-mount"></div>` followed by `<script src="/static/js/sidebar.js"></script>` — the script renders the full sidebar, auto-detects the active nav link, injects Google Fonts (Fira Code + Fira Sans), and defines `window.applyTheme()`. Do not duplicate sidebar HTML across pages; edit `sidebar.js` for any sidebar changes.
 
 The header user widget is a shared JS component defined in `frontend/static/js/header.js`. Each HTML page includes `<script src="/static/js/header.js"></script>` after the sidebar script and adds `id="header-user-slot"` to the right-side container inside `<header>`. The script injects a circular user avatar button with a dropdown (Profile link + disabled Logout placeholder) into that slot. Do not duplicate the widget HTML across pages; edit `header.js` for any user-menu changes.
 
