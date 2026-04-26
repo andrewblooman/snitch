@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snitch — Security Policies</title>
   <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
-  <style>/* Inter font fallback */ body { font-family: "Inter", system-ui, -apple-system, sans-serif; }</style>
+  <style>/* Inter font fallback */ body { font-family: var(--font-body); }</style>
   <link rel="stylesheet" href="/static/css/theme.css">
   <script src="/static/js/lucide.min.js"></script>
   <style>
@@ -15,10 +15,10 @@
     @keyframes slideInRight { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
     .btn-icon { background:none;border:none;cursor:pointer;padding:6px;border-radius:6px;transition:all 0.2s;display:inline-flex;align-items:center;justify-content:center; }
     .btn-icon:hover { background:rgba(255,255,255,0.08); }
-    .card { background:rgba(13,17,23,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:16px;backdrop-filter:blur(20px); }
+    .card { background:linear-gradient(145deg,#0f1b34 0%,#080f1d 100%);border:1px solid rgba(0,229,255,0.14);border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,.55),inset 0 1px 0 rgba(0,229,255,.06); }
     .dark-select option { background:#0d1117; }
     .modal-backdrop { position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:center;justify-content:center; }
-    .policy-row:hover { background:rgba(255,255,255,0.03); }
+    .policy-row:hover { background:rgba(0,229,255,0.04); }
     .tag { display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px; }
     .tag-sast { background:rgba(99,102,241,0.2);color:#a5b4fc; }
     .tag-sca { background:rgba(16,185,129,0.2);color:#6ee7b7; }
@@ -34,18 +34,18 @@
     .sev-low { color:#22c55e; }
     .sev-info { color:#64748b; }
     .chip { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;background:rgba(255,255,255,0.07);color:#94a3b8;cursor:pointer;transition:all 0.15s;user-select:none;border:1px solid transparent; }
-    .chip.active { border-color:rgba(0,212,255,0.4);color:#00d4ff;background:rgba(0,212,255,0.1); }
+    .chip.active { border-color:rgba(0,229,255,0.4);color:#00e5ff;background:rgba(0,229,255,0.1); }
     .chip:hover:not(.active) { background:rgba(255,255,255,0.1); }
     .drawer { position:fixed;top:0;right:0;height:100vh;width:480px;background:#080c18;border-left:1px solid rgba(255,255,255,0.08);z-index:300;overflow-y:auto;animation:slideInRight 0.25s ease; }
     .toggle-switch { position:relative;display:inline-block;width:36px;height:20px; }
     .toggle-switch input { opacity:0;width:0;height:0; }
     .slider { position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,0.1);border-radius:20px;transition:0.3s; }
     .slider:before { position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background:white;border-radius:50%;transition:0.3s; }
-    input:checked + .slider { background:linear-gradient(135deg,#00d4ff,#6366f1); }
+    input:checked + .slider { background:linear-gradient(135deg,#00e5ff,#6366f1); }
     input:checked + .slider:before { transform:translateX(16px); }
   </style>
 </head>
-<body style="font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
+<body style="font-family:var(--font-body,'Fira Sans',system-ui,sans-serif);background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
 
   <!-- Sidebar -->
   <div id="sidebar-mount"></div>
@@ -54,10 +54,10 @@
 
   <!-- Main -->
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
-    <header style="background:rgba(8,12,24,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
+    <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
       <div>
-        <h1 style="font-size:22px;font-weight:700;color:#f1f5f9;margin:0;">Security Policies</h1>
-        <p style="font-size:13px;color:#475569;margin:2px 0 0;">Define scan rules, severity thresholds, and enforcement actions</p>
+        <h1 style="font-size:18px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Security Policies</h1>
+        <p style="font-size:11px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// policies.config · enforcement</p>
       </div>
       <div id="header-user-slot" style="display:flex;gap:10px;align-items:center;">
         <button class="btn-secondary" onclick="seedDefaultPolicies()" id="seed-btn" title="Create default CIS L1-aligned policies">
@@ -83,7 +83,7 @@
 
       <!-- Policy Table -->
       <div class="card" style="overflow:hidden;">
-        <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;">
+        <div style="padding:20px 24px;border-bottom:1px solid rgba(0,229,255,0.08);display:flex;align-items:center;justify-content:space-between;">
           <div style="font-size:16px;font-weight:600;color:#f1f5f9;">All Policies</div>
           <div style="display:flex;gap:8px;">
             <select class="dark-select" id="filter-active" onchange="loadPolicies()" style="width:auto;padding:6px 10px;font-size:13px;">
@@ -178,7 +178,7 @@
         </div>
 
         <!-- Active toggle -->
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:rgba(255,255,255,0.03);border-radius:10px;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:rgba(0,229,255,0.04);border-radius:10px;margin-bottom:24px;">
           <div>
             <div style="font-size:14px;font-weight:600;color:#f1f5f9;">Activate policy</div>
             <div style="font-size:12px;color:#475569;margin-top:2px;">Active policies are evaluated on every scan</div>
@@ -224,7 +224,7 @@
   <!-- ===================== EVALUATION DRAWER ===================== -->
   <div id="eval-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:290;" onclick="closeDrawer()"></div>
   <div id="eval-drawer" class="drawer" style="display:none;">
-    <div style="padding:24px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;">
+    <div style="padding:24px;border-bottom:1px solid rgba(0,229,255,0.1);display:flex;align-items:center;justify-content:space-between;">
       <div>
         <div style="font-size:16px;font-weight:700;color:#f1f5f9;" id="drawer-title">Policy Evaluation</div>
         <div style="font-size:12px;color:#475569;margin-top:2px;" id="drawer-subtitle"></div>
@@ -291,7 +291,7 @@
       tbody.innerHTML = `
         <table style="width:100%;border-collapse:collapse;">
           <thead>
-            <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+            <tr style="border-bottom:1px solid rgba(0,229,255,0.08);">
               <th style="padding:12px 24px;text-align:left;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.5px;">Policy</th>
               <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.5px;">Scan Types</th>
               <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.5px;">Min Severity</th>
@@ -320,7 +320,7 @@
       const sevColor = {critical:'#ef4444',high:'#f97316',medium:'#eab308',low:'#22c55e',info:'#64748b'}[p.min_severity] || '#94a3b8';
       const actionTag = `<span class="tag tag-${p.action}">${p.action}</span>`;
       return `
-        <tr class="policy-row" style="border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.15s;">
+        <tr class="policy-row" style="border-bottom:1px solid rgba(0,229,255,0.06);transition:background 0.15s;">
           <td style="padding:14px 24px;">
             <div style="font-size:14px;font-weight:600;color:#f1f5f9;">${escHtml(p.name)}</div>
             ${p.description ? `<div style="font-size:12px;color:#475569;margin-top:2px;">${escHtml(p.description)}</div>` : ''}
@@ -339,7 +339,7 @@
           <td style="padding:14px 24px;text-align:right;">
             <div style="display:flex;gap:6px;justify-content:flex-end;align-items:center;">
               <button class="btn-icon" title="Evaluate" onclick="evaluatePolicy('${p.id}', '${escHtml(p.name)}')">
-                <i data-lucide="play" style="width:15px;height:15px;color:#00d4ff;"></i>
+                <i data-lucide="play" style="width:15px;height:15px;color:#00e5ff;"></i>
               </button>
               <button class="btn-icon" title="Edit" onclick="openEditModal(${JSON.stringify(p).replace(/"/g, '&quot;')})">
                 <i data-lucide="pencil" style="width:15px;height:15px;color:#94a3b8;"></i>
@@ -558,7 +558,7 @@
           for (const v of r.violations) {
             const sevColor = {critical:'#ef4444',high:'#f97316',medium:'#eab308',low:'#22c55e',info:'#64748b'}[v.severity] || '#94a3b8';
             const reasonLabel = v.reason === 'blocklisted_rule' ? '🚫 Blocklisted' : '⚠ Severity';
-            html += `<div style="padding:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;margin-bottom:8px;">
+            html += `<div style="padding:12px;background:rgba(0,229,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;margin-bottom:8px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
                 <span style="font-size:13px;font-weight:600;color:#f1f5f9;">${escHtml(v.finding_title)}</span>
                 <span style="font-size:11px;font-weight:600;color:${sevColor};text-transform:uppercase;">${v.severity}</span>
@@ -582,7 +582,7 @@
     // TOAST
     // ----------------------------------------------------------------
     function showToast(message, type='success') {
-      const colors = {success:'#10b981', error:'#ef4444', warning:'#f59e0b', info:'#00d4ff'};
+      const colors = {success:'#10b981', error:'#ef4444', warning:'#f59e0b', info:'#00e5ff'};
       const icons = {success:'check-circle', error:'alert-circle', warning:'alert-triangle', info:'info'};
       const toast = document.createElement('div');
       toast.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(13,17,23,0.95);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:#f1f5f9;font-size:14px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.5);`;

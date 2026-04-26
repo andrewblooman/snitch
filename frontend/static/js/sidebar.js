@@ -17,6 +17,26 @@
  * window.applyTheme = applyTheme to override this shared version.
  */
 (function () {
+  // ── Inject Fira Code + Fira Sans from Google Fonts (loads on every page) ──
+  if (!document.getElementById('snitch-fonts')) {
+    var preconnect1 = document.createElement('link');
+    preconnect1.rel = 'preconnect';
+    preconnect1.href = 'https://fonts.googleapis.com';
+    document.head.appendChild(preconnect1);
+
+    var preconnect2 = document.createElement('link');
+    preconnect2.rel = 'preconnect';
+    preconnect2.href = 'https://fonts.gstatic.com';
+    preconnect2.crossOrigin = 'anonymous';
+    document.head.appendChild(preconnect2);
+
+    var fontLink = document.createElement('link');
+    fontLink.id = 'snitch-fonts';
+    fontLink.rel = 'stylesheet';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap';
+    document.head.appendChild(fontLink);
+  }
+
   // ── Default applyTheme (may be overridden by individual pages) ───────────
   window.applyTheme = function (theme) {
     document.documentElement.setAttribute('data-theme', theme);
@@ -72,12 +92,17 @@
   }
 
   var ACTIVE_STYLE = [
-    'background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(99,102,241,0.15))',
-    'color:#00d4ff',
-    'border:1px solid rgba(0,212,255,0.2)',
+    'background:linear-gradient(135deg,rgba(0,229,255,0.12),rgba(99,102,241,0.12))',
+    'color:#00e5ff',
+    'border-left:3px solid #00e5ff',
+    'border-top:1px solid rgba(0,229,255,0.18)',
+    'border-right:1px solid rgba(0,229,255,0.18)',
+    'border-bottom:1px solid rgba(0,229,255,0.18)',
+    'box-shadow:inset 0 0 12px rgba(0,229,255,0.06)',
+    'padding-left:10px',
   ].join(';');
 
-  var INACTIVE_STYLE = 'color:#94a3b8';
+  var INACTIVE_STYLE = 'color:#94a3b8;border:1px solid transparent';
 
   // ── HTML builders ─────────────────────────────────────────────────────────
   function navLink(item) {
@@ -106,7 +131,7 @@
   }
 
   function sectionLabel(text) {
-    return '<div style="font-size:10px;color:#475569;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:12px 8px 4px;">' + text + '</div>';
+    return '<div style="font-size:9px;color:#475569;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:12px 8px 4px;font-family:\'Fira Code\',monospace;">// ' + text + '</div>';
   }
 
   var navHTML = NAV_SECTIONS.map(function (section) {
@@ -114,23 +139,23 @@
   }).join('');
 
   var sidebarHTML = ''
-    + '<aside id="sidebar" style="width:260px;min-height:100vh;background:#080c18;border-right:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;">'
-    +   '<div style="padding:24px 20px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:12px;">'
-    +     '<div style="width:40px;height:40px;background:linear-gradient(135deg,rgba(0,212,255,0.2),rgba(99,102,241,0.2));border:1px solid rgba(0,212,255,0.45);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(0,212,255,0.15);">'
-    +       '<i data-lucide="shield-alert" style="width:20px;height:20px;color:#00d4ff;"></i>'
+    + '<aside id="sidebar" style="width:260px;min-height:100vh;background:#060712;border-right:1px solid rgba(0,229,255,0.10);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;">'
+    +   '<div style="padding:24px 20px;border-bottom:1px solid rgba(0,229,255,0.08);display:flex;align-items:center;gap:12px;">'
+    +     '<div style="width:40px;height:40px;background:linear-gradient(135deg,rgba(0,229,255,0.2),rgba(99,102,241,0.2));border:1px solid rgba(0,229,255,0.5);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(0,229,255,0.2),inset 0 0 10px rgba(0,229,255,0.05);">'
+    +       '<i data-lucide="shield-alert" style="width:20px;height:20px;color:#00e5ff;"></i>'
     +     '</div>'
     +     '<div>'
-    +       '<div style="font-size:20px;font-weight:800;color:#f1f5f9;letter-spacing:-0.5px;">Snitch</div>'
-    +       '<div style="font-size:11px;color:#00d4ff;font-weight:500;letter-spacing:1px;text-transform:uppercase;">AppSec Platform</div>'
+    +       '<div class="glitch-hover" style="font-size:20px;font-weight:700;color:#f1f5f9;letter-spacing:1px;font-family:\'Fira Code\',monospace;">Snitch</div>'
+    +       '<div style="font-size:10px;color:#00e5ff;font-weight:500;letter-spacing:2px;text-transform:uppercase;font-family:\'Fira Code\',monospace;">AppSec_Platform</div>'
     +     '</div>'
     +   '</div>'
     +   '<nav style="flex:1;padding:8px 12px;overflow-y:auto;">'
     +     navHTML
     +   '</nav>'
-    +   '<div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,0.08);">'
+    +   '<div style="padding:16px 20px;border-top:1px solid rgba(0,229,255,0.08);">'
     +     '<div style="display:flex;align-items:center;gap:8px;">'
-    +       '<div style="width:8px;height:8px;background:#10b981;border-radius:50%;box-shadow:0 0 8px #10b981;"></div>'
-    +       '<span style="font-size:12px;color:#475569;">All systems operational</span>'
+    +       '<div style="width:7px;height:7px;background:#00c853;border-radius:50%;box-shadow:0 0 10px #00c853,0 0 4px #00c853;"></div>'
+    +       '<span style="font-size:11px;color:#00c853;font-family:\'Fira Code\',monospace;font-weight:500;letter-spacing:0.5px;">[SECURE] · All Systems Nominal</span>'
     +     '</div>'
     +   '</div>'
     + '</aside>';

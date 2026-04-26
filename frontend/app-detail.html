@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snitch — Application Detail</title>
   <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
-  <style>/* Inter font fallback */ body { font-family: "Inter", system-ui, -apple-system, sans-serif; }</style>
+  <style>/* Inter font fallback */ body { font-family: var(--font-body); }</style>
   <link rel="stylesheet" href="/static/css/theme.css">
   <script src="/static/js/chart.min.js"></script>
   <script src="/static/js/lucide.min.js"></script>
@@ -17,13 +17,13 @@
     @keyframes fadeInUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
     @keyframes spin { to{transform:rotate(360deg)} }
     @keyframes scanPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.7;transform:scale(1.05)} }
-    @keyframes glow { 0%,100%{box-shadow:0 0 20px rgba(0,212,255,0.3)} 50%{box-shadow:0 0 40px rgba(0,212,255,0.6)} }
-    .card-hover:hover { border-color:rgba(0,212,255,0.3) !important; transform:translateY(-2px); transition:all 0.3s; }
-    .table-row:hover { background:rgba(255,255,255,0.03) !important; }
-    .card { background:rgba(13,17,23,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:16px;backdrop-filter:blur(20px); }
+    @keyframes glow { 0%,100%{box-shadow:0 0 20px rgba(0,229,255,0.3)} 50%{box-shadow:0 0 40px rgba(0,229,255,0.6)} }
+    .card-hover:hover { border-color:rgba(0,229,255,0.3) !important; transform:translateY(-2px); transition:all 0.3s; }
+    .table-row:hover { background:rgba(0,229,255,0.04) !important; }
+    .card { background:linear-gradient(145deg,#0f1b34 0%,#080f1d 100%);border:1px solid rgba(0,229,255,0.14);border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,.55),inset 0 1px 0 rgba(0,229,255,.06); }
     .dark-select option { background:#0d1117; }
     .tab-btn { padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all 0.2s;background:transparent;color:#94a3b8; }
-    .tab-btn.active { background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(99,102,241,0.15));color:#00d4ff;border:1px solid rgba(0,212,255,0.2); }
+    .tab-btn.active { background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(99,102,241,0.15));color:#00e5ff;border:1px solid rgba(0,229,255,0.2); }
     .tab-btn:hover:not(.active) { background:rgba(255,255,255,0.05);color:#e2e8f0; }
     .modal-backdrop { position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);z-index:200;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 20px; }
     .finding-expand { display:none; }
@@ -33,7 +33,7 @@
     .status-menu.open { display:block; }
   </style>
 </head>
-<body style="font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
+<body style="font-family:var(--font-body,'Fira Sans',system-ui,sans-serif);background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
 
   <!-- Sidebar -->
   <div id="sidebar-mount"></div>
@@ -42,16 +42,16 @@
 
   <!-- Main -->
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
-    <header style="background:rgba(8,12,24,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
+    <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
       <div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
-          <a href="/applications.html" style="color:#475569;text-decoration:none;font-size:13px;font-weight:500;display:flex;align-items:center;gap:4px;transition:color 0.2s;" onmouseover="this.style.color='#00d4ff'" onmouseout="this.style.color='#475569'">
+          <a href="/applications.html" style="color:#475569;text-decoration:none;font-size:13px;font-weight:500;display:flex;align-items:center;gap:4px;transition:color 0.2s;" onmouseover="this.style.color='#00e5ff'" onmouseout="this.style.color='#475569'">
             <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Applications
           </a>
           <span style="color:#475569;font-size:13px;">/</span>
           <span id="breadcrumb-name" style="font-size:13px;color:#94a3b8;font-weight:500;">Loading...</span>
         </div>
-        <h1 id="page-title" style="font-size:22px;font-weight:700;color:#f1f5f9;margin:0;">Application Detail</h1>
+        <h1 id="page-title" style="font-size:18px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Application Detail</h1>
       </div>
       <div id="header-user-slot" style="display:flex;gap:10px;align-items:center;">
         <button class="btn-secondary" onclick="openRemediationModal()">
@@ -76,12 +76,27 @@
         </div>
       </div>
 
-      <!-- Stat Cards Row -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;" id="finding-stats">
-        <div class="card" style="padding:20px;animation:pulse 1.5s infinite;"><div style="height:14px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:8px;width:70%;"></div><div style="height:28px;background:rgba(255,255,255,0.05);border-radius:6px;width:50%;"></div></div>
-        <div class="card" style="padding:20px;animation:pulse 1.5s infinite;"><div style="height:14px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:8px;width:70%;"></div><div style="height:28px;background:rgba(255,255,255,0.05);border-radius:6px;width:50%;"></div></div>
-        <div class="card" style="padding:20px;animation:pulse 1.5s infinite;"><div style="height:14px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:8px;width:70%;"></div><div style="height:28px;background:rgba(255,255,255,0.05);border-radius:6px;width:50%;"></div></div>
-        <div class="card" style="padding:20px;animation:pulse 1.5s infinite;"><div style="height:14px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:8px;width:70%;"></div><div style="height:28px;background:rgba(255,255,255,0.05);border-radius:6px;width:50%;"></div></div>
+      <!-- Finding Stats Strip -->
+      <div id="finding-stats" class="card" style="display:flex;align-items:stretch;overflow:hidden;margin-bottom:24px;min-height:90px;">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:18px 12px;animation:pulse 1.5s infinite;">
+          <div style="height:32px;width:64px;background:rgba(255,255,255,0.05);border-radius:6px;"></div>
+          <div style="height:9px;width:50px;background:rgba(255,255,255,0.04);border-radius:4px;"></div>
+        </div>
+        <div style="width:1px;background:rgba(0,229,255,0.09);align-self:stretch;margin:12px 0;flex-shrink:0;"></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:18px 12px;animation:pulse 1.5s infinite;">
+          <div style="height:32px;width:64px;background:rgba(255,255,255,0.05);border-radius:6px;"></div>
+          <div style="height:9px;width:50px;background:rgba(255,255,255,0.04);border-radius:4px;"></div>
+        </div>
+        <div style="width:1px;background:rgba(0,229,255,0.09);align-self:stretch;margin:12px 0;flex-shrink:0;"></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:18px 12px;animation:pulse 1.5s infinite;">
+          <div style="height:32px;width:64px;background:rgba(255,255,255,0.05);border-radius:6px;"></div>
+          <div style="height:9px;width:50px;background:rgba(255,255,255,0.04);border-radius:4px;"></div>
+        </div>
+        <div style="width:1px;background:rgba(0,229,255,0.09);align-self:stretch;margin:12px 0;flex-shrink:0;"></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:18px 12px;animation:pulse 1.5s infinite;">
+          <div style="height:32px;width:64px;background:rgba(255,255,255,0.05);border-radius:6px;"></div>
+          <div style="height:9px;width:50px;background:rgba(255,255,255,0.04);border-radius:4px;"></div>
+        </div>
       </div>
 
       <!-- Tabs -->
@@ -134,7 +149,7 @@
                 </tr>
               </thead>
               <tbody id="findings-tbody">
-                <tr><td colspan="7" style="padding:32px;text-align:center;"><div style="animation:spin 1s linear infinite;display:inline-block;width:24px;height:24px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00d4ff;border-radius:50%;"></div></td></tr>
+                <tr><td colspan="7" style="padding:32px;text-align:center;"><div style="animation:spin 1s linear infinite;display:inline-block;width:24px;height:24px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></td></tr>
               </tbody>
             </table>
           </div>
@@ -147,12 +162,12 @@
               <i data-lucide="play" style="width:15px;height:15px;"></i> Trigger Scan
             </button>
           </div>
-          <div id="scans-list"><div style="text-align:center;padding:32px;"><div style="animation:spin 1s linear infinite;display:inline-block;width:24px;height:24px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00d4ff;border-radius:50%;"></div></div></div>
+          <div id="scans-list"><div style="text-align:center;padding:32px;"><div style="animation:spin 1s linear infinite;display:inline-block;width:24px;height:24px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></div></div>
         </div>
 
         <!-- Remediations Tab -->
         <div id="pane-remediations" style="display:none;">
-          <div id="remediations-grid"><div style="text-align:center;padding:32px;"><div style="animation:spin 1s linear infinite;display:inline-block;width:24px;height:24px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00d4ff;border-radius:50%;"></div></div></div>
+          <div id="remediations-grid"><div style="text-align:center;padding:32px;"><div style="animation:spin 1s linear infinite;display:inline-block;width:24px;height:24px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></div></div>
         </div>
       </div>
     </main>
@@ -181,7 +196,7 @@
         <p style="font-size:14px;color:#94a3b8;margin-bottom:16px;">Select findings to include in the remediation plan:</p>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <span style="font-size:13px;color:#475569;" id="rem-selection-count">0 findings selected</span>
-          <button onclick="toggleSelectAll()" style="background:rgba(0,212,255,0.1);color:#00d4ff;border:1px solid rgba(0,212,255,0.2);padding:4px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;" id="select-all-btn">Select All</button>
+          <button onclick="toggleSelectAll()" style="background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid rgba(0,229,255,0.2);padding:4px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;" id="select-all-btn">Select All</button>
         </div>
         <div id="rem-findings-list" style="max-height:320px;overflow-y:auto;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px;"></div>
         <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px;">
@@ -197,12 +212,12 @@
         <div style="width:60px;height:60px;margin:0 auto 20px;position:relative;">
           <div style="position:absolute;inset:0;border:2px solid rgba(99,102,241,0.2);border-radius:50%;"></div>
           <div style="position:absolute;inset:0;border:2px solid transparent;border-top-color:#6366f1;border-radius:50%;animation:spin 1s linear infinite;"></div>
-          <div style="position:absolute;inset:8px;border:2px solid transparent;border-top-color:#00d4ff;border-radius:50%;animation:spin 0.7s linear infinite reverse;"></div>
+          <div style="position:absolute;inset:8px;border:2px solid transparent;border-top-color:#00e5ff;border-radius:50%;animation:spin 0.7s linear infinite reverse;"></div>
         </div>
         <div style="font-size:16px;font-weight:600;color:#f1f5f9;margin-bottom:8px;">Claude is analyzing your vulnerabilities...</div>
         <div style="font-size:13px;color:#475569;margin-bottom:20px;">This may take a moment. Please wait.</div>
         <div style="width:100%;height:4px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden;">
-          <div id="progress-bar" style="height:100%;width:0%;background:linear-gradient(135deg,#00d4ff,#6366f1);border-radius:2px;transition:width 0.5s ease;"></div>
+          <div id="progress-bar" style="height:100%;width:0%;background:linear-gradient(135deg,#00e5ff,#6366f1);border-radius:2px;transition:width 0.5s ease;"></div>
         </div>
       </div>
 
@@ -268,7 +283,7 @@ function formatDate(dateStr){
 }
 
 function showToast(message, type='success'){
-  const colors={success:'#10b981',error:'#ef4444',warning:'#f59e0b',info:'#00d4ff'};
+  const colors={success:'#10b981',error:'#ef4444',warning:'#f59e0b',info:'#00e5ff'};
   const icons={success:'check-circle',error:'alert-circle',warning:'alert-triangle',info:'info'};
   const toast=document.createElement('div');
   toast.style.cssText=`position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(13,17,23,0.95);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:#f1f5f9;font-size:14px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:slideInRight 0.3s ease;`;
@@ -292,17 +307,17 @@ function renderAppInfo(app){
   document.getElementById('page-title').textContent = app.name||'Application Detail';
   document.title = `Snitch — ${app.name||'App'}`;
 
-  const langColors={Python:'#3b82f6',JavaScript:'#f59e0b',TypeScript:'#6366f1',Go:'#00d4ff',Java:'#f97316',Kotlin:'#a78bfa',Ruby:'#ef4444',PHP:'#8b5cf6','C#':'#10b981','C++':'#94a3b8',Rust:'#f97316'};
+  const langColors={Python:'#3b82f6',JavaScript:'#f59e0b',TypeScript:'#6366f1',Go:'#00e5ff',Java:'#f97316',Kotlin:'#a78bfa',Ruby:'#ef4444',PHP:'#8b5cf6','C#':'#10b981','C++':'#94a3b8',Rust:'#f97316'};
   const lc = langColors[app.language]||'#475569';
   const repoUrl = (app.github_org && app.github_repo) ? `https://github.com/${app.github_org}/${app.github_repo}` : null;
 
   document.getElementById('app-info-card').innerHTML = `
     <h2 style="font-size:24px;font-weight:800;color:#f1f5f9;margin:0 0 10px;">${app.name||'—'}</h2>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-      ${app.team_name ? `<span style="background:rgba(0,212,255,0.1);color:#00d4ff;border:1px solid rgba(0,212,255,0.2);padding:3px 10px;border-radius:6px;font-size:12px;font-weight:500;">${app.team_name}</span>` : ''}
+      ${app.team_name ? `<span style="background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid rgba(0,229,255,0.2);padding:3px 10px;border-radius:6px;font-size:12px;font-weight:500;">${app.team_name}</span>` : ''}
       ${app.language ? `<span style="background:${lc}22;color:${lc};border:1px solid ${lc}44;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:500;">${app.language}</span>` : ''}
     </div>
-    ${repoUrl ? `<a href="${repoUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;color:#00d4ff;text-decoration:none;font-size:13px;font-weight:500;margin-bottom:14px;"><i data-lucide="github" style="width:15px;height:15px;"></i>${app.github_org}/${app.github_repo}<i data-lucide="external-link" style="width:12px;height:12px;"></i></a>` : ''}
+    ${repoUrl ? `<a href="${repoUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;color:#00e5ff;text-decoration:none;font-size:13px;font-weight:500;margin-bottom:14px;"><i data-lucide="github" style="width:15px;height:15px;"></i>${app.github_org}/${app.github_repo}<i data-lucide="external-link" style="width:12px;height:12px;"></i></a>` : ''}
     ${app.description ? `<p style="font-size:14px;color:#94a3b8;line-height:1.6;margin-bottom:16px;">${app.description}</p>` : '<p style="font-size:14px;color:#475569;margin-bottom:16px;font-style:italic;">No description provided.</p>'}
     <div style="font-size:12px;color:#475569;display:flex;align-items:center;gap:6px;"><i data-lucide="calendar" style="width:14px;height:14px;"></i> Created ${formatDate(app.created_at)}</div>
   `;
@@ -335,28 +350,24 @@ function renderAppInfo(app){
 
 function renderFindingStats(fs){
   const stats=[
-    {label:'Critical',value:fs.critical||0,color:'#ef4444',bg:'rgba(239,68,68,0.15)',border:'rgba(239,68,68,0.3)',icon:'alert-octagon'},
-    {label:'High',value:fs.high||0,color:'#f59e0b',bg:'rgba(245,158,11,0.15)',border:'rgba(245,158,11,0.3)',icon:'alert-triangle'},
-    {label:'Medium',value:fs.medium||0,color:'#f97316',bg:'rgba(249,115,22,0.15)',border:'rgba(249,115,22,0.3)',icon:'alert-circle'},
-    {label:'Low',value:fs.low||0,color:'#3b82f6',bg:'rgba(59,130,246,0.15)',border:'rgba(59,130,246,0.3)',icon:'info'},
+    {label:'CRITICAL',value:fs.critical||0,color:'#ff3333'},
+    {label:'HIGH',    value:fs.high||0,    color:'#ff9f43'},
+    {label:'MEDIUM',  value:fs.medium||0,  color:'#ff6b35'},
+    {label:'LOW',     value:fs.low||0,     color:'#54a0ff'},
   ];
-  document.getElementById('finding-stats').innerHTML = stats.map(s => `
-    <div class="card" style="padding:20px;border-color:${s.border};">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-        <div style="width:32px;height:32px;background:${s.bg};border-radius:8px;display:flex;align-items:center;justify-content:center;">
-          <i data-lucide="${s.icon}" style="width:16px;height:16px;color:${s.color};"></i>
-        </div>
-        <span style="font-size:12px;color:#94a3b8;font-weight:500;">${s.label}</span>
-      </div>
-      <div style="font-size:28px;font-weight:800;color:${s.color};">${s.value.toLocaleString()}</div>
+  const el = document.getElementById('finding-stats');
+  el.innerHTML = stats.map((s,i) => `
+    ${i>0?'<div style="width:1px;background:rgba(0,229,255,0.09);align-self:stretch;margin:12px 0;flex-shrink:0;"></div>':''}
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px 12px;text-align:center;gap:6px;">
+      <div style="font-family:'Fira Code',monospace;font-size:36px;font-weight:700;color:${s.color};line-height:1;">${s.value.toLocaleString()}</div>
+      <div style="font-family:'Fira Code',monospace;font-size:9px;font-weight:600;letter-spacing:2px;color:${s.color};opacity:0.7;">${s.label}</div>
     </div>
   `).join('');
-  lucide.createIcons();
 }
 
 // ── Findings ───────────────────────────────────────────────────────────────────
 function scannerBadge(type){
-  const m={SAST:{color:'#a78bfa',bg:'rgba(167,139,250,0.15)'},SCA:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)'},Container:{color:'#00d4ff',bg:'rgba(0,212,255,0.15)'},Secret:{color:'#ef4444',bg:'rgba(239,68,68,0.15)'}};
+  const m={SAST:{color:'#a78bfa',bg:'rgba(167,139,250,0.15)'},SCA:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)'},Container:{color:'#00e5ff',bg:'rgba(0,229,255,0.15)'},Secret:{color:'#ef4444',bg:'rgba(239,68,68,0.15)'}};
   const s=m[(type||'').toUpperCase()]||{color:'#94a3b8',bg:'rgba(148,163,184,0.15)'};
   return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}33;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600;text-transform:uppercase;">${type||'—'}</span>`;
 }
@@ -389,7 +400,7 @@ function renderFindingsTable(findings){
     lucide.createIcons();return;
   }
   tbody.innerHTML=findings.map(f=>`
-    <tr class="table-row" style="border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;transition:background 0.2s;" id="row-${f.id}" onclick="toggleExpand('${f.id}')">
+    <tr class="table-row" style="border-bottom:1px solid rgba(0,229,255,0.06);cursor:pointer;transition:background 0.2s;" id="row-${f.id}" onclick="toggleExpand('${f.id}')">
       <td style="padding:12px;">${severityBadge(f.severity)}</td>
       <td style="padding:12px;max-width:260px;">
         <div style="font-size:13px;font-weight:500;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${f.title||''}">${f.title||'—'}</div>
@@ -435,7 +446,7 @@ function renderStatusDropdown(f){
       <div onclick="toggleStatusMenu('${f.id}')" style="cursor:pointer;">${statusBadge(f.status||'open')}</div>
       <div class="status-menu" id="menu-${f.id}">
         ${['open','accepted','false_positive'].map(s=>`
-          <div onclick="updateStatus('${f.id}','${s}')" style="padding:8px 12px;font-size:13px;color:${s===(f.status||'open')?'#00d4ff':'#94a3b8'};cursor:pointer;border-radius:6px;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+          <div onclick="updateStatus('${f.id}','${s}')" style="padding:8px 12px;font-size:13px;color:${s===(f.status||'open')?'#00e5ff':'#94a3b8'};cursor:pointer;border-radius:6px;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
             ${s==='open'?'Open':s==='accepted'?'Accept Risk':'False Positive'}
           </div>
         `).join('')}
@@ -465,7 +476,7 @@ async function updateStatus(findingId, status){
 
 // ── Scan History ───────────────────────────────────────────────────────────────
 function scanStatusBadge(status){
-  const m={completed:{color:'#10b981',bg:'rgba(16,185,129,0.1)',label:'Completed'},running:{color:'#00d4ff',bg:'rgba(0,212,255,0.1)',label:'Running',anim:true},failed:{color:'#ef4444',bg:'rgba(239,68,68,0.1)',label:'Failed'},pending:{color:'#94a3b8',bg:'rgba(148,163,184,0.1)',label:'Pending'}};
+  const m={completed:{color:'#10b981',bg:'rgba(16,185,129,0.1)',label:'Completed'},running:{color:'#00e5ff',bg:'rgba(0,229,255,0.1)',label:'Running',anim:true},failed:{color:'#ef4444',bg:'rgba(239,68,68,0.1)',label:'Failed'},pending:{color:'#94a3b8',bg:'rgba(148,163,184,0.1)',label:'Pending'}};
   const s=m[status]||m.pending;
   const style=s.anim?'animation:scanPulse 1.5s infinite;':'';
   return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}44;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;${style}">${s.label}</span>`;
@@ -515,7 +526,7 @@ async function triggerScan(){
 
 // ── Remediations ───────────────────────────────────────────────────────────────
 function remStatusBadge(status){
-  const m={pending:{color:'#f97316',bg:'rgba(249,115,22,0.1)',label:'Pending'},in_progress:{color:'#00d4ff',bg:'rgba(0,212,255,0.1)',label:'In Progress'},completed:{color:'#10b981',bg:'rgba(16,185,129,0.1)',label:'Completed'},failed:{color:'#ef4444',bg:'rgba(239,68,68,0.1)',label:'Failed'}};
+  const m={pending:{color:'#f97316',bg:'rgba(249,115,22,0.1)',label:'Pending'},in_progress:{color:'#00e5ff',bg:'rgba(0,229,255,0.1)',label:'In Progress'},completed:{color:'#10b981',bg:'rgba(16,185,129,0.1)',label:'Completed'},failed:{color:'#ef4444',bg:'rgba(239,68,68,0.1)',label:'Failed'}};
   const s=m[status]||m.pending;
   return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}44;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;">${s.label}</span>`;
 }
@@ -534,13 +545,13 @@ function renderRemediationsTab(items){
       </div>
       <div style="font-size:14px;font-weight:600;color:#f1f5f9;margin-bottom:6px;">Remediation Plan</div>
       <div style="font-size:12px;color:#475569;margin-bottom:12px;">${(r.finding_ids||[]).length} finding${(r.finding_ids||[]).length!==1?'s':''} addressed</div>
-      ${r.pr_url?`<a href="${r.pr_url}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;color:#00d4ff;text-decoration:none;font-size:12px;font-weight:500;margin-bottom:12px;"><i data-lucide="git-pull-request" style="width:13px;height:13px;"></i>View Pull Request</a>`:''}
+      ${r.pr_url?`<a href="${r.pr_url}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;color:#00e5ff;text-decoration:none;font-size:12px;font-weight:500;margin-bottom:12px;"><i data-lucide="git-pull-request" style="width:13px;height:13px;"></i>View Pull Request</a>`:''}
       <div style="display:flex;gap:8px;margin-top:auto;">
         <button class="btn-secondary" style="flex:1;padding:8px;font-size:12px;" onclick="viewPlan('${r.id}',\`${encodeURIComponent(r.plan_content||'No content available.')}\`)">
           <i data-lucide="eye" style="width:13px;height:13px;"></i> View Plan
         </button>
         <button class="btn-secondary" style="padding:8px 12px;font-size:12px;${r.status==='completed'?'opacity:0.4;cursor:not-allowed;':''}" ${r.status==='completed'?'disabled':''} onclick="executeRemediationById('${r.id}')">
-          <i data-lucide="play" style="width:13px;height:13px;color:#00d4ff;"></i>
+          <i data-lucide="play" style="width:13px;height:13px;color:#00e5ff;"></i>
         </button>
       </div>
     </div>
@@ -572,7 +583,7 @@ function openRemediationModal(){
   } else {
     list.innerHTML=openFindings.map(f=>`
       <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
-        <input type="checkbox" value="${f.id}" onchange="updateRemSelCount()" style="accent-color:#00d4ff;width:16px;height:16px;cursor:pointer;">
+        <input type="checkbox" value="${f.id}" onchange="updateRemSelCount()" style="accent-color:#00e5ff;width:16px;height:16px;cursor:pointer;">
         ${severityBadge(f.severity)}
         <span style="font-size:13px;color:#e2e8f0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.title||'Untitled'}</span>
         ${scannerBadge(f.scanner_type)}
@@ -690,7 +701,7 @@ async function runScan(){
 // ── Loaders ────────────────────────────────────────────────────────────────────
 async function loadScansTab(){
   const el=document.getElementById('scans-list');
-  el.innerHTML='<div style="text-align:center;padding:32px;"><div style="animation:spin 1s linear infinite;display:inline-block;width:24px;height:24px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00d4ff;border-radius:50%;"></div></div>';
+  el.innerHTML='<div style="text-align:center;padding:32px;"><div style="animation:spin 1s linear infinite;display:inline-block;width:24px;height:24px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></div>';
   try{
     const res=await fetch(`/api/v1/applications/${appId}/scans`);
     if(!res.ok)throw new Error('Failed to load scans');
@@ -711,7 +722,7 @@ async function loadScansTab(){
 
 async function loadRemediationsTab(){
   const el=document.getElementById('remediations-grid');
-  el.innerHTML='<div style="text-align:center;padding:32px;"><div style="animation:spin 1s linear infinite;display:inline-block;width:24px;height:24px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00d4ff;border-radius:50%;"></div></div>';
+  el.innerHTML='<div style="text-align:center;padding:32px;"><div style="animation:spin 1s linear infinite;display:inline-block;width:24px;height:24px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></div>';
   try{
     const res=await fetch(`/api/v1/remediation?application_id=${appId}`);
     if(!res.ok)throw new Error('Failed to load remediations');
