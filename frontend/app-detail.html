@@ -311,6 +311,7 @@ function renderAppInfo(app){
   const lc = langColors[app.language]||'#475569';
   const repoUrl = (app.github_org && app.github_repo) ? `https://github.com/${app.github_org}/${app.github_repo}` : null;
 
+  const scheduleLabel = app.scan_schedule === 'none' ? 'Manual only' : app.scan_schedule || 'Manual only';
   document.getElementById('app-info-card').innerHTML = `
     <h2 style="font-size:24px;font-weight:800;color:#f1f5f9;margin:0 0 10px;">${app.name||'—'}</h2>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
@@ -318,8 +319,25 @@ function renderAppInfo(app){
       ${app.language ? `<span style="background:${lc}22;color:${lc};border:1px solid ${lc}44;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:500;">${app.language}</span>` : ''}
     </div>
     ${repoUrl ? `<a href="${repoUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;color:#00e5ff;text-decoration:none;font-size:13px;font-weight:500;margin-bottom:14px;"><i data-lucide="github" style="width:15px;height:15px;"></i>${app.github_org}/${app.github_repo}<i data-lucide="external-link" style="width:12px;height:12px;"></i></a>` : ''}
-    ${app.description ? `<p style="font-size:14px;color:#94a3b8;line-height:1.6;margin-bottom:16px;">${app.description}</p>` : '<p style="font-size:14px;color:#475569;margin-bottom:16px;font-style:italic;">No description provided.</p>'}
-    <div style="font-size:12px;color:#475569;display:flex;align-items:center;gap:6px;"><i data-lucide="calendar" style="width:14px;height:14px;"></i> Created ${formatDate(app.created_at)}</div>
+    ${app.description ? `<p style="font-size:14px;color:#94a3b8;line-height:1.6;margin:0 0 16px;">${app.description}</p>` : '<p style="font-size:14px;color:#475569;margin:0 0 16px;font-style:italic;">No description provided.</p>'}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
+      <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 14px;">
+        <div style="font-size:10px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Scan Schedule</div>
+        <div style="font-size:13px;font-weight:500;color:#e2e8f0;font-family:'Fira Code',monospace;">${scheduleLabel}</div>
+      </div>
+      <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 14px;">
+        <div style="font-size:10px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Open / Total Findings</div>
+        <div style="font-size:13px;font-weight:500;color:#e2e8f0;font-family:'Fira Code',monospace;">${app.open_findings||0} <span style="color:#475569;">/ ${app.total_findings||0}</span></div>
+      </div>
+      <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 14px;">
+        <div style="font-size:10px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Total Scans</div>
+        <div style="font-size:13px;font-weight:500;color:#e2e8f0;font-family:'Fira Code',monospace;">${app.scan_count||0} <span style="color:#475569;">scans</span></div>
+      </div>
+      <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 14px;">
+        <div style="font-size:10px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">${app.container_image ? 'Container Image' : 'Added'}</div>
+        <div style="font-size:13px;font-weight:500;color:#e2e8f0;font-family:'Fira Code',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${app.container_image||''}">${app.container_image || formatDate(app.created_at)}</div>
+      </div>
+    </div>
   `;
   lucide.createIcons();
 
@@ -344,6 +362,12 @@ function renderAppInfo(app){
     <div style="margin-top:12px;font-size:12px;color:#475569;display:flex;align-items:center;justify-content:center;gap:6px;">
       <i data-lucide="clock" style="width:13px;height:13px;"></i> Last scan: ${timeAgo(app.last_scan_at)}
     </div>
+    <div style="display:flex;justify-content:center;gap:6px;margin-top:14px;flex-wrap:wrap;">
+      <span style="background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.25);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;font-family:'Fira Code',monospace;">${app.critical_count||0}C</span>
+      <span style="background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;font-family:'Fira Code',monospace;">${app.high_count||0}H</span>
+      <span style="background:rgba(249,115,22,0.12);color:#f97316;border:1px solid rgba(249,115,22,0.25);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;font-family:'Fira Code',monospace;">${app.medium_count||0}M</span>
+      <span style="background:rgba(59,130,246,0.12);color:#3b82f6;border:1px solid rgba(59,130,246,0.25);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;font-family:'Fira Code',monospace;">${app.low_count||0}L</span>
+    </div>
   `;
   lucide.createIcons();
 }
@@ -367,8 +391,15 @@ function renderFindingStats(fs){
 
 // ── Findings ───────────────────────────────────────────────────────────────────
 function scannerBadge(type){
-  const m={SAST:{color:'#a78bfa',bg:'rgba(167,139,250,0.15)'},SCA:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)'},Container:{color:'#00e5ff',bg:'rgba(0,229,255,0.15)'},Secret:{color:'#ef4444',bg:'rgba(239,68,68,0.15)'}};
-  const s=m[(type||'').toUpperCase()]||{color:'#94a3b8',bg:'rgba(148,163,184,0.15)'};
+  const m={
+    semgrep:{color:'#a78bfa',bg:'rgba(167,139,250,0.15)'},
+    grype:{color:'#00e5ff',bg:'rgba(0,229,255,0.15)'},
+    trivy:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)'},
+    gitleaks:{color:'#ef4444',bg:'rgba(239,68,68,0.15)'},
+    checkov:{color:'#10b981',bg:'rgba(16,185,129,0.15)'},
+    govulncheck:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)'},
+  };
+  const s=m[(type||'').toLowerCase()]||{color:'#94a3b8',bg:'rgba(148,163,184,0.15)'};
   return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}33;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600;text-transform:uppercase;">${type||'—'}</span>`;
 }
 
@@ -386,10 +417,12 @@ function applyFindingFilters(){
   const filtered=allFindings.filter(f=>{
     const sm=!search||(f.title||'').toLowerCase().includes(search)||(f.cve_id||'').toLowerCase().includes(search);
     const sevm=!sev||(f.severity||'').toLowerCase()===sev;
-    const scanm=!scanner||(f.scanner_type||'').toLowerCase()===scanner.toLowerCase();
+    const scanm=!scanner||(f.finding_type||'').toLowerCase()===scanner.toLowerCase();
     const stm=!status||f.status===status;
     return sm&&sevm&&scanm&&stm;
   });
+  const SEV_ORDER={critical:0,high:1,medium:2,low:3,info:4};
+  filtered.sort((a,b)=>(SEV_ORDER[a.severity]??5)-(SEV_ORDER[b.severity]??5));
   renderFindingsTable(filtered);
 }
 
@@ -406,9 +439,9 @@ function renderFindingsTable(findings){
         <div style="font-size:13px;font-weight:500;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${f.title||''}">${f.title||'—'}</div>
         ${f.cve_id?`<div style="font-size:11px;color:#475569;margin-top:2px;">${f.cve_id}</div>`:''}
       </td>
-      <td style="padding:12px;font-size:12px;color:#94a3b8;">${f.vulnerability_type||'—'}</td>
-      <td style="padding:12px;">${scannerBadge(f.scanner_type)}</td>
-      <td style="padding:12px;max-width:180px;"><div style="font-size:11px;color:#475569;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.file_path?`${f.file_path}${f.line_number?`:${f.line_number}`:''}`:f.affected_component||'—'}</div></td>
+      <td style="padding:12px;font-size:12px;color:#94a3b8;">${f.finding_type||'—'}</td>
+      <td style="padding:12px;">${scannerBadge(f.scanner)}</td>
+      <td style="padding:12px;max-width:180px;"><div style="font-size:11px;color:#475569;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.file_path?`${f.file_path}${f.line_number?`:${f.line_number}`:''}`:f.package_name?`${f.package_name}${f.package_version?'@'+f.package_version:''}` :'—'}</div></td>
       <td style="padding:12px;" onclick="event.stopPropagation()">${renderStatusDropdown(f)}</td>
       <td style="padding:12px;"><i data-lucide="chevron-down" id="chevron-${f.id}" style="width:16px;height:16px;color:#475569;transition:transform 0.2s;"></i></td>
     </tr>
@@ -421,11 +454,17 @@ function renderFindingsTable(findings){
               <div style="font-size:13px;color:#94a3b8;line-height:1.6;">${f.description||'No description available.'}</div>
             </div>
             <div>
-              <div style="font-size:11px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Recommendation</div>
-              <div style="font-size:13px;color:#94a3b8;line-height:1.6;">${f.recommendation||'No recommendation available.'}</div>
+              <div style="font-size:11px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Details</div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                ${f.cve_id?`<div style="font-size:12px;color:#94a3b8;"><span style="color:#475569;">CVE:</span> <span style="font-family:monospace;color:#f59e0b;">${f.cve_id}</span></div>`:''}
+                ${f.rule_id?`<div style="font-size:12px;color:#94a3b8;"><span style="color:#475569;">Rule:</span> <span style="font-family:monospace;">${f.rule_id}</span></div>`:''}
+                ${f.package_name?`<div style="font-size:12px;color:#94a3b8;"><span style="color:#475569;">Package:</span> ${f.package_name}${f.package_version?' @ '+f.package_version:''}</div>`:''}
+                ${f.cvss_score?`<div style="font-size:12px;color:#94a3b8;"><span style="color:#475569;">CVSS:</span> <span style="color:${f.cvss_score>=7?'#ef4444':f.cvss_score>=4?'#f59e0b':'#10b981'};">${f.cvss_score.toFixed(1)}</span></div>`:''}
+                ${!f.cve_id&&!f.rule_id&&!f.package_name&&!f.cvss_score?'<div style="font-size:13px;color:#475569;">No additional metadata.</div>':''}
+              </div>
             </div>
           </div>
-          ${f.fix_version?`<div style="margin-top:12px;"><span style="background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2);padding:3px 10px;border-radius:6px;font-size:12px;font-weight:500;"><i data-lucide="package" style="width:12px;height:12px;display:inline;vertical-align:middle;margin-right:4px;"></i>Fix version: ${f.fix_version}</span></div>`:''}
+          ${f.fixed_version?`<div style="margin-top:12px;"><span style="background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2);padding:3px 10px;border-radius:6px;font-size:12px;font-weight:500;"><i data-lucide="package" style="width:12px;height:12px;display:inline;vertical-align:middle;margin-right:4px;"></i>Fix version: ${f.fixed_version}</span></div>`:''}
         </div>
       </td>
     </tr>
@@ -586,7 +625,7 @@ function openRemediationModal(){
         <input type="checkbox" value="${f.id}" onchange="updateRemSelCount()" style="accent-color:#00e5ff;width:16px;height:16px;cursor:pointer;">
         ${severityBadge(f.severity)}
         <span style="font-size:13px;color:#e2e8f0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.title||'Untitled'}</span>
-        ${scannerBadge(f.scanner_type)}
+        ${scannerBadge(f.scanner)}
       </label>
     `).join('');
   }
@@ -755,7 +794,7 @@ async function loadPage(){
     if(!appRes.ok)throw new Error('Application not found');
     appData=await appRes.json();
     renderAppInfo(appData);
-    renderFindingStats(appData.findings_summary||{});
+    renderFindingStats({critical:appData.critical_count||0,high:appData.high_count||0,medium:appData.medium_count||0,low:appData.low_count||0});
 
     if(findingsRes.ok){
       const fd=await findingsRes.json();
