@@ -26,7 +26,7 @@
 | 🚦 **Policy Engine** | Define pass/fail gates by severity, scan type, and rule — evaluated on every scan |
 | 🔑 **Service Accounts** | Machine identities for CI/CD pipelines — Bearer token auth (`snitch_<32chars>`) for the push endpoint; token shown once, SHA-256 hash stored |
 | 🌐 **REST API** | Full OpenAPI/Swagger docs at `/docs` |
-| 🎨 **Consistent UI** | Shared sidebar (`sidebar.js`) and header (`header.js`) components with design tokens in `theme.css` — single source of truth for navigation and styles |
+| 🎨 **Cybersecurity UI** | Shared sidebar (`sidebar.js`) and header (`header.js`) components with Fira Code typography, near-black backgrounds, cyan-border gradient cards, and HUD-style Threat Intelligence Strip — designed with the [ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) Claude Code skill |
 | ⚙️ **Settings Page** | Admin configuration page for platform integrations (GitHub, Anthropic), scan defaults, and system status |
 | 📋 **Applications List View** | Sortable table view for the applications portfolio — click any column header to re-sort |
 | 📚 **Developer Docs** | Built-in documentation page (`/help.html`) with Quick Start, GitHub Actions CI/CD guide (2-stage auth+push), General Usage, and API Reference |
@@ -502,6 +502,25 @@ Requires `SEMGREP_APP_TOKEN` set in repository secrets (optional — Semgrep run
 | Reports | Security Reports |
 |---|---|
 | ![Reports](https://github.com/user-attachments/assets/e134de5a-1efb-4d1c-be5e-6bfb98fca6e5) | ![Overview](https://github.com/user-attachments/assets/31654329-37c4-4f35-a1e7-dbea190d7f35) |
+
+---
+
+## Claude Code Skills
+
+This project uses the **[ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)** Claude Code skill for UI/UX design work. It provides a searchable database of 67 styles, 96 colour palettes, 57 font pairings, and 25 chart types with opinionated recommendations for product type, stack, and accessibility.
+
+Install it into any project:
+
+```bash
+# Clone into your .claude/skills directory
+git clone https://github.com/nextlevelbuilder/ui-ux-pro-max-skill .claude/skills/ui-ux-pro-max
+```
+
+Then invoke it inside Claude Code with `/ui-ux-pro-max <your design request>` or run the design-system generator directly:
+
+```bash
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "cybersecurity dashboard dark" --design-system -p "My Project"
+```
 
 ---
 
