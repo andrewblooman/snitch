@@ -261,6 +261,7 @@ let allFindings = [];
 let currentPlanId = null;
 
 // ── Utilities ──────────────────────────────────────────────────────────────────
+function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function getRiskColor(s){return s>=75?'#ef4444':s>=50?'#f59e0b':s>=25?'#f97316':'#10b981';}
 function getRiskLevel(s){if(s>=75)return{label:'Critical',color:'#ef4444',bg:'rgba(239,68,68,0.15)'};if(s>=50)return{label:'High',color:'#f59e0b',bg:'rgba(245,158,11,0.15)'};if(s>=25)return{label:'Medium',color:'#f97316',bg:'rgba(249,115,22,0.15)'};return{label:'Low',color:'#10b981',bg:'rgba(16,185,129,0.15)'};}
 
@@ -313,17 +314,17 @@ function renderAppInfo(app){
 
   const scheduleLabel = app.scan_schedule === 'none' ? 'Manual only' : app.scan_schedule || 'Manual only';
   document.getElementById('app-info-card').innerHTML = `
-    <h2 style="font-size:24px;font-weight:800;color:#f1f5f9;margin:0 0 10px;">${app.name||'—'}</h2>
+    <h2 style="font-size:24px;font-weight:800;color:#f1f5f9;margin:0 0 10px;">${escHtml(app.name||'—')}</h2>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-      ${app.team_name ? `<span style="background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid rgba(0,229,255,0.2);padding:3px 10px;border-radius:6px;font-size:12px;font-weight:500;">${app.team_name}</span>` : ''}
-      ${app.language ? `<span style="background:${lc}22;color:${lc};border:1px solid ${lc}44;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:500;">${app.language}</span>` : ''}
+      ${app.team_name ? `<span style="background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid rgba(0,229,255,0.2);padding:3px 10px;border-radius:6px;font-size:12px;font-weight:500;">${escHtml(app.team_name)}</span>` : ''}
+      ${app.language ? `<span style="background:${lc}22;color:${lc};border:1px solid ${lc}44;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:500;">${escHtml(app.language)}</span>` : ''}
     </div>
-    ${repoUrl ? `<a href="${repoUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;color:#00e5ff;text-decoration:none;font-size:13px;font-weight:500;margin-bottom:14px;"><i data-lucide="github" style="width:15px;height:15px;"></i>${app.github_org}/${app.github_repo}<i data-lucide="external-link" style="width:12px;height:12px;"></i></a>` : ''}
-    ${app.description ? `<p style="font-size:14px;color:#94a3b8;line-height:1.6;margin:0 0 16px;">${app.description}</p>` : '<p style="font-size:14px;color:#475569;margin:0 0 16px;font-style:italic;">No description provided.</p>'}
+    ${repoUrl ? `<a href="${repoUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;color:#00e5ff;text-decoration:none;font-size:13px;font-weight:500;margin-bottom:14px;"><i data-lucide="github" style="width:15px;height:15px;"></i>${escHtml(app.github_org)}/${escHtml(app.github_repo)}<i data-lucide="external-link" style="width:12px;height:12px;"></i></a>` : ''}
+    ${app.description ? `<p style="font-size:14px;color:#94a3b8;line-height:1.6;margin:0 0 16px;">${escHtml(app.description)}</p>` : '<p style="font-size:14px;color:#475569;margin:0 0 16px;font-style:italic;">No description provided.</p>'}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
       <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 14px;">
         <div style="font-size:10px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Scan Schedule</div>
-        <div style="font-size:13px;font-weight:500;color:#e2e8f0;font-family:'Fira Code',monospace;">${scheduleLabel}</div>
+        <div style="font-size:13px;font-weight:500;color:#e2e8f0;font-family:'Fira Code',monospace;">${escHtml(scheduleLabel)}</div>
       </div>
       <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 14px;">
         <div style="font-size:10px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Open / Total Findings</div>
@@ -335,7 +336,7 @@ function renderAppInfo(app){
       </div>
       <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 14px;">
         <div style="font-size:10px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">${app.container_image ? 'Container Image' : 'Added'}</div>
-        <div style="font-size:13px;font-weight:500;color:#e2e8f0;font-family:'Fira Code',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${app.container_image||''}">${app.container_image || formatDate(app.created_at)}</div>
+        <div style="font-size:13px;font-weight:500;color:#e2e8f0;font-family:'Fira Code',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escHtml(app.container_image||'')}">${escHtml(app.container_image || formatDate(app.created_at))}</div>
       </div>
     </div>
   `;
@@ -436,12 +437,12 @@ function renderFindingsTable(findings){
     <tr class="table-row" style="border-bottom:1px solid rgba(0,229,255,0.06);cursor:pointer;transition:background 0.2s;" id="row-${f.id}" onclick="toggleExpand('${f.id}')">
       <td style="padding:12px;">${severityBadge(f.severity)}</td>
       <td style="padding:12px;max-width:260px;">
-        <div style="font-size:13px;font-weight:500;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${f.title||''}">${f.title||'—'}</div>
-        ${f.cve_id?`<div style="font-size:11px;color:#475569;margin-top:2px;">${f.cve_id}</div>`:''}
+        <div style="font-size:13px;font-weight:500;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escHtml(f.title||'')}">${escHtml(f.title||'—')}</div>
+        ${f.cve_id?`<div style="font-size:11px;color:#475569;margin-top:2px;">${escHtml(f.cve_id)}</div>`:''}
       </td>
-      <td style="padding:12px;font-size:12px;color:#94a3b8;">${f.finding_type||'—'}</td>
+      <td style="padding:12px;font-size:12px;color:#94a3b8;">${escHtml(f.finding_type||'—')}</td>
       <td style="padding:12px;">${scannerBadge(f.scanner)}</td>
-      <td style="padding:12px;max-width:180px;"><div style="font-size:11px;color:#475569;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.file_path?`${f.file_path}${f.line_number?`:${f.line_number}`:''}`:f.package_name?`${f.package_name}${f.package_version?'@'+f.package_version:''}` :'—'}</div></td>
+      <td style="padding:12px;max-width:180px;"><div style="font-size:11px;color:#475569;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.file_path?`${escHtml(f.file_path)}${f.line_number?`:${f.line_number}`:''}`:f.package_name?`${escHtml(f.package_name)}${f.package_version?'@'+escHtml(f.package_version):''}` :'—'}</div></td>
       <td style="padding:12px;" onclick="event.stopPropagation()">${renderStatusDropdown(f)}</td>
       <td style="padding:12px;"><i data-lucide="chevron-down" id="chevron-${f.id}" style="width:16px;height:16px;color:#475569;transition:transform 0.2s;"></i></td>
     </tr>
@@ -451,14 +452,14 @@ function renderFindingsTable(findings){
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
             <div>
               <div style="font-size:11px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Description</div>
-              <div style="font-size:13px;color:#94a3b8;line-height:1.6;">${f.description||'No description available.'}</div>
+              <div style="font-size:13px;color:#94a3b8;line-height:1.6;">${escHtml(f.description||'No description available.')}</div>
             </div>
             <div>
               <div style="font-size:11px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Details</div>
               <div style="display:flex;flex-direction:column;gap:6px;">
-                ${f.cve_id?`<div style="font-size:12px;color:#94a3b8;"><span style="color:#475569;">CVE:</span> <span style="font-family:monospace;color:#f59e0b;">${f.cve_id}</span></div>`:''}
-                ${f.rule_id?`<div style="font-size:12px;color:#94a3b8;"><span style="color:#475569;">Rule:</span> <span style="font-family:monospace;">${f.rule_id}</span></div>`:''}
-                ${f.package_name?`<div style="font-size:12px;color:#94a3b8;"><span style="color:#475569;">Package:</span> ${f.package_name}${f.package_version?' @ '+f.package_version:''}</div>`:''}
+                ${f.cve_id?`<div style="font-size:12px;color:#94a3b8;"><span style="color:#475569;">CVE:</span> <span style="font-family:monospace;color:#f59e0b;">${escHtml(f.cve_id)}</span></div>`:''}
+                ${f.rule_id?`<div style="font-size:12px;color:#94a3b8;"><span style="color:#475569;">Rule:</span> <span style="font-family:monospace;">${escHtml(f.rule_id)}</span></div>`:''}
+                ${f.package_name?`<div style="font-size:12px;color:#94a3b8;"><span style="color:#475569;">Package:</span> ${escHtml(f.package_name)}${f.package_version?' @ '+escHtml(f.package_version):''}</div>`:''}
                 ${f.cvss_score?`<div style="font-size:12px;color:#94a3b8;"><span style="color:#475569;">CVSS:</span> <span style="color:${f.cvss_score>=7?'#ef4444':f.cvss_score>=4?'#f59e0b':'#10b981'};">${f.cvss_score.toFixed(1)}</span></div>`:''}
                 ${!f.cve_id&&!f.rule_id&&!f.package_name&&!f.cvss_score?'<div style="font-size:13px;color:#475569;">No additional metadata.</div>':''}
               </div>
@@ -532,8 +533,8 @@ function renderScansTab(scans){
       <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:200px;">
         ${scanStatusBadge(s.status)}
         <div>
-          <div style="font-size:14px;font-weight:600;color:#f1f5f9;">${(s.scan_type||'Full Scan').toUpperCase()}</div>
-          <div style="font-size:11px;color:#475569;margin-top:2px;">Triggered by: ${s.triggered_by||'Manual'}</div>
+          <div style="font-size:14px;font-weight:600;color:#f1f5f9;">${escHtml((s.scan_type||'Full Scan').toUpperCase())}</div>
+          <div style="font-size:11px;color:#475569;margin-top:2px;">Triggered by: ${escHtml(s.triggered_by||'Manual')}</div>
         </div>
       </div>
       <div style="font-size:12px;color:#475569;min-width:140px;">
