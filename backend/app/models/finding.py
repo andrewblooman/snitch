@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, func
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, func, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -37,6 +37,9 @@ class Finding(Base):
     package_version: Mapped[str | None] = mapped_column(String(100), nullable=True)
     fixed_version: Mapped[str | None] = mapped_column(String(100), nullable=True)
     cvss_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    epss_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    epss_percentile: Mapped[float | None] = mapped_column(Float, nullable=True)
+    compliance_tags: Mapped[list | dict | None] = mapped_column(JSON, nullable=True)
 
     status: Mapped[str] = mapped_column(String(50), default="open", nullable=False)
 
@@ -57,6 +60,12 @@ class Finding(Base):
     @property
     def source(self) -> str:
         return "cicd" if self.cicd_scan_id is not None else "repository"
+
+    @property
+    def application_name(self) -> str | None:
+        # Only access if already eagerly loaded — avoid triggering lazy load in async context
+        app = self.__dict__.get('application')
+        return app.name if app else None
 
     application: Mapped["Application"] = relationship(  # noqa: F821
         "Application", back_populates="findings"

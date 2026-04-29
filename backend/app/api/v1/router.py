@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1 import applications, auth, cicd_scans, findings, github, policies, remediation, reports, rules, scans, secrets, seed, service_accounts
+from app.api.v1 import applications, auth, cicd_scans, findings, github, policies, remediation, reports, rules, scans, secrets, seed, service_accounts, threat_intel
 
 api_router = APIRouter(prefix="/api/v1")
 
@@ -17,3 +17,4 @@ api_router.include_router(secrets.router)
 api_router.include_router(rules.router)
 api_router.include_router(service_accounts.router)
 api_router.include_router(auth.router)
+api_router.include_router(threat_intel.router)

@@ -28,10 +28,13 @@
     {
       label: 'Overview',
       items: [
-        { href: '/',                  icon: 'layout-dashboard', label: 'Dashboard',    matchPaths: ['/'] },
-        { href: '/applications.html', icon: 'layers',           label: 'Applications', matchPaths: ['/applications.html', '/app-detail.html'] },
+        { href: '/index.html',        icon: 'layout-dashboard', label: 'Dashboard',    matchPaths: ['/index.html', '/'] },
+        { href: '/applications.html', icon: 'server',           label: 'Applications', matchPaths: ['/applications.html', '/app-detail.html'] },
+        { href: '/findings.html',     icon: 'list',             label: 'Findings',     matchPaths: ['/findings.html'] },
         { href: '/reports.html',      icon: 'bar-chart-3',      label: 'Reports',      matchPaths: ['/reports.html'] },
         { href: '/secrets.html',      icon: 'key',              label: 'Secrets',      matchPaths: ['/secrets.html'] },
+        { href: '/threat-intel.html', icon: 'radar',            label: 'Threat Intel', matchPaths: ['/threat-intel.html'] },
+        { href: '/compliance.html',   icon: 'file-check-2',     label: 'Compliance',   matchPaths: ['/compliance.html'] },
       ]
     },
     {
@@ -94,7 +97,7 @@
       'padding:10px 12px',
       'border-radius:8px',
       'text-decoration:none',
-      'font-size:14px',
+      'font-size:16px',
       'font-weight:500',
       'margin-bottom:2px',
       'transition:all 0.2s',
@@ -111,7 +114,7 @@
   }
 
   function sectionLabel(text) {
-    return '<div style="font-size:9px;color:#475569;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:12px 8px 4px;font-family:\'Fira Code\',monospace;">// ' + text + '</div>';
+    return '<div style="font-size:11px;color:#475569;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:12px 8px 4px;font-family:\'Fira Code\',monospace;">// ' + text + '</div>';
   }
 
   var navHTML = NAV_SECTIONS.map(function (section) {
@@ -126,7 +129,7 @@
     +     '</div>'
     +     '<div>'
     +       '<div class="glitch-hover" style="font-size:20px;font-weight:700;color:#f1f5f9;letter-spacing:1px;font-family:\'Fira Code\',monospace;">Snitch</div>'
-    +       '<div style="font-size:10px;color:#00e5ff;font-weight:500;letter-spacing:2px;text-transform:uppercase;font-family:\'Fira Code\',monospace;">AppSec_Platform</div>'
+    +       '<div style="font-size:12px;color:#00e5ff;font-weight:500;letter-spacing:2px;text-transform:uppercase;font-family:\'Fira Code\',monospace;">AppSec_Platform</div>'
     +     '</div>'
     +   '</div>'
     +   '<nav style="flex:1;padding:8px 12px;overflow-y:auto;">'
@@ -135,7 +138,7 @@
     +   '<div style="padding:16px 20px;border-top:1px solid rgba(0,229,255,0.08);">'
     +     '<div style="display:flex;align-items:center;gap:8px;">'
     +       '<div style="width:7px;height:7px;background:#00c853;border-radius:50%;box-shadow:0 0 10px #00c853,0 0 4px #00c853;"></div>'
-    +       '<span style="font-size:11px;color:#00c853;font-family:\'Fira Code\',monospace;font-weight:500;letter-spacing:0.5px;">[SECURE] · All Systems Nominal</span>'
+    +       '<span style="font-size:13px;color:#00c853;font-family:\'Fira Code\',monospace;font-weight:500;letter-spacing:0.5px;">[SECURE] · All Systems Nominal</span>'
     +     '</div>'
     +   '</div>'
     + '</aside>';

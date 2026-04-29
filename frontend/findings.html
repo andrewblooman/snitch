@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snitch — Global Findings</title>
+  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
+  <style>/* Inter font fallback */ body { font-family: var(--font-body); }</style>
+  <link rel="stylesheet" href="/static/css/theme.css">
+  <script src="/static/js/lucide.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    @keyframes slideInRight { from{transform:translateX(100px);opacity:0} to{transform:translateX(0);opacity:1} }
+    @keyframes slideOutRight { from{transform:translateX(0);opacity:1} to{transform:translateX(100px);opacity:0} }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    
+    .card { background:linear-gradient(145deg,#0f1b34 0%,#080f1d 100%);border:1px solid rgba(0,229,255,0.14);border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,.55),inset 0 1px 0 rgba(0,229,255,.06); }
+    .table-row:hover { background:rgba(0,229,255,0.04) !important; cursor:pointer;}
+    .badge { display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px; }
+    .badge-critical { background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3); }
+    .badge-high { background:rgba(249,115,22,0.15);color:#fb923c;border:1px solid rgba(249,115,22,0.3); }
+    .badge-medium { background:rgba(234,179,8,0.15);color:#facc15;border:1px solid rgba(234,179,8,0.3); }
+    .badge-low { background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3); }
+    
+    .filter-select {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid rgba(0,229,255,0.2);
+      color: #f1f5f9;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .filter-select:focus { border-color: #00e5ff; box-shadow: 0 0 0 2px rgba(0,229,255,0.2); }
+    .filter-select option { background: #0f1b34; color: #f1f5f9; }
+    
+    .pagination-btn {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid rgba(0,229,255,0.2);
+      color: #00e5ff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .pagination-btn:hover:not(:disabled) { background: rgba(0,229,255,0.1); }
+    .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; border-color: rgba(255,255,255,0.1); color: #94a3b8; }
+  </style>
+</head>
+<body style="font-family:var(--font-body,'Fira Sans',system-ui,sans-serif);background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
+
+  <!-- Sidebar -->
+  <div id="sidebar-mount"></div>
+  <script src="/static/js/sidebar.js"></script>
+  <script src="/static/js/header.js"></script>
+
+  <!-- Main -->
+  <div id="main-content" style="margin-left:260px;min-height:100vh;">
+    <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
+      <div>
+        <h1 style="font-size:20px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Global Findings</h1>
+        <p style="font-size:13px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// platform.vulnerabilities · search</p>
+      </div>
+      <div id="header-user-slot" style="display:flex;align-items:center;gap:8px;"></div>
+    </header>
+
+    <main style="padding:32px;max-width:1400px;margin:0 auto;">
+
+      <!-- Filters -->
+      <div class="card" style="padding:20px;margin-bottom:24px;display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;">
+        <div style="flex:1;min-width:150px;">
+          <label style="display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Severity</label>
+          <select id="filter-severity" class="filter-select" style="width:100%;" onchange="applyFilters()">
+            <option value="">All Severities</option>
+            <option value="critical">Critical</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+            <option value="info">Info</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:150px;">
+          <label style="display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Type</label>
+          <select id="filter-type" class="filter-select" style="width:100%;" onchange="applyFilters()">
+            <option value="">All Types</option>
+            <option value="sast">SAST (Code)</option>
+            <option value="sca">SCA (Dependencies)</option>
+            <option value="container">Container</option>
+            <option value="secrets">Secrets</option>
+            <option value="iac">IaC (Infrastructure)</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:150px;">
+          <label style="display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Status</label>
+          <select id="filter-status" class="filter-select" style="width:100%;" onchange="applyFilters()">
+            <option value="">All Statuses</option>
+            <option value="open">Open</option>
+            <option value="fixed">Fixed</option>
+            <option value="accepted">Risk Accepted</option>
+            <option value="false_positive">False Positive</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:150px;">
+          <label style="display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Scanner</label>
+          <select id="filter-scanner" class="filter-select" style="width:100%;" onchange="applyFilters()">
+            <option value="">All Scanners</option>
+            <option value="semgrep">Semgrep</option>
+            <option value="trivy">Trivy</option>
+            <option value="grype">Grype</option>
+            <option value="gitleaks">Gitleaks</option>
+            <option value="checkov">Checkov</option>
+            <option value="govulncheck">Govulncheck</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div style="padding:16px 24px;background:rgba(0,0,0,0.2);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:16px;font-weight:600;color:#f1f5f9;display:flex;align-items:center;gap:8px;">
+            <i data-lucide="list" style="width:18px;height:18px;color:#00e5ff;"></i>
+            <span id="total-count">Loading findings...</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="pagination-btn" id="btn-prev" onclick="changePage(-1)" disabled><i data-lucide="chevron-left" style="width:16px;height:16px;"></i></button>
+            <span id="page-indicator" style="font-size:14px;color:#94a3b8;font-weight:600;">Page 1</span>
+            <button class="pagination-btn" id="btn-next" onclick="changePage(1)" disabled><i data-lucide="chevron-right" style="width:16px;height:16px;"></i></button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr style="background:rgba(0,0,0,0.15);border-bottom:1px solid rgba(255,255,255,0.06);">
+                <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Severity</th>
+                <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Title</th>
+                <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Application</th>
+                <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Type</th>
+                <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Status</th>
+                <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Discovered</th>
+              </tr>
+            </thead>
+            <tbody id="findings-tbody">
+              <tr><td colspan="6" style="padding:40px;text-align:center;"><div style="animation:spin 1s linear infinite;display:inline-block;width:32px;height:32px;border:3px solid rgba(0,229,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+<script>
+let currentPage = 1;
+let totalPages = 1;
+
+function severityBadge(sev){
+  const map={critical:{color:'#ef4444',bg:'rgba(239,68,68,0.15)',label:'Critical'},high:{color:'#f59e0b',bg:'rgba(245,158,11,0.15)',label:'High'},medium:{color:'#f97316',bg:'rgba(249,115,22,0.15)',label:'Medium'},low:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)',label:'Low'},info:{color:'#94a3b8',bg:'rgba(148,163,184,0.15)',label:'Info'}};
+  const s=map[sev?.toLowerCase()]||map.info;
+  return `<span class="badge" style="background:${s.bg};color:${s.color};border:1px solid ${s.color}44;">${s.label}</span>`;
+}
+
+function typeBadge(type){
+  const m={sast:{color:'#a855f7',bg:'rgba(168,85,247,0.15)'},sca:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)'},container:{color:'#0ea5e9',bg:'rgba(14,165,233,0.15)'},secrets:{color:'#f43f5e',bg:'rgba(244,63,94,0.15)'}};
+  const k=type?.toLowerCase();
+  const s=k?m[k]:{color:'#94a3b8',bg:'rgba(148,163,184,0.15)'};
+  return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}33;padding:2px 7px;border-radius:5px;font-size:12px;font-weight:600;text-transform:uppercase;">${type||'—'}</span>`;
+}
+
+function statusBadge(status){
+  const map={open:{color:'#ef4444',label:'Open'},fixed:{color:'#10b981',label:'Fixed'},accepted:{color:'#f59e0b',label:'Accepted'},false_positive:{color:'#94a3b8',label:'False Pos'}};
+  const s=map[status?.toLowerCase()]||map.open;
+  return `<span style="color:${s.color};font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px;"><span style="width:6px;height:6px;border-radius:50%;background:${s.color};display:inline-block;"></span>${s.label}</span>`;
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return 'Never';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return 'Never';
+  const diff = Math.floor((Date.now() - d) / 1000);
+  if (diff < 0) return 'Just now';
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+  return `${Math.floor(diff/86400)}d ago`;
+}
+
+function parseQueryParams() {
+  const params = new URLSearchParams(window.location.search);
+  const sev = params.get('severity');
+  if (sev) {
+    document.getElementById('filter-severity').value = sev.toLowerCase();
+    // Default status to open if coming from dashboard severity click
+    document.getElementById('filter-status').value = 'open';
+  }
+}
+
+async function loadFindings() {
+  const tbody = document.getElementById('findings-tbody');
+
+  const sev = document.getElementById('filter-severity').value;
+  const type = document.getElementById('filter-type').value;
+  const status = document.getElementById('filter-status').value;
+  const scanner = document.getElementById('filter-scanner').value;
+
+  let url = `/api/v1/findings?page=${currentPage}&page_size=20`;
+  if(sev) url += `&severity=${sev}`;
+  if(type) url += `&finding_type=${type}`;
+  if(status) url += `&status=${status}`;
+  if(scanner) url += `&scanner=${scanner}`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Failed to fetch findings');
+    const data = await res.json();
+    
+    document.getElementById('total-count').textContent = `${data.total.toLocaleString()} Findings`;
+    document.getElementById('page-indicator').textContent = `Page ${data.page} of ${data.pages}`;
+    
+    totalPages = data.pages;
+    document.getElementById('btn-prev').disabled = data.page <= 1;
+    document.getElementById('btn-next').disabled = data.page >= data.pages;
+    
+    if (!data.items || data.items.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="padding:60px;text-align:center;color:#475569;"><i data-lucide="shield-check" style="width:48px;height:48px;display:block;margin:0 auto 16px;opacity:0.3;"></i><div style="font-size:16px;">No findings match your criteria.</div></td></tr>`;
+      lucide.createIcons();
+      return;
+    }
+    
+    tbody.innerHTML = data.items.map(f => `
+      <tr class="table-row" style="border-bottom:1px solid rgba(255,255,255,0.04);" onclick="openFindingPanel('${f.id}')">
+        <td style="padding:16px 24px;">${severityBadge(f.severity)}</td>
+        <td style="padding:16px 24px;max-width:350px;">
+          <div style="font-size:15px;font-weight:600;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${f.title||''}">${(f.title||'Unknown').slice(0,60)}${(f.title||'').length>60?'…':''}</div>
+        </td>
+        <td style="padding:16px 24px;">
+          <div style="font-size:14px;color:#f1f5f9;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;" title="${f.application_name||f.application_id}">${f.application_name||f.application_id.split('-')[0]+'...'}</div>
+        </td>
+        <td style="padding:16px 24px;">${typeBadge(f.finding_type||f.scanner)}</td>
+        <td style="padding:16px 24px;">${statusBadge(f.status)}</td>
+        <td style="padding:16px 24px;font-size:14px;color:#94a3b8;">${timeAgo(f.first_seen_at)}</td>
+      </tr>
+    `).join('');
+    
+    lucide.createIcons();
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="6" style="padding:40px;text-align:center;color:#ef4444;"><i data-lucide="alert-triangle" style="width:32px;height:32px;display:block;margin:0 auto 12px;"></i>Error loading findings</td></tr>`;
+    lucide.createIcons();
+  }
+}
+
+function applyFilters() {
+  currentPage = 1;
+  
+  // Update URL so it's shareable
+  const sev = document.getElementById('filter-severity').value;
+  const url = new URL(window.location);
+  if(sev) url.searchParams.set('severity', sev);
+  else url.searchParams.delete('severity');
+  window.history.replaceState({}, '', url);
+  
+  loadFindings();
+}
+
+function changePage(delta) {
+  const newPage = currentPage + delta;
+  if (newPage >= 1 && newPage <= totalPages) {
+    currentPage = newPage;
+    loadFindings();
+  }
+}
+
+// ── Finding Detail Panel ────────────────────────────────────────────────────
+let activeFindingId = null;
+
+async function openFindingPanel(id) {
+  activeFindingId = id;
+  const panel = document.getElementById('finding-panel');
+  const body = document.getElementById('panel-body');
+  body.innerHTML = `<div style="display:flex;justify-content:center;padding:40px;"><div style="animation:spin 1s linear infinite;width:32px;height:32px;border:3px solid rgba(0,229,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></div>`;
+  panel.style.display = 'flex';
+  requestAnimationFrame(() => panel.classList.add('open'));
+
+  try {
+    const res = await fetch(`/api/v1/findings/${id}`);
+    if (!res.ok) throw new Error('Not found');
+    const f = await res.json();
+    renderPanel(f);
+  } catch {
+    body.innerHTML = `<div style="padding:24px;color:#ef4444;">Failed to load finding details.</div>`;
+  }
+}
+
+function closeFindingPanel() {
+  const panel = document.getElementById('finding-panel');
+  panel.classList.remove('open');
+  setTimeout(() => { panel.style.display = 'none'; activeFindingId = null; }, 300);
+}
+
+function renderPanel(f) {
+  const body = document.getElementById('panel-body');
+  const escAttr = s => (s||'').replace(/"/g, '&quot;');
+  body.innerHTML = `
+    <div style="padding:24px;display:flex;flex-direction:column;gap:20px;">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        ${severityBadge(f.severity)}
+        ${typeBadge(f.finding_type||f.scanner)}
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Title</div>
+        <div style="font-size:16px;font-weight:600;color:#f1f5f9;line-height:1.4;">${f.title||'—'}</div>
+      </div>
+      ${f.description ? `
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Description</div>
+        <div style="font-size:14px;color:#94a3b8;line-height:1.6;">${f.description}</div>
+      </div>` : ''}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Scanner</div>
+          <div style="font-size:14px;color:#00e5ff;font-family:'Fira Code',monospace;">${f.scanner||'—'}</div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Application</div>
+          <a href="/app-detail.html?id=${f.application_id}" style="font-size:14px;color:#00e5ff;text-decoration:none;font-weight:500;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${f.application_name||f.application_id}</a>
+        </div>
+        ${f.file_path ? `
+        <div style="grid-column:1/-1;">
+          <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">File Path</div>
+          <div style="font-size:13px;color:#94a3b8;font-family:'Fira Code',monospace;word-break:break-all;">${f.file_path}${f.line_number ? ':'+f.line_number : ''}</div>
+        </div>` : ''}
+        ${f.cve_id ? `
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">CVE</div>
+          <div style="font-size:14px;color:#f1f5f9;font-family:'Fira Code',monospace;">${f.cve_id}</div>
+        </div>` : ''}
+        ${f.package_name ? `
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Package</div>
+          <div style="font-size:14px;color:#f1f5f9;font-family:'Fira Code',monospace;">${f.package_name}${f.package_version?' @ '+f.package_version:''}</div>
+        </div>` : ''}
+        ${f.cvss_score != null ? `
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">CVSS Score</div>
+          <div style="font-size:14px;color:#f1f5f9;font-family:'Fira Code',monospace;">${f.cvss_score.toFixed(1)}</div>
+        </div>` : ''}
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">First Seen</div>
+          <div style="font-size:14px;color:#94a3b8;">${timeAgo(f.first_seen_at)}</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Status</div>
+        <select id="panel-status-select" style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,229,255,0.25);color:#f1f5f9;padding:8px 12px;border-radius:8px;font-size:14px;width:100%;cursor:pointer;" onchange="updateFindingStatus('${escAttr(f.id)}', this.value)">
+          <option value="open" ${f.status==='open'?'selected':''}>Open</option>
+          <option value="fixed" ${f.status==='fixed'?'selected':''}>Fixed</option>
+          <option value="accepted" ${f.status==='accepted'?'selected':''}>Risk Accepted</option>
+          <option value="false_positive" ${f.status==='false_positive'?'selected':''}>False Positive</option>
+        </select>
+        <div id="panel-status-msg" style="font-size:13px;margin-top:6px;min-height:18px;"></div>
+      </div>
+    </div>
+  `;
+  lucide.createIcons();
+}
+
+async function updateFindingStatus(id, status) {
+  const msg = document.getElementById('panel-status-msg');
+  msg.style.color = '#94a3b8';
+  msg.textContent = 'Saving…';
+  try {
+    const res = await fetch(`/api/v1/findings/${id}`, {
+      method: 'PATCH',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({status})
+    });
+    if (!res.ok) throw new Error();
+    msg.style.color = '#10b981';
+    msg.textContent = 'Status updated';
+    setTimeout(() => { msg.textContent = ''; }, 2000);
+    loadFindings();
+  } catch {
+    msg.style.color = '#ef4444';
+    msg.textContent = 'Failed to update status';
+  }
+}
+
+// Close panel on backdrop click
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFindingPanel(); });
+
+// Init
+parseQueryParams();
+loadFindings();
+</script>
+
+<!-- Finding Detail Panel -->
+<div id="finding-panel" style="display:none;position:fixed;inset:0;z-index:200;justify-content:flex-end;">
+  <div onclick="closeFindingPanel()" style="position:absolute;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(2px);"></div>
+  <aside style="position:relative;width:480px;max-width:95vw;height:100%;background:linear-gradient(180deg,#0f1b34 0%,#080f1d 100%);border-left:1px solid rgba(0,229,255,0.15);box-shadow:-8px 0 48px rgba(0,0,0,0.7);display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);" id="panel-aside">
+    <div style="padding:16px 24px;border-bottom:1px solid rgba(0,229,255,0.1);display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.2);">
+      <div style="font-size:15px;font-weight:700;color:#f1f5f9;font-family:'Fira Code',monospace;">Finding Detail</div>
+      <button onclick="closeFindingPanel()" style="background:none;border:none;color:#94a3b8;cursor:pointer;padding:4px;border-radius:6px;display:flex;align-items:center;" onmouseover="this.style.color='#f1f5f9'" onmouseout="this.style.color='#94a3b8'"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+    </div>
+    <div id="panel-body" style="flex:1;overflow-y:auto;"></div>
+  </aside>
+</div>
+<style>
+#finding-panel.open #panel-aside { transform: translateX(0); }
+</style>
+</body>
+</html>

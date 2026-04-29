@@ -234,3 +234,50 @@ async def get_top_vulnerabilities(
     sev_order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
     results.sort(key=lambda v: (sev_order.get(v.severity, 5), -v.total_occurrences))
     return results[:limit]
+
+
+@router.get("/compliance")
+async def get_compliance_report(db: AsyncSession = Depends(get_db)):
+    findings_result = await db.execute(select(Finding).where(Finding.status == "open"))
+    findings = findings_result.scalars().all()
+
+    frameworks = {}
+    for f in findings:
+        tags = f.compliance_tags or []
+        for tag in tags:
+            try:
+                fw, control = tag.split("|", 1)
+            except ValueError:
+                continue
+                
+            if fw not in frameworks:
+                frameworks[fw] = {"framework": fw, "controls": {}}
+                
+            if control not in frameworks[fw]["controls"]:
+                frameworks[fw]["controls"][control] = {
+                    "control": control,
+                    "findings": 0,
+                    "critical": 0,
+                    "high": 0,
+                    "medium": 0,
+                    "low": 0
+                }
+                
+            ctrl = frameworks[fw]["controls"][control]
+            ctrl["findings"] += 1
+            if f.severity in ctrl:
+                ctrl[f.severity] += 1
+                
+    # Format response
+    response = []
+    for fw, fw_data in frameworks.items():
+        controls_list = list(fw_data["controls"].values())
+        controls_list.sort(key=lambda x: (-x["critical"], -x["high"], -x["findings"]))
+        response.append({
+            "framework": fw,
+            "controls": controls_list,
+            "total_findings": sum(c["findings"] for c in controls_list)
+        })
+        
+    response.sort(key=lambda x: -x["total_findings"])
+    return response

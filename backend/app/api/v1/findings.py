@@ -5,6 +5,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.db.session import get_db
 from app.models.finding import Finding
@@ -73,7 +74,12 @@ async def list_findings(
     total_result = await db.execute(select(func.count()).select_from(q.subquery()))
     total = total_result.scalar_one()
 
-    q = q.order_by(Finding.created_at.desc()).offset((page - 1) * page_size).limit(page_size)
+    q = (
+        q.options(selectinload(Finding.application))
+        .order_by(Finding.created_at.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )
     result = await db.execute(q)
     findings = result.scalars().all()
 
