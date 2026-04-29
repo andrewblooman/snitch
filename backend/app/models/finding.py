@@ -39,7 +39,7 @@ class Finding(Base):
     cvss_score: Mapped[float | None] = mapped_column(Float, nullable=True)
     epss_score: Mapped[float | None] = mapped_column(Float, nullable=True)
     epss_percentile: Mapped[float | None] = mapped_column(Float, nullable=True)
-    compliance_tags: Mapped[list | dict | None] = mapped_column(JSON, nullable=True)
+    compliance_tags: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
 
     status: Mapped[str] = mapped_column(String(50), default="open", nullable=False)
 

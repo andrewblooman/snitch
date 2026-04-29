@@ -69,13 +69,17 @@ async def list_findings(
     if severity:
         q = q.where(Finding.severity == severity)
     if finding_type:
-        q = q.where(Finding.finding_type == finding_type)
+        q = q.where(func.lower(Finding.finding_type) == finding_type.lower())
     if scanner:
         q = q.where(Finding.scanner == scanner)
     if status:
         q = q.where(Finding.status == status)
     if identifier:
-        q = q.where(or_(Finding.cve_id == identifier, Finding.rule_id == identifier))
+        q = q.where(or_(
+            Finding.cve_id == identifier,
+            Finding.rule_id == identifier,
+            Finding.title == identifier,
+        ))
     if compliance_tag:
         q = q.where(cast(Finding.compliance_tags, String).contains(compliance_tag))
 
@@ -139,5 +143,7 @@ async def update_finding(
         finding.fixed_at = datetime.now(timezone.utc)
 
     await db.flush()
-    await db.refresh(finding)
-    return finding
+    result = await db.execute(
+        select(Finding).options(selectinload(Finding.application)).where(Finding.id == finding_id)
+    )
+    return result.scalar_one()

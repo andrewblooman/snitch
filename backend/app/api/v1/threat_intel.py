@@ -1,9 +1,12 @@
 import re
 import asyncio
+import logging
 import httpx
 import xml.etree.ElementTree as ET
 from email.utils import parsedate_to_datetime
 from fastapi import APIRouter, HTTPException
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/threat-intel", tags=["threat-intel"])
 
@@ -48,7 +51,7 @@ async def fetch_feed(client, feed_info):
             })
         return items
     except Exception as e:
-        print(f"Error fetching {feed_info['name']}: {e}")
+        logger.error("Error fetching feed %s: %s", feed_info['name'], e)
         return []
 
 @router.get("/feed")
@@ -92,12 +95,12 @@ async def get_locations():
         
         from app.core.config import settings
         
-        # 2. Try Anthropic
+        # 2. Try Anthropic (async client — does not block the event loop)
         if settings.ANTHROPIC_API_KEY:
             try:
-                import anthropic
+                from anthropic import AsyncAnthropic
                 import json
-                client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+                client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
                 prompt = (
                     "Analyze the following cybersecurity news items. Extract up to 5 distinct geographic countries or regions "
                     "mentioned as targets or origins of attacks. Return ONLY a strict JSON array of objects. "
@@ -106,21 +109,21 @@ async def get_locations():
                     f"News:\n{text_corpus}\n\n"
                     "Output strict JSON array only, no markdown blocks or conversational text."
                 )
-                
-                response = client.messages.create(
+
+                response = await client.messages.create(
                     model="claude-3-5-sonnet-20241022",
                     max_tokens=1000,
                     messages=[{"role": "user", "content": prompt}]
                 )
-                
+
                 text_out = response.content[0].text.strip()
                 if text_out.startswith("```json"): text_out = text_out.replace("```json", "", 1)
                 if text_out.endswith("```"): text_out = text_out[:-3]
-                
+
                 locations = json.loads(text_out.strip())
                 return {"locations": locations}
             except Exception as e:
-                print(f"Anthropic location extraction failed: {e}")
+                logger.error("Anthropic location extraction failed: %s", e)
                 # Fall through to fallback
                 
         # 3. Fallback Keyword Matcher

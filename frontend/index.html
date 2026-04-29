@@ -561,7 +561,7 @@ function renderTopVulns(items) {
   el.innerHTML = items.map(function(v, idx){
     var dotColor = severityDot(v.severity);
     var title = escapeHtml((v.title||'Unknown vulnerability').slice(0,60)) + ((v.title||'').length > 60 ? '…' : '');
-    var ident = v.identifier || v.cve_id || v.rule_id || '—';
+    var ident = escapeHtml(v.identifier || v.cve_id || v.rule_id || '—');
     return '<div class="app-bar-row" style="padding:14px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);">'
       + '<div style="width:20px;text-align:center;font-family:\'Fira Code\',monospace;font-size:13px;font-weight:600;color:#475569;flex-shrink:0;">#'+(idx+1)+'</div>'
       + '<div class="sev-dot" style="background:'+dotColor+';box-shadow:0 0 6px '+dotColor+'88;margin:0 10px 0 4px;"></div>'
@@ -599,18 +599,6 @@ async function renderThreatIntel() {
       return;
     }
     
-    function timeAgo(dateStr) {
-  if (!dateStr) return 'Never';
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return 'Never';
-  const diff = Math.floor((Date.now() - d) / 1000);
-  if (diff < 0) return 'Just now';
-  if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
-  return `${Math.floor(diff/86400)}d ago`;
-}
-
     el.innerHTML = topItems.map(function(item) {
       // Pick a random icon/color based on source hash for visual variety
       const colors = ['#ff3333', '#ff9f43', '#00e5ff', '#ff6b35', '#a29bfe'];
@@ -626,9 +614,9 @@ async function renderThreatIntel() {
         + '<i data-lucide="'+icon+'" style="width:16px;height:16px;"></i>'
         + '</div>'
         + '<div style="flex:1;min-width:0;">'
-        + '<div style="font-size:15px;font-weight:600;color:#e2e8f0;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+item.title+'</div>'
+        + '<div style="font-size:15px;font-weight:600;color:#e2e8f0;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+escapeHtml(item.title)+'</div>'
         + '<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:#475569;font-family:\'Fira Code\',monospace;margin-top:6px;">'
-        + '<span>SOURCE: <strong style="color:#00e5ff;">'+item.source+'</strong></span>'
+        + '<span>SOURCE: <strong style="color:#00e5ff;">'+escapeHtml(item.source)+'</strong></span>'
         + '<span style="color:rgba(255,255,255,0.2);">|</span>'
         + '<span>'+timeAgo(item.pubDate)+'</span>'
         + '</div>'

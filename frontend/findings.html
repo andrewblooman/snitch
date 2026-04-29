@@ -161,6 +161,10 @@ let totalPages = 1;
 let sortBy = 'severity';
 let sortDir = 'asc';
 
+function escapeHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 function severityBadge(sev){
   const map={critical:{color:'#ef4444',bg:'rgba(239,68,68,0.15)',label:'Critical'},high:{color:'#f59e0b',bg:'rgba(245,158,11,0.15)',label:'High'},medium:{color:'#f97316',bg:'rgba(249,115,22,0.15)',label:'Medium'},low:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)',label:'Low'},info:{color:'#94a3b8',bg:'rgba(148,163,184,0.15)',label:'Info'}};
   const s=map[sev?.toLowerCase()]||map.info;
@@ -255,13 +259,13 @@ async function loadFindings() {
     }
     
     tbody.innerHTML = data.items.map(f => `
-      <tr class="table-row" style="border-bottom:1px solid rgba(255,255,255,0.04);" onclick="openFindingPanel('${f.id}')">
+      <tr class="table-row" style="border-bottom:1px solid rgba(255,255,255,0.04);" onclick="openFindingPanel('${escapeHtml(f.id)}')">
         <td style="padding:16px 24px;">${severityBadge(f.severity)}</td>
         <td style="padding:16px 24px;max-width:350px;">
-          <div style="font-size:15px;font-weight:600;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${f.title||''}">${(f.title||'Unknown').slice(0,60)}${(f.title||'').length>60?'…':''}</div>
+          <div style="font-size:15px;font-weight:600;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(f.title||'')}">${escapeHtml((f.title||'Unknown').slice(0,60))}${(f.title||'').length>60?'…':''}</div>
         </td>
         <td style="padding:16px 24px;">
-          <div style="font-size:14px;color:#f1f5f9;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;" title="${f.application_name||f.application_id}">${f.application_name||f.application_id.split('-')[0]+'...'}</div>
+          <div style="font-size:14px;color:#f1f5f9;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;" title="${escapeHtml(f.application_name||f.application_id)}">${escapeHtml(f.application_name||f.application_id.split('-')[0]+'...')}</div>
         </td>
         <td style="padding:16px 24px;">${typeBadge(f.finding_type||f.scanner)}</td>
         <td style="padding:16px 24px;">${statusBadge(f.status)}</td>
@@ -343,7 +347,7 @@ function closeFindingPanel() {
 
 function renderPanel(f) {
   const body = document.getElementById('panel-body');
-  const escAttr = s => (s||'').replace(/"/g, '&quot;');
+  const eh = escapeHtml;
   body.innerHTML = `
     <div style="padding:24px;display:flex;flex-direction:column;gap:20px;">
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -352,36 +356,36 @@ function renderPanel(f) {
       </div>
       <div>
         <div style="font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Title</div>
-        <div style="font-size:16px;font-weight:600;color:#f1f5f9;line-height:1.4;">${f.title||'—'}</div>
+        <div style="font-size:16px;font-weight:600;color:#f1f5f9;line-height:1.4;">${eh(f.title)||'—'}</div>
       </div>
       ${f.description ? `
       <div>
         <div style="font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Description</div>
-        <div style="font-size:14px;color:#94a3b8;line-height:1.6;">${f.description}</div>
+        <div style="font-size:14px;color:#94a3b8;line-height:1.6;">${eh(f.description)}</div>
       </div>` : ''}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div>
           <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Scanner</div>
-          <div style="font-size:14px;color:#00e5ff;font-family:'Fira Code',monospace;">${f.scanner||'—'}</div>
+          <div style="font-size:14px;color:#00e5ff;font-family:'Fira Code',monospace;">${eh(f.scanner)||'—'}</div>
         </div>
         <div>
           <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Application</div>
-          <a href="/app-detail.html?id=${f.application_id}" style="font-size:14px;color:#00e5ff;text-decoration:none;font-weight:500;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${f.application_name||f.application_id}</a>
+          <a href="/app-detail.html?id=${eh(f.application_id)}" style="font-size:14px;color:#00e5ff;text-decoration:none;font-weight:500;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${eh(f.application_name||f.application_id)}</a>
         </div>
         ${f.file_path ? `
         <div style="grid-column:1/-1;">
           <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">File Path</div>
-          <div style="font-size:13px;color:#94a3b8;font-family:'Fira Code',monospace;word-break:break-all;">${f.file_path}${f.line_number ? ':'+f.line_number : ''}</div>
+          <div style="font-size:13px;color:#94a3b8;font-family:'Fira Code',monospace;word-break:break-all;">${eh(f.file_path)}${f.line_number ? ':'+f.line_number : ''}</div>
         </div>` : ''}
         ${f.cve_id ? `
         <div>
           <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">CVE</div>
-          <div style="font-size:14px;color:#f1f5f9;font-family:'Fira Code',monospace;">${f.cve_id}</div>
+          <div style="font-size:14px;color:#f1f5f9;font-family:'Fira Code',monospace;">${eh(f.cve_id)}</div>
         </div>` : ''}
         ${f.package_name ? `
         <div>
           <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Package</div>
-          <div style="font-size:14px;color:#f1f5f9;font-family:'Fira Code',monospace;">${f.package_name}${f.package_version?' @ '+f.package_version:''}</div>
+          <div style="font-size:14px;color:#f1f5f9;font-family:'Fira Code',monospace;">${eh(f.package_name)}${f.package_version?' @ '+eh(f.package_version):''}</div>
         </div>` : ''}
         ${f.cvss_score != null ? `
         <div>
@@ -395,7 +399,7 @@ function renderPanel(f) {
       </div>
       <div>
         <div style="font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Status</div>
-        <select id="panel-status-select" style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,229,255,0.25);color:#f1f5f9;padding:8px 12px;border-radius:8px;font-size:14px;width:100%;cursor:pointer;" onchange="updateFindingStatus('${escAttr(f.id)}', this.value)">
+        <select id="panel-status-select" style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,229,255,0.25);color:#f1f5f9;padding:8px 12px;border-radius:8px;font-size:14px;width:100%;cursor:pointer;" onchange="updateFindingStatus('${eh(f.id)}', this.value)">
           <option value="open" ${f.status==='open'?'selected':''}>Open</option>
           <option value="fixed" ${f.status==='fixed'?'selected':''}>Fixed</option>
           <option value="accepted" ${f.status==='accepted'?'selected':''}>Risk Accepted</option>

@@ -291,41 +291,44 @@ def weekly_scan_all() -> dict:
     return {"dispatched": len(dispatched), "app_ids": dispatched}
 
 
-@celery_app.task(name="app.worker.tasks.fetch_epss_scores_task", max_retries=3)
-def fetch_epss_scores_task(app_id_str: str, cve_ids: list[str]) -> dict:
+@celery_app.task(bind=True, name="app.worker.tasks.fetch_epss_scores_task", max_retries=3, default_retry_delay=60)
+def fetch_epss_scores_task(self, app_id_str: str, cve_ids: list[str]) -> dict:
     import asyncio
     from app.services.epss import fetch_epss_scores
-    
+
     if not cve_ids:
         return {"fetched": 0}
-        
-    application_id = uuid.UUID(app_id_str)
-    
-    # Run the async fetch in a synchronous wrapper
-    scores = asyncio.run(fetch_epss_scores(cve_ids))
-    if not scores:
-        return {"fetched": 0, "error": "No scores returned or API failed"}
-        
-    with _get_sync_session() as db:
-        findings = db.execute(
-            select(Finding).where(
-                Finding.application_id == application_id,
-                Finding.cve_id.in_(scores.keys())
-            )
-        ).scalars().all()
-        
-        updated = 0
-        for finding in findings:
-            cve = finding.cve_id
-            if cve in scores:
-                finding.epss_score = scores[cve]["epss"]
-                finding.epss_percentile = scores[cve]["percentile"]
-                updated += 1
-                
-        if updated > 0:
-            app = db.get(Application, application_id)
-            if app:
-                _recalculate_risk(db, app)
-            db.commit()
-            
-    return {"fetched": len(scores), "updated": updated}
+
+    try:
+        application_id = uuid.UUID(app_id_str)
+
+        scores = asyncio.run(fetch_epss_scores(cve_ids))
+        if not scores:
+            return {"fetched": 0, "error": "No scores returned or API failed"}
+
+        with _get_sync_session() as db:
+            findings = db.execute(
+                select(Finding).where(
+                    Finding.application_id == application_id,
+                    Finding.cve_id.in_(scores.keys())
+                )
+            ).scalars().all()
+
+            updated = 0
+            for finding in findings:
+                cve = finding.cve_id
+                if cve in scores:
+                    finding.epss_score = scores[cve]["epss"]
+                    finding.epss_percentile = scores[cve]["percentile"]
+                    updated += 1
+
+            if updated > 0:
+                app = db.get(Application, application_id)
+                if app:
+                    _recalculate_risk(db, app)
+                db.commit()
+
+        return {"fetched": len(scores), "updated": updated}
+
+    except Exception as exc:
+        raise self.retry(exc=exc)

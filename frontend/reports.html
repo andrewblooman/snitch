@@ -194,6 +194,10 @@ let activeDays = 90;
 let trendChartInst = null;
 
 // ── Utilities ──────────────────────────────────────────────────────────────────
+function escapeHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 function animateCounter(el, target, duration=1200, prefix='', suffix='') {
   const startTime = performance.now();
   function update(now) {
@@ -465,8 +469,8 @@ function renderTopVulns(items){
     <tr class="table-row" style="border-bottom:1px solid rgba(0,229,255,0.06);cursor:pointer;" onclick="window.location.href='${href}'">
       <td style="padding:12px;text-align:center;font-size:15px;font-weight:600;color:#475569;">${i+1}</td>
       <td style="padding:12px;width:45%;max-width:480px;">
-        <div style="font-size:15px;color:#e2e8f0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${v.title||''}">${(v.title||'Unknown vulnerability').slice(0,100)}${(v.title||'').length>100?'…':''}</div>
-        ${v.identifier&&v.identifier!==v.title?`<div style="font-size:12px;color:#475569;font-family:'Fira Code',monospace;margin-top:2px;">${v.identifier}</div>`:''}
+        <div style="font-size:15px;color:#e2e8f0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(v.title||'')}">${escapeHtml((v.title||'Unknown vulnerability').slice(0,100))}${(v.title||'').length>100?'…':''}</div>
+        ${v.identifier&&v.identifier!==v.title?`<div style="font-size:12px;color:#475569;font-family:'Fira Code',monospace;margin-top:2px;">${escapeHtml(v.identifier)}</div>`:''}
       </td>
       <td style="padding:12px;">${typeBadge(v.finding_type||v.scanner_type||v.type)}</td>
       <td style="padding:12px;">${severityBadge(v.severity)}</td>
