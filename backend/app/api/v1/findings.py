@@ -3,7 +3,7 @@ import uuid
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -55,6 +55,7 @@ async def list_findings(
     finding_type: Optional[str] = Query(None),
     scanner: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
+    identifier: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -70,6 +71,8 @@ async def list_findings(
         q = q.where(Finding.scanner == scanner)
     if status:
         q = q.where(Finding.status == status)
+    if identifier:
+        q = q.where(or_(Finding.cve_id == identifier, Finding.rule_id == identifier))
 
     total_result = await db.execute(select(func.count()).select_from(q.subquery()))
     total = total_result.scalar_one()

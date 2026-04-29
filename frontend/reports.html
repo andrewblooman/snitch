@@ -456,11 +456,17 @@ function renderTopVulns(items){
     lucide.createIcons();return;
   }
   const maxOcc=Math.max(...items.map(v=>v.total_occurrences||v.occurrences||v.count||0),1);
-  tbody.innerHTML=items.map((v,i)=>`
-    <tr class="table-row" style="border-bottom:1px solid rgba(0,229,255,0.06);">
+  tbody.innerHTML=items.map((v,i)=>{
+    const id=encodeURIComponent(v.identifier||'');
+    const sev=encodeURIComponent(v.severity||'');
+    const ft=encodeURIComponent(v.finding_type||v.scanner_type||v.type||'');
+    const href=`/findings.html?identifier=${id}&severity=${sev}&finding_type=${ft}`;
+    return `
+    <tr class="table-row" style="border-bottom:1px solid rgba(0,229,255,0.06);cursor:pointer;" onclick="window.location.href='${href}'">
       <td style="padding:12px;text-align:center;font-size:15px;font-weight:600;color:#475569;">${i+1}</td>
       <td style="padding:12px;width:45%;max-width:480px;">
         <div style="font-size:15px;color:#e2e8f0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${v.title||''}">${(v.title||'Unknown vulnerability').slice(0,100)}${(v.title||'').length>100?'…':''}</div>
+        ${v.identifier&&v.identifier!==v.title?`<div style="font-size:12px;color:#475569;font-family:'Fira Code',monospace;margin-top:2px;">${v.identifier}</div>`:''}
       </td>
       <td style="padding:12px;">${typeBadge(v.finding_type||v.scanner_type||v.type)}</td>
       <td style="padding:12px;">${severityBadge(v.severity)}</td>
@@ -470,7 +476,7 @@ function renderTopVulns(items){
       <td style="padding:12px;min-width:120px;">${occurrenceBar(v.total_occurrences||v.occurrences||v.count||0,maxOcc)}</td>
       <td style="padding:12px;text-align:center;">${trendIndicator(v.trend||'stable')}</td>
     </tr>
-  `).join('');
+  `;}).join('');
 }
 
 // ── Load All ───────────────────────────────────────────────────────────────────

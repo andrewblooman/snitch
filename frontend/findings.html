@@ -60,9 +60,12 @@
   <!-- Main -->
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
     <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
-      <div>
-        <h1 style="font-size:20px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Global Findings</h1>
-        <p style="font-size:13px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// platform.vulnerabilities · search</p>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div>
+          <h1 style="font-size:20px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Global Findings</h1>
+          <p style="font-size:13px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// platform.vulnerabilities · search</p>
+        </div>
+        <span id="identifier-chip" style="display:none;align-items:center;gap:6px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.25);color:#00e5ff;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;font-family:'Fira Code',monospace;cursor:pointer;" onclick="window.location.href='/findings.html'" title="Clear filter">✕</span>
       </div>
       <div id="header-user-slot" style="display:flex;align-items:center;gap:8px;"></div>
     </header>
@@ -190,10 +193,20 @@ function timeAgo(dateStr) {
 function parseQueryParams() {
   const params = new URLSearchParams(window.location.search);
   const sev = params.get('severity');
+  const ft = params.get('finding_type');
   if (sev) {
     document.getElementById('filter-severity').value = sev.toLowerCase();
-    // Default status to open if coming from dashboard severity click
     document.getElementById('filter-status').value = 'open';
+  }
+  if (ft) document.getElementById('filter-type').value = ft.toLowerCase();
+
+  const identifier = params.get('identifier');
+  if (identifier) {
+    const chip = document.getElementById('identifier-chip');
+    if (chip) {
+      chip.textContent = `Filtered by: ${identifier}`;
+      chip.style.display = 'inline-flex';
+    }
   }
 }
 
@@ -205,11 +218,14 @@ async function loadFindings() {
   const status = document.getElementById('filter-status').value;
   const scanner = document.getElementById('filter-scanner').value;
 
+  const identifier = new URLSearchParams(window.location.search).get('identifier');
+
   let url = `/api/v1/findings?page=${currentPage}&page_size=20`;
   if(sev) url += `&severity=${sev}`;
   if(type) url += `&finding_type=${type}`;
   if(status) url += `&status=${status}`;
   if(scanner) url += `&scanner=${scanner}`;
+  if(identifier) url += `&identifier=${encodeURIComponent(identifier)}`;
 
   try {
     const res = await fetch(url);
