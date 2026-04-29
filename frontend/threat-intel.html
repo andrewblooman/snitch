@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snitch — Threat Intelligence</title>
+  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
+  <link rel="stylesheet" href="/static/css/theme.css">
+  <script src="/static/js/lucide.min.js"></script>
+  <script src="https://unpkg.com/globe.gl"></script>
+  <style>
+    * { box-sizing: border-box; }
+    @keyframes fadeInUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    @keyframes pulse-glow { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+    
+    body { font-family: var(--font-body, 'Fira Sans', system-ui, sans-serif); background: var(--bg-page, #0a0e1a); color: var(--text-primary, #f1f5f9); margin: 0; padding: 0; min-height: 100vh; }
+    
+    .card { background: linear-gradient(145deg, #0f1b34 0%, #080f1d 100%); border: 1px solid rgba(0,229,255,0.14); border-radius: 16px; box-shadow: 0 4px 32px rgba(0,0,0,.55), inset 0 1px 0 rgba(0,229,255,.06); position: relative; overflow: hidden; }
+    
+    .feed-item {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 24px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      transition: all 0.2s;
+      text-decoration: none;
+      color: inherit;
+    }
+    .feed-item:hover {
+      background: rgba(0,229,255,0.03);
+      border-color: rgba(0,229,255,0.15);
+      transform: translateY(-2px);
+    }
+    
+    .feed-source { font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #00e5ff; display: flex; align-items: center; gap: 6px; }
+    .feed-title { font-size: 17px; font-weight: 600; color: #f1f5f9; line-height: 1.4; }
+    .feed-desc { font-size: 15px; color: #94a3b8; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .feed-meta { font-size: 14px; color: #475569; font-family: 'Fira Code', monospace; margin-top: auto; display: flex; align-items: center; justify-content: space-between; }
+
+    .apt-item { display: flex; flex-direction: column; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s; }
+    .apt-item:last-child { border-bottom: none; }
+    .apt-item:hover { background: rgba(0,229,255,0.02); }
+    .apt-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #ef4444; background: rgba(239,68,68,0.1); padding: 4px 8px; border-radius: 4px; }
+    .apt-status .dot { width: 6px; height: 6px; background: #ef4444; border-radius: 50%; animation: pulse-glow 2s infinite; }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div id="sidebar-mount"></div>
+  <script src="/static/js/sidebar.js"></script>
+  <script src="/static/js/header.js"></script>
+
+  <!-- Main -->
+  <div id="main-content" style="margin-left:260px;min-height:100vh;">
+    <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
+      <div>
+        <h1 style="font-size:19px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Threat Intelligence</h1>
+        <p style="font-size:13px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// platform.intel · active_campaigns</p>
+      </div>
+      <div id="header-user-slot" style="display:flex;align-items:center;gap:12px;"></div>
+    </header>
+
+    <main style="padding:32px; max-width: 1400px; margin: 0 auto; display:flex; flex-direction:column; gap:24px;">
+      
+      <!-- Top Row: Globe Heatmap -->
+      <div class="card" style="padding:0; height: 450px; animation:fadeInUp 0.4s ease 0.1s both; display:flex; position:relative;">
+        <div style="position:absolute; top:24px; left:28px; z-index:10; pointer-events:none; display:flex; flex-direction:column; gap:16px;">
+          <div>
+            <div style="font-size:19px;font-weight:600;color:#f1f5f9;margin-bottom:4px;">Global Threat Activity</div>
+            <div style="font-size:14px;color:#94a3b8;font-family:'Fira Code',monospace;">Live network attack origins</div>
+          </div>
+          
+          <div id="locations-panel" style="background:rgba(10,14,26,0.85);backdrop-filter:blur(10px);border:1px solid rgba(0,229,255,0.15);border-radius:12px;padding:16px;width:300px;pointer-events:auto;max-height:330px;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+            <div style="font-size:13px;font-weight:700;color:#00e5ff;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+              <div style="width:6px;height:6px;background:#00e5ff;border-radius:50%;animation:pulse-glow 2s infinite;"></div>
+              Live Intel Locations
+            </div>
+            <div id="locations-list" style="display:flex;flex-direction:column;gap:12px;">
+              <div style="text-align:center;padding:20px;color:#94a3b8;font-size:14px;">
+                <div style="animation:spin 1s linear infinite;display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.08);border-top-color:#00e5ff;border-radius:50%;margin-bottom:8px;"></div><br>
+                Analyzing intel streams...
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div id="globeViz" style="width: 100%; height: 100%; cursor: grab;"></div>
+      </div>
+      
+      <!-- Bottom Row: Feed and APTs -->
+      <div style="display:grid;grid-template-columns:1fr 400px;gap:24px;">
+        
+        <!-- Feed Section -->
+        <div class="card" style="padding:32px;animation:fadeInUp 0.4s ease 0.2s both;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+            <div style="font-size:19px;font-weight:600;color:#f1f5f9;">Intelligence Aggregator</div>
+            <button onclick="loadFeed()" style="background:transparent;border:1px solid rgba(0,229,255,0.3);color:#00e5ff;padding:8px 16px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.2s;">
+              <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i> Refresh
+            </button>
+          </div>
+          
+          <div id="feed-container" style="display:grid;grid-template-columns:1fr;gap:16px;">
+            <div style="padding:60px;text-align:center;">
+              <div style="animation:spin 1s linear infinite;display:inline-block;width:32px;height:32px;border:3px solid rgba(255,255,255,0.08);border-top-color:#00e5ff;border-radius:50%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- APT Tracker -->
+        <div class="card" style="padding:0;animation:fadeInUp 0.4s ease 0.3s both; height:fit-content;">
+          <div style="padding:28px 28px 16px; border-bottom:1px solid rgba(0,229,255,0.1);">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <i data-lucide="crosshair" style="width:18px;height:18px;color:#ef4444;"></i>
+              <div style="font-size:19px;font-weight:600;color:#f1f5f9;">APT Tracker</div>
+            </div>
+            <div style="font-size:14px;color:#94a3b8;margin-top:6px;">Advanced Persistent Threats</div>
+          </div>
+          
+          <div style="display:flex;flex-direction:column;">
+            
+            <div class="apt-item">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+                <div>
+                  <div style="font-size:17px;font-weight:600;color:#f1f5f9;">APT29 (Cozy Bear)</div>
+                  <div style="font-size:13px;color:#94a3b8;font-family:'Fira Code',monospace;margin-top:2px;">Aliases: Midnight Blizzard, NOBELIUM</div>
+                </div>
+                <div class="apt-status"><div class="dot"></div>Active</div>
+              </div>
+              <div style="font-size:15px;color:#cbd5e1;line-height:1.5;margin-bottom:12px;">State-sponsored group focused on intelligence gathering, targeting government networks, think tanks, and technology companies.</div>
+              <div style="font-size:14px;color:#475569;"><strong>Recent Campaign:</strong> Ongoing credential spraying attacks against cloud infrastructure.</div>
+            </div>
+
+            <div class="apt-item">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+                <div>
+                  <div style="font-size:17px;font-weight:600;color:#f1f5f9;">Lazarus Group</div>
+                  <div style="font-size:13px;color:#94a3b8;font-family:'Fira Code',monospace;margin-top:2px;">Aliases: HIDDEN COBRA, Zinc</div>
+                </div>
+                <div class="apt-status"><div class="dot"></div>Active</div>
+              </div>
+              <div style="font-size:15px;color:#cbd5e1;line-height:1.5;margin-bottom:12px;">Highly capable threat actor heavily involved in financially motivated attacks, cryptocurrency theft, and espionage.</div>
+              <div style="font-size:14px;color:#475569;"><strong>Recent Campaign:</strong> Exploitation of zero-days in enterprise software for crypto-heists.</div>
+            </div>
+
+            <div class="apt-item">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+                <div>
+                  <div style="font-size:17px;font-weight:600;color:#f1f5f9;">Sandworm Team</div>
+                  <div style="font-size:13px;color:#94a3b8;font-family:'Fira Code',monospace;margin-top:2px;">Aliases: Voodoo Bear, Unit 74455</div>
+                </div>
+                <div class="apt-status"><div class="dot"></div>Active</div>
+              </div>
+              <div style="font-size:15px;color:#cbd5e1;line-height:1.5;margin-bottom:12px;">Destructive state-sponsored actor known for attacks on critical infrastructure and energy sectors.</div>
+              <div style="font-size:14px;color:#475569;"><strong>Recent Campaign:</strong> Deployment of custom wipers against European utility providers.</div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+      
+    </main>
+  </div>
+
+<script>
+// Format time utility
+function timeAgo(dateStr) {
+  if (!dateStr) return 'Never';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return 'Never';
+  const diff = Math.floor((Date.now() - d) / 1000);
+  if (diff < 0) return 'Just now';
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+  return `${Math.floor(diff/86400)}d ago`;
+}
+
+// Load RSS Feeds
+async function loadFeed() {
+  const container = document.getElementById('feed-container');
+  container.innerHTML = '<div style="padding:60px;text-align:center;"><div style="animation:spin 1s linear infinite;display:inline-block;width:32px;height:32px;border:3px solid rgba(255,255,255,0.08);border-top-color:#00e5ff;border-radius:50%;"></div></div>';
+  
+  try {
+    const res = await fetch('/api/v1/threat-intel/feed');
+    if (!res.ok) throw new Error('Failed to load feed');
+    const data = await res.json();
+    
+    if (!data.items || data.items.length === 0) {
+      container.innerHTML = '<div style="padding:40px;text-align:center;color:#475569;">No items found.</div>';
+      return;
+    }
+    
+    container.innerHTML = data.items.map(function(item) {
+      // Pick a random icon/color based on source hash for visual variety
+      const colors = ['#ff3333', '#ff9f43', '#00e5ff', '#ff6b35', '#a29bfe'];
+      const icons = ['alert-triangle', 'cloud-lightning', 'alert-circle', 'server', 'shield-alert'];
+      let hash = 0;
+      for (let i = 0; i < item.source.length; i++) { hash = item.source.charCodeAt(i) + ((hash << 5) - hash); }
+      const idx = Math.abs(hash) % colors.length;
+      const color = colors[idx];
+      const icon = icons[idx];
+
+      return '<a href="' + item.link + '" target="_blank" rel="noopener noreferrer" class="feed-item">'
+        + '<div class="feed-source" style="color:'+color+'"><i data-lucide="'+icon+'" style="width:12px;height:12px;"></i> ' + item.source + '</div>'
+        + '<div class="feed-title">' + item.title + '</div>'
+        + '<div class="feed-desc">' + item.description + '</div>'
+        + '<div class="feed-meta">'
+        + '<span>Published: ' + timeAgo(item.pubDate) + '</span>'
+        + '<span style="display:flex;align-items:center;gap:4px;color:#00e5ff;">Read article <i data-lucide="arrow-right" style="width:12px;height:12px;"></i></span>'
+        + '</div>'
+        + '</a>';
+    }).join('');
+    
+    lucide.createIcons();
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:#ef4444;"><i data-lucide="alert-circle" style="width:32px;height:32px;margin:0 auto 12px;display:block;opacity:0.8;"></i>Failed to load threat intelligence feed.</div>';
+    lucide.createIcons();
+  }
+}
+
+// Initialize Globe.gl Heatmap
+let globeObj = null;
+
+function initGlobe() {
+  const container = document.getElementById('globeViz');
+  globeObj = Globe()
+    (container)
+    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+    .backgroundColor('rgba(0,0,0,0)')
+    .arcStroke(0.5)
+    .arcDashLength(() => Math.random())
+    .arcDashGap(() => Math.random())
+    .arcDashAnimateTime(() => Math.random() * 4000 + 1000);
+    
+  globeObj.controls().autoRotate = true;
+  globeObj.controls().autoRotateSpeed = 1.2;
+  globeObj.controls().enableZoom = false;
+
+  window.addEventListener('resize', () => {
+    globeObj.width(container.clientWidth);
+    globeObj.height(container.clientHeight);
+  });
+}
+
+// Load Analyzed Locations
+async function loadLocations() {
+  const list = document.getElementById('locations-list');
+  try {
+    const res = await fetch('/api/v1/threat-intel/locations');
+    if (!res.ok) throw new Error('Failed to load locations');
+    const data = await res.json();
+    
+    if (!data.locations || data.locations.length === 0) {
+      list.innerHTML = '<div style="color:#475569;font-size:14px;">No specific locations detected.</div>';
+      return;
+    }
+    
+    // Render side panel
+    list.innerHTML = data.locations.map(loc => `
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);padding:10px;border-radius:8px;">
+        <div style="font-size:15px;font-weight:600;color:#f1f5f9;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
+          <i data-lucide="map-pin" style="width:12px;height:12px;color:#ef4444;"></i>
+          ${loc.country}
+        </div>
+        <div style="font-size:13px;color:#94a3b8;line-height:1.4;">${loc.event}</div>
+      </div>
+    `).join('');
+    lucide.createIcons();
+
+    // Plot on globe if initialized
+    if (globeObj) {
+      // Create random arcs originating or terminating at these hotspots
+      const N = 30;
+      const arcsData = [...Array(N).keys()].map(() => {
+        const isTarget = Math.random() > 0.5;
+        const hotspot = data.locations[Math.floor(Math.random() * data.locations.length)];
+        const randomLat = (Math.random() - 0.5) * 160;
+        const randomLng = (Math.random() - 0.5) * 360;
+        
+        return {
+          startLat: isTarget ? randomLat : hotspot.lat,
+          startLng: isTarget ? randomLng : hotspot.lng,
+          endLat: isTarget ? hotspot.lat : randomLat,
+          endLng: isTarget ? hotspot.lng : randomLng,
+          color: ['#ff3333', '#ff6b35', '#ff9f43', '#00e5ff'][Math.floor(Math.random() * 4)]
+        };
+      });
+
+      // Rings for the hotspots
+      const ringsData = data.locations.map(loc => ({
+        lat: loc.lat,
+        lng: loc.lng,
+        color: '#ef4444',
+        maxR: 5,
+        propagationSpeed: 2,
+        repeatPeriod: 1000
+      }));
+
+      globeObj
+        .arcsData(arcsData)
+        .arcColor('color')
+        .ringsData(ringsData)
+        .ringColor('color')
+        .ringMaxRadius('maxR')
+        .ringPropagationSpeed('propagationSpeed')
+        .ringRepeatPeriod('repeatPeriod');
+        
+      // Point camera to first hotspot
+      globeObj.pointOfView({ lat: data.locations[0].lat, lng: data.locations[0].lng, altitude: 2 }, 1500);
+    }
+
+  } catch (err) {
+    console.error(err);
+    list.innerHTML = '<div style="color:#ef4444;font-size:14px;">Failed to analyze locations.</div>';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  lucide.createIcons();
+  loadFeed();
+  setTimeout(() => {
+    initGlobe();
+    loadLocations();
+  }, 100);
+});
+</script>
+</body>
+</html>

@@ -16,7 +16,7 @@
 
     /* Tab bar */
     .tab-bar { display:flex;gap:4px;background:rgba(3,4,12,0.7);border:1px solid rgba(0,229,255,0.1);border-radius:12px;padding:4px;margin-bottom:28px; }
-    .tab-btn { flex:1;padding:10px 16px;border:none;background:transparent;color:#64748b;font-size:13px;font-weight:600;border-radius:8px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap; }
+    .tab-btn { flex:1;padding:10px 16px;border:none;background:transparent;color:#64748b;font-size:15px;font-weight:600;border-radius:8px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap; }
     .tab-btn.active { background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(99,102,241,0.15));color:#00e5ff;border:1px solid rgba(0,229,255,0.2); }
     .tab-btn:hover:not(.active) { color:#94a3b8;background:rgba(255,255,255,0.04); }
     .tab-panel { display:none;animation:fadeInUp 0.3s ease; }
@@ -24,32 +24,32 @@
 
     /* Typography */
     .doc-h2 { font-size:22px;font-weight:700;color:#f1f5f9;margin:0 0 6px; }
-    .doc-h3 { font-size:15px;font-weight:700;color:#f1f5f9;margin:24px 0 8px; }
-    .doc-h4 { font-size:13px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin:20px 0 8px; }
-    .doc-lead { font-size:14px;color:#64748b;margin:0 0 24px;line-height:1.6; }
-    .doc-p { font-size:14px;color:#94a3b8;line-height:1.7;margin:0 0 16px; }
+    .doc-h3 { font-size:17px;font-weight:700;color:#f1f5f9;margin:24px 0 8px; }
+    .doc-h4 { font-size:15px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin:20px 0 8px; }
+    .doc-lead { font-size:16px;color:#64748b;margin:0 0 24px;line-height:1.6; }
+    .doc-p { font-size:16px;color:#94a3b8;line-height:1.7;margin:0 0 16px; }
 
     /* Step badges */
     .step-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px; }
     .step-card { background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.12);border-radius:12px;padding:16px; }
-    .step-num { display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:linear-gradient(135deg,#00e5ff,#6366f1);border-radius:50%;font-size:12px;font-weight:700;color:#fff;margin-bottom:10px; }
-    .step-title { font-size:13px;font-weight:600;color:#f1f5f9;margin:0 0 4px; }
-    .step-desc { font-size:12px;color:#64748b;margin:0;line-height:1.5; }
+    .step-num { display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:linear-gradient(135deg,#00e5ff,#6366f1);border-radius:50%;font-size:14px;font-weight:700;color:#fff;margin-bottom:10px; }
+    .step-title { font-size:15px;font-weight:600;color:#f1f5f9;margin:0 0 4px; }
+    .step-desc { font-size:14px;color:#64748b;margin:0;line-height:1.5; }
 
     /* Code blocks */
     .code-block { background:#060a14;border:1px solid rgba(255,255,255,0.08);border-radius:10px;overflow:hidden;margin:0 0 20px; }
     .code-header { display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:rgba(255,255,255,0.03);border-bottom:1px solid rgba(255,255,255,0.06); }
-    .code-lang { font-size:11px;font-weight:600;color:#6366f1;letter-spacing:0.5px;text-transform:uppercase; }
-    .code-file { font-size:11px;color:#475569; }
+    .code-lang { font-size:13px;font-weight:600;color:#6366f1;letter-spacing:0.5px;text-transform:uppercase; }
+    .code-file { font-size:13px;color:#475569; }
     .code-body { padding:16px;overflow-x:auto; }
-    .code-body pre { margin:0;font-family:'JetBrains Mono','Fira Code','Cascadia Code',monospace;font-size:12px;line-height:1.7;color:#e2e8f0; }
+    .code-body pre { margin:0;font-family:'JetBrains Mono','Fira Code','Cascadia Code',monospace;font-size:14px;line-height:1.7;color:#e2e8f0; }
     .code-body .cm { color:#475569; }  /* comments */
     .code-body .kw { color:#00e5ff; }  /* keywords / keys */
     .code-body .st { color:#10b981; }  /* strings */
     .code-body .va { color:#f59e0b; }  /* variables/env */
 
     /* Callout */
-    .callout { display:flex;gap:12px;padding:14px 16px;border-radius:10px;margin:0 0 20px;font-size:13px;line-height:1.6; }
+    .callout { display:flex;gap:12px;padding:14px 16px;border-radius:10px;margin:0 0 20px;font-size:15px;line-height:1.6; }
     .callout-info { background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);color:#a5b4fc; }
     .callout-tip  { background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);color:#6ee7b7; }
     .callout-warn { background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:#fcd34d; }
@@ -58,19 +58,19 @@
     .feature-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:24px; }
     .feature-card { background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px; }
     .feature-icon { width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px; }
-    .feature-title { font-size:14px;font-weight:600;color:#f1f5f9;margin:0 0 6px; }
-    .feature-desc { font-size:12px;color:#64748b;margin:0;line-height:1.5; }
+    .feature-title { font-size:16px;font-weight:600;color:#f1f5f9;margin:0 0 6px; }
+    .feature-desc { font-size:14px;color:#64748b;margin:0;line-height:1.5; }
 
     /* Endpoint table */
-    .ep-table { width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px; }
-    .ep-table th { text-align:left;padding:8px 12px;background:rgba(255,255,255,0.04);color:#64748b;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid rgba(255,255,255,0.08); }
+    .ep-table { width:100%;border-collapse:collapse;font-size:15px;margin-bottom:20px; }
+    .ep-table th { text-align:left;padding:8px 12px;background:rgba(255,255,255,0.04);color:#64748b;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid rgba(255,255,255,0.08); }
     .ep-table td { padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:top; }
     .ep-table tr:last-child td { border-bottom:none; }
-    .method { display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;font-family:monospace; }
+    .method { display:inline-block;padding:2px 8px;border-radius:4px;font-size:13px;font-weight:700;font-family:monospace; }
     .method-get  { background:rgba(16,185,129,0.15);color:#10b981; }
     .method-post { background:rgba(99,102,241,0.15);color:#818cf8; }
     .method-del  { background:rgba(239,68,68,0.15);color:#f87171; }
-    .ep-path { font-family:monospace;color:#00e5ff;font-size:12px; }
+    .ep-path { font-family:monospace;color:#00e5ff;font-size:14px; }
     .ep-desc { color:#94a3b8; }
 
     [data-theme="light"] .doc-h2 { color:#0f172a; }
@@ -96,7 +96,7 @@
     <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 0 rgba(0,229,255,0.12),0 4px 24px rgba(0,0,0,0.4);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
       <div>
         <h1 style="font-size:22px;font-weight:700;color:#f1f5f9;margin:0;">Documentation</h1>
-        <p style="font-size:13px;color:#475569;margin:2px 0 0;">Developer guides and platform reference</p>
+        <p style="font-size:15px;color:#475569;margin:2px 0 0;">Developer guides and platform reference</p>
       </div>
       <div id="header-user-slot" style="display:flex;align-items:center;gap:8px;"></div>
     </header>
@@ -225,7 +225,7 @@ Risk levels:
 
           <div class="doc-h3">Before you start</div>
           <p class="doc-p">Three values need to be available in your workflow:</p>
-          <ol style="font-size:14px;color:#94a3b8;line-height:1.8;padding-left:20px;margin:0 0 16px;">
+          <ol style="font-size:16px;color:#94a3b8;line-height:1.8;padding-left:20px;margin:0 0 16px;">
             <li><strong>Snitch URL</strong> — the base URL where your Snitch instance is running (e.g. <code>https://snitch.example.com</code>)</li>
             <li><strong>Snitch Application ID</strong> — the UUID of the application you registered in Snitch. Find it on the <a href="/applications.html" style="color:#00e5ff;">Applications page</a>: open any app and copy the ID from the URL or detail view.</li>
             <li><strong>Snitch Token</strong> — a service account token. Create one in <a href="/service-accounts.html" style="color:#00e5ff;">Admin → Service Accounts</a>. The token is shown once on creation — copy it and add it as a secret.</li>
@@ -422,7 +422,7 @@ open  →  false_positive (not a real vulnerability)</pre></div>
 
           <div class="doc-h3">Policies</div>
           <p class="doc-p">Policies let you define automated rules that run after every scan. A policy specifies:</p>
-          <ul style="font-size:14px;color:#94a3b8;line-height:1.8;padding-left:20px;">
+          <ul style="font-size:16px;color:#94a3b8;line-height:1.8;padding-left:20px;">
             <li><strong>Minimum severity</strong> — findings below this threshold are ignored by the policy</li>
             <li><strong>Scan types</strong> — which scanner results to evaluate (sast, sca, container, secrets, iac)</li>
             <li><strong>Rule blocklist / allowlist</strong> — specific Semgrep/Checkov rule IDs to include or exclude</li>
@@ -486,7 +486,7 @@ open  →  false_positive (not a real vulnerability)</pre></div>
             </tbody>
           </table>
 
-          <div class="doc-h4">CI/CD Scan Push <span style="font-size:11px;background:rgba(239,68,68,0.15);color:#f87171;padding:2px 7px;border-radius:10px;font-weight:600;margin-left:6px;">🔒 Requires Bearer token</span></div>
+          <div class="doc-h4">CI/CD Scan Push <span style="font-size:13px;background:rgba(239,68,68,0.15);color:#f87171;padding:2px 7px;border-radius:10px;font-weight:600;margin-left:6px;">🔒 Requires Bearer token</span></div>
           <table class="ep-table">
             <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
             <tbody>
@@ -570,7 +570,7 @@ fi</pre></div>
 
         <div class="card" style="padding:28px;">
           <div class="doc-h3">Push Endpoint</div>
-          <p style="font-size:13px;color:#64748b;margin:0 0 16px;">All parameters are passed as query strings; the request body is the raw JSON output from the scanner.</p>
+          <p style="font-size:15px;color:#64748b;margin:0 0 16px;">All parameters are passed as query strings; the request body is the raw JSON output from the scanner.</p>
           <div class="code-block">
             <div class="code-header"><span class="code-lang">http</span><span class="code-file">POST /api/v1/cicd-scans/push</span></div>
             <div class="code-body"><pre><span class="cm">// Query parameters</span>

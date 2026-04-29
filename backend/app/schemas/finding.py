@@ -36,6 +36,7 @@ class FindingResponse(FindingBase):
 
     id: uuid.UUID
     application_id: uuid.UUID
+    application_name: Optional[str] = None
     scan_id: Optional[uuid.UUID] = None
     status: str
     first_seen_at: datetime

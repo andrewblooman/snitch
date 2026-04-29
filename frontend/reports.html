@@ -20,7 +20,7 @@
     .card-hover:hover { border-color:rgba(0,229,255,0.3) !important; transform:translateY(-2px); transition:all 0.3s; }
     .table-row:hover { background:rgba(0,229,255,0.04) !important; }
     .card { background:linear-gradient(145deg,#0f1b34 0%,#080f1d 100%);border:1px solid rgba(0,229,255,0.14);border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,.55),inset 0 1px 0 rgba(0,229,255,.06); }
-    .range-btn { padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#94a3b8;transition:all 0.2s; }
+    .range-btn { padding:7px 16px;border-radius:8px;font-size:15px;font-weight:500;cursor:pointer;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#94a3b8;transition:all 0.2s; }
     .range-btn:hover { background:rgba(255,255,255,0.08);color:#f1f5f9; }
     .range-btn.active { background:linear-gradient(135deg,rgba(0,229,255,0.2),rgba(99,102,241,0.2));color:#00e5ff;border-color:rgba(0,229,255,0.3); }
   </style>
@@ -36,8 +36,8 @@
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
     <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
       <div>
-        <h1 style="font-size:18px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Security Reports</h1>
-        <p style="font-size:11px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// reports.analytics · insights</p>
+        <h1 style="font-size:19px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Security Reports</h1>
+        <p style="font-size:13px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// reports.analytics · insights</p>
       </div>
       <!-- Date Range Buttons + user widget -->
       <div id="header-user-slot" style="display:flex;align-items:center;gap:12px;">
@@ -81,8 +81,8 @@
       <div class="card" style="padding:28px;margin-bottom:28px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
           <div>
-            <div style="font-size:16px;font-weight:600;color:#f1f5f9;">Vulnerability Trend</div>
-            <div style="font-size:12px;color:#475569;margin-top:2px;">Findings over time by severity</div>
+            <div style="font-size:17px;font-weight:600;color:#f1f5f9;">Vulnerability Trend</div>
+            <div style="font-size:14px;color:#475569;margin-top:2px;">Findings over time by severity</div>
           </div>
           <div id="trend-loading" style="display:none;"><div style="animation:spin 1s linear infinite;width:20px;height:20px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></div>
         </div>
@@ -100,21 +100,21 @@
               <i data-lucide="trophy" style="width:18px;height:18px;color:#f59e0b;"></i>
             </div>
             <div>
-              <div style="font-size:16px;font-weight:600;color:#f1f5f9;">Team Leaderboard</div>
-              <div style="font-size:12px;color:#475569;">Security posture by team</div>
+              <div style="font-size:17px;font-weight:600;color:#f1f5f9;">Team Leaderboard</div>
+              <div style="font-size:14px;color:#475569;">Security posture by team</div>
             </div>
           </div>
           <div style="overflow-x:auto;">
             <table style="width:100%;border-collapse:collapse;" id="leaderboard-table">
               <thead>
                 <tr style="border-bottom:1px solid rgba(0,229,255,0.08);">
-                  <th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Rank</th>
-                  <th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Team</th>
-                  <th style="text-align:center;padding:8px 10px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Apps</th>
-                  <th style="text-align:center;padding:8px 10px;font-size:11px;font-weight:600;color:#ef4444;text-transform:uppercase;letter-spacing:0.8px;">C</th>
-                  <th style="text-align:center;padding:8px 10px;font-size:11px;font-weight:600;color:#f59e0b;text-transform:uppercase;letter-spacing:0.8px;">H</th>
-                  <th style="text-align:center;padding:8px 10px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Avg Risk</th>
-                  <th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Level</th>
+                  <th style="text-align:left;padding:8px 10px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Rank</th>
+                  <th style="text-align:left;padding:8px 10px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Team</th>
+                  <th style="text-align:center;padding:8px 10px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Apps</th>
+                  <th style="text-align:center;padding:8px 10px;font-size:13px;font-weight:600;color:#ef4444;text-transform:uppercase;letter-spacing:0.8px;">C</th>
+                  <th style="text-align:center;padding:8px 10px;font-size:13px;font-weight:600;color:#f59e0b;text-transform:uppercase;letter-spacing:0.8px;">H</th>
+                  <th style="text-align:center;padding:8px 10px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Avg Risk</th>
+                  <th style="text-align:left;padding:8px 10px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Level</th>
                 </tr>
               </thead>
               <tbody id="leaderboard-tbody">
@@ -132,20 +132,20 @@
                 <i data-lucide="git-pull-request" style="width:18px;height:18px;color:#6366f1;"></i>
               </div>
               <div>
-                <div style="font-size:16px;font-weight:600;color:#f1f5f9;">Remediation PRs</div>
-                <div style="font-size:12px;color:#475569;">Auto-generated pull requests</div>
+                <div style="font-size:17px;font-weight:600;color:#f1f5f9;">Remediation PRs</div>
+                <div style="font-size:14px;color:#475569;">Auto-generated pull requests</div>
               </div>
             </div>
-            <span id="pr-count-badge" style="background:rgba(99,102,241,0.15);color:#6366f1;border:1px solid rgba(99,102,241,0.3);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;">—</span>
+            <span id="pr-count-badge" style="background:rgba(99,102,241,0.15);color:#6366f1;border:1px solid rgba(99,102,241,0.3);padding:3px 10px;border-radius:20px;font-size:14px;font-weight:600;">—</span>
           </div>
           <div style="overflow-x:auto;">
             <table style="width:100%;border-collapse:collapse;" id="pr-table">
               <thead>
                 <tr style="border-bottom:1px solid rgba(0,229,255,0.08);">
-                  <th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">App</th>
-                  <th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Title</th>
-                  <th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Status</th>
-                  <th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Link</th>
+                  <th style="text-align:left;padding:8px 10px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">App</th>
+                  <th style="text-align:left;padding:8px 10px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Title</th>
+                  <th style="text-align:left;padding:8px 10px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Status</th>
+                  <th style="text-align:left;padding:8px 10px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Link</th>
                 </tr>
               </thead>
               <tbody id="pr-tbody">
@@ -163,22 +163,21 @@
             <i data-lucide="bug" style="width:18px;height:18px;color:#ef4444;"></i>
           </div>
           <div>
-            <div style="font-size:16px;font-weight:600;color:#f1f5f9;">Top Vulnerabilities Across All Applications</div>
-            <div style="font-size:12px;color:#475569;">Most impactful issues by occurrence</div>
+            <div style="font-size:17px;font-weight:600;color:#f1f5f9;">Top Vulnerabilities Across All Applications</div>
+            <div style="font-size:14px;color:#475569;">Most impactful issues by occurrence</div>
           </div>
         </div>
         <div style="overflow-x:auto;">
           <table style="width:100%;border-collapse:collapse;" id="vuln-table">
             <thead>
               <tr style="border-bottom:1px solid rgba(0,229,255,0.08);">
-                <th style="text-align:center;padding:8px 12px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;width:40px;">#</th>
-                <th style="text-align:left;padding:8px 12px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">CVE / Rule</th>
-                <th style="text-align:left;padding:8px 12px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Title</th>
-                <th style="text-align:left;padding:8px 12px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Type</th>
-                <th style="text-align:left;padding:8px 12px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Severity</th>
-                <th style="text-align:center;padding:8px 12px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Affected Apps</th>
-                <th style="text-align:left;padding:8px 12px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Occurrences</th>
-                <th style="text-align:center;padding:8px 12px;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Trend</th>
+                <th style="text-align:center;padding:8px 12px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;width:40px;">#</th>
+                <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;width:45%;min-width:280px;">Title</th>
+                <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Type</th>
+                <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Severity</th>
+                <th style="text-align:center;padding:8px 12px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Affected Apps</th>
+                <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Occurrences</th>
+                <th style="text-align:center;padding:8px 12px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Trend</th>
               </tr>
             </thead>
             <tbody id="vuln-tbody">
@@ -195,6 +194,10 @@ let activeDays = 90;
 let trendChartInst = null;
 
 // ── Utilities ──────────────────────────────────────────────────────────────────
+function escapeHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 function animateCounter(el, target, duration=1200, prefix='', suffix='') {
   const startTime = performance.now();
   function update(now) {
@@ -218,21 +221,26 @@ function getRiskLevel(s){
 function severityBadge(sev){
   const map={critical:{color:'#ef4444',bg:'rgba(239,68,68,0.15)',label:'Critical'},high:{color:'#f59e0b',bg:'rgba(245,158,11,0.15)',label:'High'},medium:{color:'#f97316',bg:'rgba(249,115,22,0.15)',label:'Medium'},low:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)',label:'Low'},info:{color:'#94a3b8',bg:'rgba(148,163,184,0.15)',label:'Info'}};
   const s=map[sev?.toLowerCase()]||map.info;
-  return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}44;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">${s.label}</span>`;
+  return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}44;padding:2px 8px;border-radius:6px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">${s.label}</span>`;
 }
 
-function timeAgo(dateStr){
-  if(!dateStr)return'—';
-  const diff=Math.floor((Date.now()-new Date(dateStr))/1000);
-  if(diff<60)return`${diff}s ago`;if(diff<3600)return`${Math.floor(diff/60)}m ago`;
-  if(diff<86400)return`${Math.floor(diff/3600)}h ago`;return`${Math.floor(diff/86400)}d ago`;
+function timeAgo(dateStr) {
+  if (!dateStr) return 'Never';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return 'Never';
+  const diff = Math.floor((Date.now() - d) / 1000);
+  if (diff < 0) return 'Just now';
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+  return `${Math.floor(diff/86400)}d ago`;
 }
 
 function showToast(message, type='success'){
   const colors={success:'#10b981',error:'#ef4444',warning:'#f59e0b',info:'#00e5ff'};
   const icons={success:'check-circle',error:'alert-circle',warning:'alert-triangle',info:'info'};
   const toast=document.createElement('div');
-  toast.style.cssText=`position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(13,17,23,0.95);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:#f1f5f9;font-size:14px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:slideInRight 0.3s ease;`;
+  toast.style.cssText=`position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(13,17,23,0.95);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:#f1f5f9;font-size:16px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:slideInRight 0.3s ease;`;
   const _icon = document.createElement('i');
   _icon.setAttribute('data-lucide', icons[type]);
   _icon.style.cssText = `width:18px;height:18px;color:${colors[type]};flex-shrink:0;`;
@@ -269,7 +277,7 @@ function renderStats(d){
     ${i>0?'<div style="width:1px;background:rgba(0,229,255,0.09);align-self:stretch;margin:12px 0;flex-shrink:0;"></div>':''}
     <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 12px;text-align:center;gap:6px;">
       <div id="stat-counter-${i}" style="font-family:'Fira Code',monospace;font-size:40px;font-weight:700;color:${m.color};line-height:1;letter-spacing:-1px;">0${m.suffix}</div>
-      <div style="font-family:'Fira Code',monospace;font-size:9px;font-weight:600;letter-spacing:2px;color:#475569;">${m.label}</div>
+      <div style="font-family:'Fira Code',monospace;font-size:11px;font-weight:600;letter-spacing:2px;color:#475569;">${m.label}</div>
     </div>
   `).join('');
   const row=document.getElementById('stats-row');
@@ -348,14 +356,14 @@ function renderTrendChart(data){
 // ── Leaderboard ────────────────────────────────────────────────────────────────
 function rankDisplay(n){
   const colors=['#f59e0b','#94a3b8','#a78bfa'];
-  if(n<=3)return`<span style="font-family:'Fira Code',monospace;font-size:13px;font-weight:700;color:${colors[n-1]};">#${n}</span>`;
-  return`<span style="font-family:'Fira Code',monospace;font-size:12px;color:#475569;font-weight:600;">#${n}</span>`;
+  if(n<=3)return`<span style="font-family:'Fira Code',monospace;font-size:15px;font-weight:700;color:${colors[n-1]};">#${n}</span>`;
+  return`<span style="font-family:'Fira Code',monospace;font-size:14px;color:#475569;font-weight:600;">#${n}</span>`;
 }
 
 function renderLeaderboard(teams){
   const tbody=document.getElementById('leaderboard-tbody');
   if(!teams||teams.length===0){
-    tbody.innerHTML=`<tr><td colspan="7" style="padding:32px;text-align:center;color:#475569;font-size:13px;"><i data-lucide="users" style="width:28px;height:28px;display:block;margin:0 auto 8px;opacity:0.3;"></i>No team data available</td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="7" style="padding:32px;text-align:center;color:#475569;font-size:15px;"><i data-lucide="users" style="width:28px;height:28px;display:block;margin:0 auto 8px;opacity:0.3;"></i>No team data available</td></tr>`;
     lucide.createIcons();return;
   }
   tbody.innerHTML=teams.map((t,i)=>{
@@ -367,16 +375,16 @@ function renderLeaderboard(teams){
       <tr class="table-row" style="border-bottom:1px solid rgba(0,229,255,0.06);${goldStyle}">
         <td style="padding:12px 10px;text-align:center;">${rankDisplay(rank)}</td>
         <td style="padding:12px 10px;">
-          <div style="font-size:14px;font-weight:${isTop?'700':'500'};color:${rank===1?'#f59e0b':rank===2?'#94a3b8':rank===3?'#a78bfa':'#f1f5f9'};">${t.team_name||t.name||'—'}</div>
+          <div style="font-size:16px;font-weight:${isTop?'700':'500'};color:${rank===1?'#f59e0b':rank===2?'#94a3b8':rank===3?'#a78bfa':'#f1f5f9'};">${t.team_name||t.name||'—'}</div>
         </td>
-        <td style="padding:12px 10px;text-align:center;font-size:13px;color:#94a3b8;">${t.app_count||t.applications||0}</td>
-        <td style="padding:12px 10px;text-align:center;font-size:13px;font-weight:600;color:${(t.critical_findings||0)>0?'#ef4444':'#475569'};">${t.critical_findings||0}</td>
-        <td style="padding:12px 10px;text-align:center;font-size:13px;font-weight:600;color:${(t.high_findings||0)>0?'#f59e0b':'#475569'};">${t.high_findings||0}</td>
+        <td style="padding:12px 10px;text-align:center;font-size:15px;color:#94a3b8;">${t.app_count||t.applications||0}</td>
+        <td style="padding:12px 10px;text-align:center;font-size:15px;font-weight:600;color:${(t.critical_findings||0)>0?'#ef4444':'#475569'};">${t.critical_findings||0}</td>
+        <td style="padding:12px 10px;text-align:center;font-size:15px;font-weight:600;color:${(t.high_findings||0)>0?'#f59e0b':'#475569'};">${t.high_findings||0}</td>
         <td style="padding:12px 10px;text-align:center;">
-          <span style="font-size:13px;font-weight:700;color:${risk.color};">${Math.round(t.avg_risk_score||0)}</span>
+          <span style="font-size:15px;font-weight:700;color:${risk.color};">${Math.round(t.avg_risk_score||0)}</span>
         </td>
         <td style="padding:12px 10px;">
-          <span style="background:${risk.bg};color:${risk.color};border:1px solid ${risk.color}44;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;">${risk.label}</span>
+          <span style="background:${risk.bg};color:${risk.color};border:1px solid ${risk.color}44;padding:2px 8px;border-radius:6px;font-size:13px;font-weight:600;">${risk.label}</span>
         </td>
       </tr>
     `;
@@ -387,7 +395,7 @@ function renderLeaderboard(teams){
 function prStatusBadge(status){
   const m={open:{color:'#10b981',bg:'rgba(16,185,129,0.1)',label:'Open'},merged:{color:'#6366f1',bg:'rgba(99,102,241,0.1)',label:'Merged'},closed:{color:'#94a3b8',bg:'rgba(148,163,184,0.1)',label:'Closed'}};
   const s=m[status?.toLowerCase()]||m.closed;
-  return`<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}44;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;">${s.label}</span>`;
+  return`<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}44;padding:2px 8px;border-radius:6px;font-size:13px;font-weight:600;">${s.label}</span>`;
 }
 
 function renderPRs(items){
@@ -396,22 +404,22 @@ function renderPRs(items){
   document.getElementById('pr-count-badge').textContent=`${openCount} open`;
 
   if(!items||items.length===0){
-    tbody.innerHTML=`<tr><td colspan="4" style="padding:32px;text-align:center;color:#475569;font-size:13px;"><i data-lucide="git-pull-request" style="width:28px;height:28px;display:block;margin:0 auto 8px;opacity:0.3;"></i>No pull requests yet</td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="4" style="padding:32px;text-align:center;color:#475569;font-size:15px;"><i data-lucide="git-pull-request" style="width:28px;height:28px;display:block;margin:0 auto 8px;opacity:0.3;"></i>No pull requests yet</td></tr>`;
     lucide.createIcons();return;
   }
   tbody.innerHTML=items.map(p=>`
     <tr class="table-row" style="border-bottom:1px solid rgba(0,229,255,0.06);">
       <td style="padding:10px 10px;max-width:100px;">
-        <div style="font-size:12px;color:#e2e8f0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.application_name||p.app_name||'—'}</div>
-        <div style="font-size:11px;color:#475569;">${p.team_name||''}</div>
+        <div style="font-size:14px;color:#e2e8f0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.application_name||p.app_name||'—'}</div>
+        <div style="font-size:13px;color:#475569;">${p.team_name||''}</div>
       </td>
       <td style="padding:10px 10px;max-width:160px;">
-        <div style="font-size:12px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${p.title||''}">${(p.title||'—').slice(0,40)}${(p.title||'').length>40?'…':''}</div>
-        <div style="font-size:11px;color:#475569;margin-top:2px;">${timeAgo(p.created_at)}</div>
+        <div style="font-size:14px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${p.title||''}">${(p.title||'—').slice(0,40)}${(p.title||'').length>40?'…':''}</div>
+        <div style="font-size:13px;color:#475569;margin-top:2px;">${timeAgo(p.created_at)}</div>
       </td>
       <td style="padding:10px 10px;">${prStatusBadge(p.status)}</td>
       <td style="padding:10px 10px;">
-        ${p.pr_url||p.url?`<a href="${p.pr_url||p.url}" target="_blank" rel="noopener noreferrer" style="color:#00e5ff;display:inline-flex;align-items:center;gap:4px;text-decoration:none;font-size:12px;font-weight:500;"><i data-lucide="external-link" style="width:13px;height:13px;"></i>View</a>`:'<span style="color:#475569;font-size:12px;">—</span>'}
+        ${p.pr_url||p.url?`<a href="${p.pr_url||p.url}" target="_blank" rel="noopener noreferrer" style="color:#00e5ff;display:inline-flex;align-items:center;gap:4px;text-decoration:none;font-size:14px;font-weight:500;"><i data-lucide="external-link" style="width:13px;height:13px;"></i>View</a>`:'<span style="color:#475569;font-size:14px;">—</span>'}
       </td>
     </tr>
   `).join('');
@@ -423,21 +431,21 @@ function typeBadge(type){
   const m={SAST:{color:'#a78bfa',bg:'rgba(167,139,250,0.15)'},SCA:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)'},Container:{color:'#00e5ff',bg:'rgba(0,229,255,0.15)'},Secret:{color:'#ef4444',bg:'rgba(239,68,68,0.15)'}};
   const k=Object.keys(m).find(k=>k.toLowerCase()===(type||'').toLowerCase());
   const s=k?m[k]:{color:'#94a3b8',bg:'rgba(148,163,184,0.15)'};
-  return`<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}33;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600;text-transform:uppercase;">${type||'—'}</span>`;
+  return`<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}33;padding:2px 7px;border-radius:5px;font-size:12px;font-weight:600;text-transform:uppercase;">${type||'—'}</span>`;
 }
 
 function trendIndicator(trend){
-  if(!trend||trend==='stable'||trend==='same')return`<span style="color:#475569;font-size:16px;">—</span>`;
-  if(trend==='up'||trend>0)return`<span style="color:#ef4444;font-size:14px;font-weight:700;">↑</span>`;
-  if(trend==='down'||trend<0)return`<span style="color:#10b981;font-size:14px;font-weight:700;">↓</span>`;
-  return`<span style="color:#475569;font-size:16px;">—</span>`;
+  if(!trend||trend==='stable'||trend==='same')return`<span style="color:#475569;font-size:17px;">—</span>`;
+  if(trend==='up'||trend>0)return`<span style="color:#ef4444;font-size:16px;font-weight:700;">↑</span>`;
+  if(trend==='down'||trend<0)return`<span style="color:#10b981;font-size:16px;font-weight:700;">↓</span>`;
+  return`<span style="color:#475569;font-size:17px;">—</span>`;
 }
 
 function occurrenceBar(count, max){
   const pct=max>0?Math.round((count/max)*100):0;
   return`
     <div style="display:flex;align-items:center;gap:8px;">
-      <span style="font-size:13px;font-weight:600;color:#f1f5f9;min-width:28px;">${count}</span>
+      <span style="font-size:15px;font-weight:600;color:#f1f5f9;min-width:28px;">${count}</span>
       <div style="flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;min-width:60px;">
         <div style="height:100%;width:${pct}%;background:linear-gradient(135deg,#00e5ff,#6366f1);border-radius:3px;transition:width 0.5s;"></div>
       </div>
@@ -448,28 +456,31 @@ function occurrenceBar(count, max){
 function renderTopVulns(items){
   const tbody=document.getElementById('vuln-tbody');
   if(!items||items.length===0){
-    tbody.innerHTML=`<tr><td colspan="8" style="padding:40px;text-align:center;color:#475569;font-size:14px;"><i data-lucide="shield-check" style="width:36px;height:36px;display:block;margin:0 auto 12px;opacity:0.3;"></i>No vulnerability data available</td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="8" style="padding:40px;text-align:center;color:#475569;font-size:16px;"><i data-lucide="shield-check" style="width:36px;height:36px;display:block;margin:0 auto 12px;opacity:0.3;"></i>No vulnerability data available</td></tr>`;
     lucide.createIcons();return;
   }
-  const maxOcc=Math.max(...items.map(v=>v.occurrences||v.count||0),1);
-  tbody.innerHTML=items.map((v,i)=>`
-    <tr class="table-row" style="border-bottom:1px solid rgba(0,229,255,0.06);">
-      <td style="padding:12px;text-align:center;font-size:13px;font-weight:600;color:#475569;">${i+1}</td>
-      <td style="padding:12px;">
-        <div style="font-size:12px;font-family:monospace;color:#00e5ff;font-weight:500;">${v.cve_id||v.rule_id||'—'}</div>
+  const maxOcc=Math.max(...items.map(v=>v.total_occurrences||v.occurrences||v.count||0),1);
+  tbody.innerHTML=items.map((v,i)=>{
+    const id=encodeURIComponent(v.identifier||'');
+    const sev=encodeURIComponent(v.severity||'');
+    const ft=encodeURIComponent(v.finding_type||v.scanner_type||v.type||'');
+    const href=`/findings.html?identifier=${id}&severity=${sev}&finding_type=${ft}`;
+    return `
+    <tr class="table-row" style="border-bottom:1px solid rgba(0,229,255,0.06);cursor:pointer;" onclick="window.location.href='${href}'">
+      <td style="padding:12px;text-align:center;font-size:15px;font-weight:600;color:#475569;">${i+1}</td>
+      <td style="padding:12px;width:45%;max-width:480px;">
+        <div style="font-size:15px;color:#e2e8f0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(v.title||'')}">${escapeHtml((v.title||'Unknown vulnerability').slice(0,100))}${(v.title||'').length>100?'…':''}</div>
+        ${v.identifier&&v.identifier!==v.title?`<div style="font-size:12px;color:#475569;font-family:'Fira Code',monospace;margin-top:2px;">${escapeHtml(v.identifier)}</div>`:''}
       </td>
-      <td style="padding:12px;max-width:220px;">
-        <div style="font-size:13px;color:#e2e8f0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${v.title||''}">${(v.title||'Unknown vulnerability').slice(0,50)}${(v.title||'').length>50?'…':''}</div>
-      </td>
-      <td style="padding:12px;">${typeBadge(v.scanner_type||v.type)}</td>
+      <td style="padding:12px;">${typeBadge(v.finding_type||v.scanner_type||v.type)}</td>
       <td style="padding:12px;">${severityBadge(v.severity)}</td>
       <td style="padding:12px;text-align:center;">
-        <span style="background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid rgba(0,229,255,0.2);padding:2px 10px;border-radius:6px;font-size:12px;font-weight:600;">${v.affected_apps||v.app_count||0}</span>
+        <span style="background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid rgba(0,229,255,0.2);padding:2px 10px;border-radius:6px;font-size:14px;font-weight:600;">${v.affected_apps||v.app_count||0}</span>
       </td>
-      <td style="padding:12px;min-width:120px;">${occurrenceBar(v.occurrences||v.count||0,maxOcc)}</td>
-      <td style="padding:12px;text-align:center;">${trendIndicator(v.trend)}</td>
+      <td style="padding:12px;min-width:120px;">${occurrenceBar(v.total_occurrences||v.occurrences||v.count||0,maxOcc)}</td>
+      <td style="padding:12px;text-align:center;">${trendIndicator(v.trend||'stable')}</td>
     </tr>
-  `).join('');
+  `;}).join('');
 }
 
 // ── Load All ───────────────────────────────────────────────────────────────────

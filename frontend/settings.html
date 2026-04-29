@@ -15,15 +15,15 @@
     @keyframes spin { to{transform:rotate(360deg)} }
     .card { background:linear-gradient(145deg,#0f1b34 0%,#080f1d 100%);border:1px solid rgba(0,229,255,0.14);border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,.55),inset 0 1px 0 rgba(0,229,255,.06); }
     .section-card { padding:28px;margin-bottom:20px;animation:fadeInUp 0.4s ease both; }
-    .section-title { font-size:16px;font-weight:700;color:#f1f5f9;margin:0 0 4px; }
-    .section-sub { font-size:13px;color:#475569;margin:0 0 24px; }
+    .section-title { font-size:17px;font-weight:700;color:#f1f5f9;margin:0 0 4px; }
+    .section-sub { font-size:15px;color:#475569;margin:0 0 24px; }
     .pref-row { display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.05); }
     .pref-row:last-child { border-bottom:none; }
-    .pref-label { font-size:14px;font-weight:500;color:#f1f5f9; }
-    .pref-desc { font-size:12px;color:#475569;margin-top:2px; }
+    .pref-label { font-size:16px;font-weight:500;color:#f1f5f9; }
+    .pref-desc { font-size:14px;color:#475569;margin-top:2px; }
     .field-group { margin-bottom:20px; }
     .field-group:last-child { margin-bottom:0; }
-    .field-label { font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px; }
+    .field-label { font-size:14px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px; }
     .token-row { display:flex;gap:10px;align-items:center; }
     .status-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
     .status-dot-green { background:#10b981;box-shadow:0 0 6px #10b981; }
@@ -45,8 +45,8 @@
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
     <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
       <div>
-        <h1 style="font-size:18px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Settings</h1>
-        <p style="font-size:11px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// platform.admin · configuration</p>
+        <h1 style="font-size:19px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Settings</h1>
+        <p style="font-size:13px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// platform.admin · configuration</p>
       </div>
       <div id="header-user-slot" style="display:flex;align-items:center;gap:8px;"></div>
     </header>
@@ -61,9 +61,9 @@
         <!-- GitHub Token -->
         <div class="field-group">
           <label class="field-label">GitHub Token</label>
-          <p style="font-size:12px;color:#475569;margin:0 0 10px;">Required for repository discovery and GitHub code scanning sync. Needs <code style="background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:4px;font-size:11px;">repo</code> and <code style="background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:4px;font-size:11px;">security_events</code> scopes.</p>
+          <p style="font-size:14px;color:#475569;margin:0 0 10px;">Required for repository discovery and GitHub code scanning sync. Needs <code style="background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:4px;font-size:13px;">repo</code> and <code style="background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:4px;font-size:13px;">security_events</code> scopes.</p>
           <div class="token-row">
-            <input type="password" id="github-token-input" class="dark-input" placeholder="ghp_••••••••••••••••••••••••••••••••••••••" style="font-family:monospace;font-size:13px;flex:1;" autocomplete="off">
+            <input type="password" id="github-token-input" class="dark-input" placeholder="ghp_••••••••••••••••••••••••••••••••••••••" style="font-family:monospace;font-size:15px;flex:1;" autocomplete="off">
             <button class="btn-secondary" id="github-toggle-btn" onclick="toggleVisibility('github-token-input','github-toggle-btn')" style="padding:10px 14px;flex-shrink:0;">
               <i data-lucide="eye" style="width:16px;height:16px;"></i>
             </button>
@@ -71,15 +71,15 @@
               <i data-lucide="save" style="width:16px;height:16px;"></i> Save
             </button>
           </div>
-          <div id="github-token-status" style="margin-top:8px;font-size:12px;color:#475569;"></div>
+          <div id="github-token-status" style="margin-top:8px;font-size:14px;color:#475569;"></div>
         </div>
 
         <!-- Anthropic API Key -->
         <div class="field-group">
           <label class="field-label">Anthropic API Key</label>
-          <p style="font-size:12px;color:#475569;margin:0 0 10px;">Required for AI-powered remediation suggestions via Claude. Without this key the platform falls back to a mock remediation plan.</p>
+          <p style="font-size:14px;color:#475569;margin:0 0 10px;">Required for AI-powered remediation suggestions via Claude. Without this key the platform falls back to a mock remediation plan.</p>
           <div class="token-row">
-            <input type="password" id="anthropic-token-input" class="dark-input" placeholder="sk-ant-••••••••••••••••••••••••••••••••••••••••••••••••" style="font-family:monospace;font-size:13px;flex:1;" autocomplete="off">
+            <input type="password" id="anthropic-token-input" class="dark-input" placeholder="sk-ant-••••••••••••••••••••••••••••••••••••••••••••••••" style="font-family:monospace;font-size:15px;flex:1;" autocomplete="off">
             <button class="btn-secondary" id="anthropic-toggle-btn" onclick="toggleVisibility('anthropic-token-input','anthropic-toggle-btn')" style="padding:10px 14px;flex-shrink:0;">
               <i data-lucide="eye" style="width:16px;height:16px;"></i>
             </button>
@@ -87,7 +87,7 @@
               <i data-lucide="save" style="width:16px;height:16px;"></i> Save
             </button>
           </div>
-          <div id="anthropic-token-status" style="margin-top:8px;font-size:12px;color:#475569;"></div>
+          <div id="anthropic-token-status" style="margin-top:8px;font-size:14px;color:#475569;"></div>
         </div>
       </div>
 
@@ -132,7 +132,7 @@
             <div class="pref-label">Platform version</div>
             <div class="pref-desc">Current release of the Snitch platform</div>
           </div>
-          <span style="font-family:monospace;font-size:13px;color:#00e5ff;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);padding:4px 12px;border-radius:8px;">v0.1.0</span>
+          <span style="font-family:monospace;font-size:15px;color:#00e5ff;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);padding:4px 12px;border-radius:8px;">v0.1.0</span>
         </div>
 
         <div class="pref-row">
@@ -140,7 +140,7 @@
             <div class="pref-label">Environment</div>
             <div class="pref-desc">Deployment context</div>
           </div>
-          <span style="font-family:monospace;font-size:13px;color:#f59e0b;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);padding:4px 12px;border-radius:8px;">Development</span>
+          <span style="font-family:monospace;font-size:15px;color:#f59e0b;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);padding:4px 12px;border-radius:8px;">Development</span>
         </div>
 
         <div class="pref-row" style="border-bottom:none;">
@@ -148,7 +148,7 @@
             <div class="pref-label">API status</div>
             <div class="pref-desc">Backend reachability check</div>
           </div>
-          <div id="api-status" style="display:flex;align-items:center;gap:8px;font-size:13px;color:#475569;">
+          <div id="api-status" style="display:flex;align-items:center;gap:8px;font-size:15px;color:#475569;">
             <div style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00e5ff;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
             Checking…
           </div>
@@ -214,12 +214,12 @@ async function checkApiStatus() {
   try {
     var res = await fetch('/api/v1/applications?page=1&page_size=1');
     if (res.ok) {
-      el.innerHTML = '<div class="status-dot status-dot-green"></div><span style="color:#10b981;font-size:13px;">Reachable</span>';
+      el.innerHTML = '<div class="status-dot status-dot-green"></div><span style="color:#10b981;font-size:15px;">Reachable</span>';
     } else {
-      el.innerHTML = '<div class="status-dot status-dot-yellow"></div><span style="color:#f59e0b;font-size:13px;">Degraded (HTTP ' + res.status + ')</span>';
+      el.innerHTML = '<div class="status-dot status-dot-yellow"></div><span style="color:#f59e0b;font-size:15px;">Degraded (HTTP ' + res.status + ')</span>';
     }
   } catch (e) {
-    el.innerHTML = '<div class="status-dot status-dot-red"></div><span style="color:#ef4444;font-size:13px;">Unreachable</span>';
+    el.innerHTML = '<div class="status-dot status-dot-red"></div><span style="color:#ef4444;font-size:15px;">Unreachable</span>';
   }
 }
 

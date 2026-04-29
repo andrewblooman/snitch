@@ -3,8 +3,9 @@ import uuid
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import func, select
+from sqlalchemy import case, cast, func, or_, select, String
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.db.session import get_db
 from app.models.finding import Finding
@@ -54,6 +55,10 @@ async def list_findings(
     finding_type: Optional[str] = Query(None),
     scanner: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
+    identifier: Optional[str] = Query(None),
+    compliance_tag: Optional[str] = Query(None),
+    sort_by: Optional[str] = Query("severity", pattern="^(severity|created_at)$"),
+    sort_dir: Optional[str] = Query("asc", pattern="^(asc|desc)$"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -64,16 +69,43 @@ async def list_findings(
     if severity:
         q = q.where(Finding.severity == severity)
     if finding_type:
-        q = q.where(Finding.finding_type == finding_type)
+        q = q.where(func.lower(Finding.finding_type) == finding_type.lower())
     if scanner:
         q = q.where(Finding.scanner == scanner)
     if status:
         q = q.where(Finding.status == status)
+    if identifier:
+        q = q.where(or_(
+            Finding.cve_id == identifier,
+            Finding.rule_id == identifier,
+            Finding.title == identifier,
+        ))
+    if compliance_tag:
+        q = q.where(cast(Finding.compliance_tags, String).contains(compliance_tag))
 
     total_result = await db.execute(select(func.count()).select_from(q.subquery()))
     total = total_result.scalar_one()
 
-    q = q.order_by(Finding.created_at.desc()).offset((page - 1) * page_size).limit(page_size)
+    sev_order = case(
+        (Finding.severity == "critical", 0),
+        (Finding.severity == "high", 1),
+        (Finding.severity == "medium", 2),
+        (Finding.severity == "low", 3),
+        else_=4,
+    )
+    if sort_by == "severity":
+        primary = sev_order if sort_dir == "asc" else sev_order.desc()
+        secondary = Finding.created_at.desc()
+    else:
+        primary = Finding.created_at.asc() if sort_dir == "asc" else Finding.created_at.desc()
+        secondary = sev_order
+
+    q = (
+        q.options(selectinload(Finding.application))
+        .order_by(primary, secondary)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )
     result = await db.execute(q)
     findings = result.scalars().all()
 
@@ -85,7 +117,9 @@ async def list_findings(
 
 @router.get("/{finding_id}", response_model=FindingResponse)
 async def get_finding(finding_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Finding).where(Finding.id == finding_id))
+    result = await db.execute(
+        select(Finding).options(selectinload(Finding.application)).where(Finding.id == finding_id)
+    )
     finding = result.scalar_one_or_none()
     if not finding:
         raise HTTPException(status_code=404, detail="Finding not found")
@@ -109,5 +143,7 @@ async def update_finding(
         finding.fixed_at = datetime.now(timezone.utc)
 
     await db.flush()
-    await db.refresh(finding)
-    return finding
+    result = await db.execute(
+        select(Finding).options(selectinload(Finding.application)).where(Finding.id == finding_id)
+    )
+    return result.scalar_one()

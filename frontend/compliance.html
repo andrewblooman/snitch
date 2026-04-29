@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snitch — Compliance Posture</title>
+  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
+  <style>/* Inter font fallback */ body { font-family: var(--font-body); }</style>
+  <link rel="stylesheet" href="/static/css/theme.css">
+  <script src="/static/js/lucide.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    @keyframes fadeInUp { from{transform:translateY(16px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    .card { background:linear-gradient(145deg,#0f1b34 0%,#080f1d 100%);border:1px solid rgba(0,229,255,0.14);border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,.55),inset 0 1px 0 rgba(0,229,255,.06); }
+    .fw-card { animation: fadeInUp 0.4s ease both; }
+    .fw-card:hover { border-color:rgba(0,229,255,0.3); }
+    .table-row:hover { background:rgba(0,229,255,0.05) !important; cursor:pointer; }
+    .badge { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px; }
+    .badge-critical { background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3); }
+    .badge-high { background:rgba(249,115,22,0.15);color:#fb923c;border:1px solid rgba(249,115,22,0.3); }
+    .badge-medium { background:rgba(234,179,8,0.15);color:#facc15;border:1px solid rgba(234,179,8,0.3); }
+    .badge-low { background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3); }
+    .badge-pass { background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3); }
+    .score-ring { position:relative; display:inline-flex; align-items:center; justify-content:center; }
+    .btn-secondary { background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.25);color:#00e5ff;padding:8px 16px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s; }
+    .btn-secondary:hover { background:rgba(0,229,255,0.15); }
+    .btn-secondary:disabled { opacity:0.5;cursor:not-allowed; }
+  </style>
+</head>
+<body style="font-family:var(--font-body,'Fira Sans',system-ui,sans-serif);background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
+
+  <div id="sidebar-mount"></div>
+  <script src="/static/js/sidebar.js"></script>
+  <script src="/static/js/header.js"></script>
+
+  <div id="main-content" style="margin-left:260px;min-height:100vh;">
+    <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
+      <div>
+        <h1 style="font-size:20px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Compliance Posture</h1>
+        <p style="font-size:13px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// reports.compliance · framework_mapping</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="btn-secondary" id="btn-retag" onclick="retagFindings()">
+          <i data-lucide="tag" style="width:16px;height:16px;"></i> Reapply Tags
+        </button>
+        <button class="btn-secondary" onclick="loadCompliance()">
+          <i data-lucide="refresh-cw" style="width:16px;height:16px;"></i> Refresh
+        </button>
+        <div id="header-user-slot" style="display:flex;align-items:center;gap:8px;"></div>
+      </div>
+    </header>
+
+    <main style="padding:32px;max-width:1400px;margin:0 auto;">
+
+      <!-- Summary bar -->
+      <div id="summary-bar" style="display:none;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px;"></div>
+
+      <div id="loading-state" style="text-align:center;padding:80px;">
+        <div style="animation:spin 1s linear infinite;display:inline-block;width:32px;height:32px;border:3px solid rgba(0,229,255,0.1);border-top-color:#00e5ff;border-radius:50%;margin-bottom:16px;"></div>
+        <div style="font-size:15px;color:#94a3b8;font-weight:500;">Analyzing compliance mappings...</div>
+      </div>
+
+      <div id="retag-msg" style="display:none;margin-bottom:16px;padding:12px 20px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:10px;font-size:14px;color:#34d399;"></div>
+
+      <div id="frameworks-container" style="display:flex;flex-direction:column;gap:28px;"></div>
+
+    </main>
+  </div>
+
+<script>
+// ── Framework Icon & Colour Map ──────────────────────────────────────────────
+const FW_META = {
+  'OWASP Top 10 2021': { icon:'shield-alert', color:'#f97316', bg:'rgba(249,115,22,0.12)' },
+  'PCI-DSS v4.0':      { icon:'credit-card',  color:'#3b82f6', bg:'rgba(59,130,246,0.12)' },
+  'CIS Benchmarks':    { icon:'server',        color:'#a855f7', bg:'rgba(168,85,247,0.12)' },
+  'DORA':              { icon:'activity',      color:'#00e5ff', bg:'rgba(0,229,255,0.10)' },
+  'SOC 2 Type II':     { icon:'file-check-2',  color:'#10b981', bg:'rgba(16,185,129,0.12)' },
+};
+const DEFAULT_META = { icon:'shield', color:'#94a3b8', bg:'rgba(148,163,184,0.1)' };
+
+function fwMeta(name) { return FW_META[name] || DEFAULT_META; }
+
+// ── Score Ring SVG ───────────────────────────────────────────────────────────
+function scoreRing(score, color) {
+  const r = 28, c = 2 * Math.PI * r;
+  const dash = (score / 100) * c;
+  const scoreColor = score >= 80 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ef4444';
+  return `
+    <svg width="72" height="72" style="transform:rotate(-90deg)">
+      <circle cx="36" cy="36" r="${r}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="6"/>
+      <circle cx="36" cy="36" r="${r}" fill="none" stroke="${scoreColor}" stroke-width="6"
+        stroke-dasharray="${dash.toFixed(1)} ${c.toFixed(1)}" stroke-linecap="round"
+        style="transition:stroke-dasharray 0.6s ease"/>
+    </svg>
+    <div style="position:absolute;display:flex;flex-direction:column;align-items:center;">
+      <span style="font-size:17px;font-weight:800;color:${scoreColor};font-family:'Fira Code',monospace;line-height:1;">${score}%</span>
+      <span style="font-size:9px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-top:1px;">score</span>
+    </div>`;
+}
+
+async function loadCompliance() {
+  document.getElementById('loading-state').style.display = 'block';
+  document.getElementById('frameworks-container').innerHTML = '';
+  document.getElementById('summary-bar').style.display = 'none';
+  try {
+    const res = await fetch('/api/v1/reports/compliance');
+    if (!res.ok) throw new Error('Failed to load compliance data');
+    const data = await res.json();
+    document.getElementById('loading-state').style.display = 'none';
+    renderSummary(data);
+    renderCompliance(data);
+  } catch (err) {
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('frameworks-container').innerHTML = `
+      <div class="card" style="padding:40px;text-align:center;">
+        <i data-lucide="alert-triangle" style="width:48px;height:48px;color:#ef4444;margin:0 auto 16px;display:block;"></i>
+        <div style="font-size:16px;font-weight:600;color:#f1f5f9;margin-bottom:8px;">Failed to load compliance data</div>
+        <div style="font-size:14px;color:#94a3b8;">${err.message}</div>
+      </div>`;
+    lucide.createIcons();
+  }
+}
+
+function renderSummary(data) {
+  const bar = document.getElementById('summary-bar');
+  if (!data.length) return;
+  const avgScore = Math.round(data.reduce((s, fw) => s + fw.compliance_score, 0) / data.length);
+  const totalViolations = data.reduce((s, fw) => s + fw.total_findings, 0);
+  const fullyCompliant = data.filter(fw => fw.compliance_score === 100).length;
+  bar.style.display = 'grid';
+  bar.innerHTML = `
+    <div class="card" style="padding:20px;display:flex;align-items:center;gap:16px;">
+      <div style="width:48px;height:48px;background:rgba(0,229,255,0.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i data-lucide="bar-chart-2" style="width:24px;height:24px;color:#00e5ff;"></i>
+      </div>
+      <div>
+        <div style="font-size:28px;font-weight:800;color:#f1f5f9;font-family:'Fira Code',monospace;">${avgScore}%</div>
+        <div style="font-size:13px;color:#94a3b8;">Avg Compliance Score</div>
+      </div>
+    </div>
+    <div class="card" style="padding:20px;display:flex;align-items:center;gap:16px;">
+      <div style="width:48px;height:48px;background:rgba(239,68,68,0.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i data-lucide="alert-circle" style="width:24px;height:24px;color:#ef4444;"></i>
+      </div>
+      <div>
+        <div style="font-size:28px;font-weight:800;color:#f1f5f9;font-family:'Fira Code',monospace;">${totalViolations}</div>
+        <div style="font-size:13px;color:#94a3b8;">Total Violations</div>
+      </div>
+    </div>
+    <div class="card" style="padding:20px;display:flex;align-items:center;gap:16px;">
+      <div style="width:48px;height:48px;background:rgba(16,185,129,0.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i data-lucide="check-circle-2" style="width:24px;height:24px;color:#10b981;"></i>
+      </div>
+      <div>
+        <div style="font-size:28px;font-weight:800;color:#f1f5f9;font-family:'Fira Code',monospace;">${fullyCompliant}/${data.length}</div>
+        <div style="font-size:13px;color:#94a3b8;">Fully Compliant Frameworks</div>
+      </div>
+    </div>
+    <div class="card" style="padding:20px;display:flex;align-items:center;gap:16px;">
+      <div style="width:48px;height:48px;background:rgba(249,115,22,0.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i data-lucide="layers" style="width:24px;height:24px;color:#f97316;"></i>
+      </div>
+      <div>
+        <div style="font-size:28px;font-weight:800;color:#f1f5f9;font-family:'Fira Code',monospace;">${data.length}</div>
+        <div style="font-size:13px;color:#94a3b8;">Frameworks Tracked</div>
+      </div>
+    </div>
+  `;
+  lucide.createIcons();
+}
+
+function renderCompliance(data) {
+  const container = document.getElementById('frameworks-container');
+  if (!data || data.length === 0) {
+    container.innerHTML = `
+      <div class="card" style="padding:60px;text-align:center;">
+        <i data-lucide="shield-check" style="width:64px;height:64px;color:#10b981;margin:0 auto 20px;display:block;opacity:0.8;"></i>
+        <div style="font-size:20px;font-weight:700;color:#f1f5f9;margin-bottom:10px;">Fully Compliant</div>
+        <div style="font-size:15px;color:#94a3b8;max-width:400px;margin:0 auto;">No open findings are mapped to any compliance violations.</div>
+      </div>`;
+    lucide.createIcons();
+    return;
+  }
+
+  container.innerHTML = data.map((fw, fwIdx) => {
+    const meta = fwMeta(fw.framework);
+    const scoreColor = fw.compliance_score >= 80 ? '#10b981' : fw.compliance_score >= 50 ? '#f59e0b' : '#ef4444';
+    const controlRows = fw.controls.length === 0
+      ? `<tr><td colspan="4" style="padding:32px;text-align:center;color:#10b981;font-size:14px;">
+           <i data-lucide="check-circle-2" style="width:20px;height:20px;display:inline-block;vertical-align:middle;margin-right:8px;"></i>All controls passing
+         </td></tr>`
+      : fw.controls.map(c => {
+          const tag = encodeURIComponent(`${fw.framework}|${c.control}`);
+          return `
+          <tr class="table-row" style="border-bottom:1px solid rgba(255,255,255,0.04);"
+              onclick="window.location.href='/findings.html?compliance_tag=${tag}&status=open'">
+            <td style="padding:16px 24px;">
+              <div style="font-size:14px;font-weight:600;color:#f1f5f9;font-family:'Fira Code',monospace;">${c.control}</div>
+            </td>
+            <td style="padding:16px 24px;text-align:center;">
+              <span style="font-size:18px;font-weight:800;color:#f87171;font-family:'Fira Code',monospace;">${c.findings}</span>
+            </td>
+            <td style="padding:16px 24px;">
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                ${c.critical > 0 ? `<span class="badge badge-critical">${c.critical} Crit</span>` : ''}
+                ${c.high > 0 ? `<span class="badge badge-high">${c.high} High</span>` : ''}
+                ${c.medium > 0 ? `<span class="badge badge-medium">${c.medium} Med</span>` : ''}
+                ${c.low > 0 ? `<span class="badge badge-low">${c.low} Low</span>` : ''}
+              </div>
+            </td>
+            <td style="padding:16px 24px;text-align:right;">
+              <a href="/findings.html?compliance_tag=${tag}&status=open"
+                 onclick="event.stopPropagation()"
+                 style="font-size:13px;color:#00e5ff;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:4px;"
+                 onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+                View findings <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
+              </a>
+            </td>
+          </tr>`;
+        }).join('');
+
+    return `
+    <div class="card fw-card" style="overflow:hidden;animation-delay:${fwIdx * 60}ms;">
+      <div style="background:rgba(0,0,0,0.25);border-bottom:1px solid rgba(255,255,255,0.06);padding:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div style="width:52px;height:52px;background:${meta.bg};border:1px solid ${meta.color}44;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i data-lucide="${meta.icon}" style="width:26px;height:26px;color:${meta.color};"></i>
+            </div>
+            <div>
+              <h3 style="font-size:20px;font-weight:800;color:#f1f5f9;margin:0 0 4px;">${fw.framework}</h3>
+              <div style="font-size:13px;color:#94a3b8;">
+                ${fw.compliant_controls}/${fw.total_controls} controls passing
+                · ${fw.total_findings} violation${fw.total_findings !== 1 ? 's' : ''}
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:20px;">
+            <div class="score-ring" style="width:72px;height:72px;">
+              ${scoreRing(fw.compliance_score, scoreColor)}
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:12px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Status</div>
+              ${fw.compliance_score === 100
+                ? `<span class="badge badge-pass"><i data-lucide="check-circle-2" style="width:13px;height:13px;"></i> Compliant</span>`
+                : `<span class="badge badge-critical"><i data-lucide="x-circle" style="width:13px;height:13px;"></i> Non-Compliant</span>`}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:rgba(0,0,0,0.12);border-bottom:1px solid rgba(255,255,255,0.06);">
+              <th style="text-align:left;padding:12px 24px;font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Control / Requirement</th>
+              <th style="text-align:center;padding:12px 24px;font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Violations</th>
+              <th style="text-align:left;padding:12px 24px;font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Severity</th>
+              <th style="text-align:right;padding:12px 24px;font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;"></th>
+            </tr>
+          </thead>
+          <tbody>${controlRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+
+  lucide.createIcons();
+}
+
+async function retagFindings() {
+  const btn = document.getElementById('btn-retag');
+  const msg = document.getElementById('retag-msg');
+  btn.disabled = true;
+  btn.innerHTML = '<div style="animation:spin 1s linear infinite;width:16px;height:16px;border:2px solid rgba(0,229,255,0.3);border-top-color:#00e5ff;border-radius:50%;"></div> Retagging...';
+  msg.style.display = 'none';
+  try {
+    const res = await fetch('/api/v1/reports/compliance/retag', { method: 'POST' });
+    const data = await res.json();
+    msg.style.display = 'block';
+    msg.textContent = `✓ Compliance tags updated on ${data.updated} of ${data.total} findings.`;
+    await loadCompliance();
+  } catch {
+    msg.style.display = 'block';
+    msg.style.background = 'rgba(239,68,68,0.08)';
+    msg.style.borderColor = 'rgba(239,68,68,0.25)';
+    msg.style.color = '#f87171';
+    msg.textContent = 'Failed to retag findings.';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="tag" style="width:16px;height:16px;"></i> Reapply Tags';
+    lucide.createIcons();
+  }
+}
+
+loadCompliance();
+</script>
+</body>
+</html>

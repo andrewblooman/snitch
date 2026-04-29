@@ -20,6 +20,16 @@ def calculate_risk_score(findings: List[Finding]) -> Tuple[float, str]:
     # high represent significant risk (CVSS 7-9), medium are moderate issues,
     # and low are informational/best-practice. Scores are capped at 100.
     score = (critical * 25) + (high * 10) + (medium * 3) + (low * 1)
+    
+    # EPSS Boost: If a highly exploitable CVE (top 15%) is present and open, boost the score.
+    epss_boost = 0
+    for f in open_findings:
+        if f.epss_percentile and f.epss_percentile > 0.85:
+            epss_boost += 15
+        elif f.epss_percentile and f.epss_percentile > 0.50:
+            epss_boost += 5
+            
+    score += epss_boost
     score = min(score, 100.0)
 
     if score >= 75:
