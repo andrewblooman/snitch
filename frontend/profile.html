@@ -28,12 +28,12 @@
     .theme-option:hover:not(.active) { background:rgba(255,255,255,0.04); }
 
     .section-card { padding:28px;margin-bottom:20px;animation:fadeInUp 0.4s ease both; }
-    .section-title { font-size:16px;font-weight:700;color:#f1f5f9;margin:0 0 4px; }
-    .section-sub { font-size:13px;color:#475569;margin:0 0 24px; }
+    .section-title { font-size:17px;font-weight:700;color:#f1f5f9;margin:0 0 4px; }
+    .section-sub { font-size:15px;color:#475569;margin:0 0 24px; }
     .pref-row { display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.05); }
     .pref-row:last-child { border-bottom:none; }
-    .pref-label { font-size:14px;font-weight:500;color:#f1f5f9; }
-    .pref-desc { font-size:12px;color:#475569;margin-top:2px; }
+    .pref-label { font-size:16px;font-weight:500;color:#f1f5f9; }
+    .pref-desc { font-size:14px;color:#475569;margin-top:2px; }
 
     [data-theme="light"] .theme-option:hover:not(.active) { background:rgba(0,0,0,0.04); }
     [data-theme="light"] .pref-row { border-bottom-color:rgba(0,0,0,0.06); }
@@ -54,8 +54,8 @@
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
     <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
       <div>
-        <h1 style="font-size:18px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Profile &amp; Preferences</h1>
-        <p style="font-size:11px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// user.profile · preferences</p>
+        <h1 style="font-size:19px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Profile &amp; Preferences</h1>
+        <p style="font-size:13px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// user.profile · preferences</p>
       </div>
       <div id="header-user-slot" style="display:flex;align-items:center;gap:8px;"></div>
     </header>
@@ -74,8 +74,8 @@
               <i data-lucide="moon" style="width:20px;height:20px;color:#6366f1;"></i>
             </div>
             <div>
-              <div style="font-size:14px;font-weight:600;color:#f1f5f9;">Dark</div>
-              <div style="font-size:12px;color:#475569;">Easy on the eyes</div>
+              <div style="font-size:16px;font-weight:600;color:#f1f5f9;">Dark</div>
+              <div style="font-size:14px;color:#475569;">Easy on the eyes</div>
             </div>
           </div>
 
@@ -85,8 +85,8 @@
               <i data-lucide="sun" style="width:20px;height:20px;color:#f59e0b;"></i>
             </div>
             <div>
-              <div style="font-size:14px;font-weight:600;color:#f1f5f9;">Light</div>
-              <div style="font-size:12px;color:#475569;">Clean and bright</div>
+              <div style="font-size:16px;font-weight:600;color:#f1f5f9;">Light</div>
+              <div style="font-size:14px;color:#475569;">Clean and bright</div>
             </div>
           </div>
         </div>
@@ -98,7 +98,7 @@
         <p class="section-sub">Use this token to authenticate requests to the Snitch API from CI/CD scripts or integrations.</p>
 
         <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;">
-          <input type="password" id="token-input" class="dark-input" readonly placeholder="No token generated yet" style="font-family:monospace;font-size:13px;letter-spacing:0.5px;">
+          <input type="password" id="token-input" class="dark-input" readonly placeholder="No token generated yet" style="font-family:monospace;font-size:15px;letter-spacing:0.5px;">
           <button class="btn-secondary" id="toggle-visibility-btn" onclick="toggleTokenVisibility()" title="Show / hide token" style="padding:10px 14px;flex-shrink:0;">
             <i data-lucide="eye" id="eye-icon" style="width:16px;height:16px;"></i>
           </button>
@@ -112,10 +112,10 @@
             <i data-lucide="refresh-cw" style="width:16px;height:16px;"></i>
             Generate New Token
           </button>
-          <span id="token-note" style="font-size:12px;color:#475569;"></span>
+          <span id="token-note" style="font-size:14px;color:#475569;"></span>
         </div>
 
-        <div id="token-warning" style="display:none;margin-top:14px;padding:12px 16px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:10px;font-size:13px;color:#f59e0b;">
+        <div id="token-warning" style="display:none;margin-top:14px;padding:12px 16px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:10px;font-size:15px;color:#f59e0b;">
           <i data-lucide="alert-triangle" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:6px;"></i>
           Copy this token now — it won't be shown again after you leave this page.
         </div>

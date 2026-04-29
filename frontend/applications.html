@@ -20,10 +20,10 @@
     .modal-backdrop { position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:center;justify-content:center; }
     .app-row { cursor:pointer;transition:background 0.15s; }
     .app-row:hover { background:rgba(0,229,255,0.04) !important; }
-    .sort-btn { background:none;border:none;display:inline-flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;padding:0;white-space:nowrap;transition:color 0.15s; }
+    .sort-btn { background:none;border:none;display:inline-flex;align-items:center;gap:4px;cursor:pointer;font-size:14px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;padding:0;white-space:nowrap;transition:color 0.15s; }
     .sort-btn:hover { color:#94a3b8; }
     .sort-btn.active { color:#00e5ff; }
-    .pill { display:inline-flex;align-items:center;justify-content:center;min-width:28px;padding:2px 7px;border-radius:6px;font-size:11px;font-weight:700; }
+    .pill { display:inline-flex;align-items:center;justify-content:center;min-width:28px;padding:2px 7px;border-radius:6px;font-size:13px;font-weight:700; }
     .pill-c { background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.2); }
     .pill-h { background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.2); }
     .pill-m { background:rgba(249,115,22,0.12);color:#f97316;border:1px solid rgba(249,115,22,0.2); }
@@ -41,8 +41,8 @@
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
     <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
       <div>
-        <h1 style="font-size:18px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Applications</h1>
-        <p style="font-size:11px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// application.portfolio · security</p>
+        <h1 style="font-size:19px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Applications</h1>
+        <p style="font-size:13px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// application.portfolio · security</p>
       </div>
       <div id="header-user-slot" style="display:flex;align-items:center;gap:12px;">
         <!-- Search -->
@@ -69,7 +69,7 @@
     </header>
 
     <main style="padding:32px;">
-      <div id="apps-count" style="font-size:13px;color:#475569;margin-bottom:16px;">Loading applications...</div>
+      <div id="apps-count" style="font-size:15px;color:#475569;margin-bottom:16px;">Loading applications...</div>
 
       <!-- Table -->
       <div class="card" style="overflow:hidden;">
@@ -122,7 +122,7 @@
                     Last Scan <i data-lucide="chevrons-up-down" style="width:14px;height:14px;"></i>
                   </button>
                 </th>
-                <th style="padding:12px 16px;text-align:center;font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Actions</th>
+                <th style="padding:12px 16px;text-align:center;font-size:14px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Actions</th>
               </tr>
             </thead>
             <tbody id="apps-tbody">
@@ -161,7 +161,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
         <div>
           <h2 style="font-size:20px;font-weight:700;color:#f1f5f9;margin:0;">Add Application</h2>
-          <p style="font-size:13px;color:#475569;margin:4px 0 0;">Register a new application for security scanning</p>
+          <p style="font-size:15px;color:#475569;margin:4px 0 0;">Register a new application for security scanning</p>
         </div>
         <button onclick="closeAddModal()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#94a3b8;cursor:pointer;padding:8px;display:flex;align-items:center;justify-content:center;">
           <i data-lucide="x" style="width:18px;height:18px;"></i>
@@ -169,25 +169,25 @@
       </div>
       <form id="add-form" onsubmit="submitAddApp(event)">
         <div style="margin-bottom:16px;">
-          <label style="font-size:13px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Application Name <span style="color:#ef4444;">*</span></label>
+          <label style="font-size:15px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Application Name <span style="color:#ef4444;">*</span></label>
           <input type="text" id="field-name" class="dark-input" style="width:100%;" placeholder="e.g. payment-service" required>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
           <div>
-            <label style="font-size:13px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">GitHub Org</label>
+            <label style="font-size:15px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">GitHub Org</label>
             <input type="text" id="field-github-org" class="dark-input" style="width:100%;" placeholder="e.g. myorg">
           </div>
           <div>
-            <label style="font-size:13px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">GitHub Repo</label>
+            <label style="font-size:15px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">GitHub Repo</label>
             <input type="text" id="field-github-repo" class="dark-input" style="width:100%;" placeholder="e.g. payment-service">
           </div>
         </div>
         <div style="margin-bottom:16px;">
-          <label style="font-size:13px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Team Name</label>
+          <label style="font-size:15px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Team Name</label>
           <input type="text" id="field-team" class="dark-input" style="width:100%;" placeholder="e.g. Platform Engineering">
         </div>
         <div style="margin-bottom:16px;">
-          <label style="font-size:13px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Language</label>
+          <label style="font-size:15px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Language</label>
           <select id="field-language" class="dark-select" style="width:100%;">
             <option value="">Select language...</option>
             <option>Python</option><option>JavaScript</option><option>TypeScript</option>
@@ -196,11 +196,11 @@
           </select>
         </div>
         <div style="margin-bottom:24px;">
-          <label style="font-size:13px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Description</label>
+          <label style="font-size:15px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Description</label>
           <textarea id="field-description" class="dark-input" style="width:100%;min-height:80px;resize:vertical;" placeholder="Brief description of this application..."></textarea>
         </div>
         <div style="margin-bottom:24px;">
-          <label style="font-size:13px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Container Image <span style="color:#475569;font-weight:400;">(optional — for Grype container scans)</span></label>
+          <label style="font-size:15px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Container Image <span style="color:#475569;font-weight:400;">(optional — for Grype container scans)</span></label>
           <input type="text" id="field-container-image" class="dark-input" style="width:100%;" placeholder="e.g. nginx:latest or ghcr.io/org/app:sha">
         </div>
         <div style="display:flex;gap:12px;justify-content:flex-end;">
@@ -235,7 +235,10 @@ function getRiskLevel(score) {
 
 function timeAgo(dateStr) {
   if (!dateStr) return 'Never';
-  const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return 'Never';
+  const diff = Math.floor((Date.now() - d) / 1000);
+  if (diff < 0) return 'Just now';
   if (diff < 60) return `${diff}s ago`;
   if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
@@ -246,7 +249,7 @@ function showToast(message, type='success') {
   const colors = {success:'#10b981', error:'#ef4444', warning:'#f59e0b', info:'#00e5ff'};
   const icons = {success:'check-circle', error:'alert-circle', warning:'alert-triangle', info:'info'};
   const toast = document.createElement('div');
-  toast.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(13,17,23,0.95);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:#f1f5f9;font-size:14px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:slideInRight 0.3s ease;`;
+  toast.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(13,17,23,0.95);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:#f1f5f9;font-size:16px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:slideInRight 0.3s ease;`;
   const _icon = document.createElement('i');
   _icon.setAttribute('data-lucide', icons[type]);
   _icon.style.cssText = `width:18px;height:18px;color:${colors[type]};flex-shrink:0;`;
@@ -326,14 +329,14 @@ function appRow(app) {
   return `
     <tr class="app-row" onclick="location.href='/app-detail.html?id=${app.id}'" style="border-bottom:1px solid rgba(0,229,255,0.06);">
       <td style="padding:14px 16px;">
-        <div style="font-size:14px;font-weight:600;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;">${app.name || '—'}</div>
-        ${app.github_org ? `<div style="font-size:11px;color:#475569;margin-top:1px;">${app.github_org}/${app.github_repo||''}</div>` : ''}
+        <div style="font-size:16px;font-weight:600;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;">${app.name || '—'}</div>
+        ${app.github_org ? `<div style="font-size:13px;color:#475569;margin-top:1px;">${app.github_org}/${app.github_repo||''}</div>` : ''}
       </td>
       <td style="padding:14px 16px;">
-        <span style="background:rgba(0,229,255,0.08);color:#00e5ff;border:1px solid rgba(0,229,255,0.15);padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;white-space:nowrap;">${app.team_name || '—'}</span>
+        <span style="background:rgba(0,229,255,0.08);color:#00e5ff;border:1px solid rgba(0,229,255,0.15);padding:2px 8px;border-radius:6px;font-size:13px;font-weight:500;white-space:nowrap;">${app.team_name || '—'}</span>
       </td>
       <td style="padding:14px 16px;white-space:nowrap;">
-        <span style="background:${risk.bg};color:${risk.color};border:1px solid ${risk.color}33;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:700;">
+        <span style="background:${risk.bg};color:${risk.color};border:1px solid ${risk.color}33;padding:3px 10px;border-radius:8px;font-size:14px;font-weight:700;">
           ${score} &nbsp;${risk.label}
         </span>
       </td>
@@ -342,14 +345,14 @@ function appRow(app) {
       <td style="padding:14px 8px;text-align:center;"><span class="pill pill-m">${m}</span></td>
       <td style="padding:14px 8px;text-align:center;"><span class="pill pill-l">${l}</span></td>
       <td style="padding:14px 16px;">
-        ${app.language ? `<span style="background:${langColor}22;color:${langColor};border:1px solid ${langColor}33;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;">${app.language}</span>` : '<span style="color:#475569;font-size:12px;">—</span>'}
+        ${app.language ? `<span style="background:${langColor}22;color:${langColor};border:1px solid ${langColor}33;padding:2px 8px;border-radius:6px;font-size:13px;font-weight:500;">${app.language}</span>` : '<span style="color:#475569;font-size:14px;">—</span>'}
       </td>
-      <td style="padding:14px 16px;font-size:12px;color:#475569;white-space:nowrap;">${timeAgo(app.last_scan_at)}</td>
+      <td style="padding:14px 16px;font-size:14px;color:#475569;white-space:nowrap;">${timeAgo(app.last_scan_at)}</td>
       <td style="padding:14px 16px;text-align:center;white-space:nowrap;" onclick="event.stopPropagation()">
-        <button onclick="location.href='/app-detail.html?id=${app.id}'" class="btn-secondary" style="padding:6px 10px;font-size:12px;margin-right:4px;" title="View details">
+        <button onclick="location.href='/app-detail.html?id=${app.id}'" class="btn-secondary" style="padding:6px 10px;font-size:14px;margin-right:4px;" title="View details">
           <i data-lucide="eye" style="width:14px;height:14px;"></i>
         </button>
-        <button onclick="runScan(event,'${app.id}','${app.name||'app'}')" id="scan-btn-${app.id}" class="btn-secondary" style="padding:6px 10px;font-size:12px;" title="Run scan">
+        <button onclick="runScan(event,'${app.id}','${app.name||'app'}')" id="scan-btn-${app.id}" class="btn-secondary" style="padding:6px 10px;font-size:14px;" title="Run scan">
           <i data-lucide="play" style="width:14px;height:14px;color:#00e5ff;"></i>
         </button>
       </td>
@@ -409,7 +412,7 @@ function renderList(apps) {
     tbody.innerHTML = `
       <tr><td colspan="10" style="text-align:center;padding:80px 20px;">
         <i data-lucide="inbox" style="width:48px;height:48px;color:#475569;margin:0 auto 16px;display:block;"></i>
-        <div style="font-size:18px;font-weight:600;color:#f1f5f9;margin-bottom:8px;">No applications found</div>
+        <div style="font-size:19px;font-weight:600;color:#f1f5f9;margin-bottom:8px;">No applications found</div>
         <p style="color:#475569;margin-bottom:24px;">Try adjusting your filters or add your first application.</p>
         <button class="btn-primary" onclick="openAddModal()"><i data-lucide="plus" style="width:16px;height:16px;"></i> Add your first application</button>
       </td></tr>`;
@@ -489,7 +492,7 @@ async function loadApplications() {
     tbody.innerHTML = `
       <tr><td colspan="10" style="text-align:center;padding:80px 20px;">
         <i data-lucide="wifi-off" style="width:48px;height:48px;color:#ef4444;margin:0 auto 16px;display:block;opacity:0.5;"></i>
-        <div style="font-size:18px;font-weight:600;color:#f1f5f9;margin-bottom:8px;">Failed to load applications</div>
+        <div style="font-size:19px;font-weight:600;color:#f1f5f9;margin-bottom:8px;">Failed to load applications</div>
         <p style="color:#475569;margin-bottom:24px;">${e.message || 'An error occurred'}</p>
         <button class="btn-secondary" onclick="loadApplications()"><i data-lucide="refresh-cw" style="width:16px;height:16px;"></i> Retry</button>
       </td></tr>`;

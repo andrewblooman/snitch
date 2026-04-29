@@ -19,7 +19,7 @@
     .dark-select option { background:#0d1117; }
     .modal-backdrop { position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:center;justify-content:center; }
     .policy-row:hover { background:rgba(0,229,255,0.04); }
-    .tag { display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px; }
+    .tag { display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px; }
     .tag-sast { background:rgba(99,102,241,0.2);color:#a5b4fc; }
     .tag-sca { background:rgba(16,185,129,0.2);color:#6ee7b7; }
     .tag-container { background:rgba(245,158,11,0.2);color:#fcd34d; }
@@ -33,7 +33,7 @@
     .sev-medium { color:#eab308; }
     .sev-low { color:#22c55e; }
     .sev-info { color:#64748b; }
-    .chip { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;background:rgba(255,255,255,0.07);color:#94a3b8;cursor:pointer;transition:all 0.15s;user-select:none;border:1px solid transparent; }
+    .chip { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:14px;font-weight:500;background:rgba(255,255,255,0.07);color:#94a3b8;cursor:pointer;transition:all 0.15s;user-select:none;border:1px solid transparent; }
     .chip.active { border-color:rgba(0,229,255,0.4);color:#00e5ff;background:rgba(0,229,255,0.1); }
     .chip:hover:not(.active) { background:rgba(255,255,255,0.1); }
     .drawer { position:fixed;top:0;right:0;height:100vh;width:480px;background:#080c18;border-left:1px solid rgba(255,255,255,0.08);z-index:300;overflow-y:auto;animation:slideInRight 0.25s ease; }
@@ -56,8 +56,8 @@
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
     <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
       <div>
-        <h1 style="font-size:18px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Security Policies</h1>
-        <p style="font-size:11px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// policies.config · enforcement</p>
+        <h1 style="font-size:19px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Security Policies</h1>
+        <p style="font-size:13px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// policies.config · enforcement</p>
       </div>
       <div id="header-user-slot" style="display:flex;gap:10px;align-items:center;">
         <button class="btn-secondary" onclick="seedDefaultPolicies()" id="seed-btn" title="Create default CIS L1-aligned policies">
@@ -84,9 +84,9 @@
       <!-- Policy Table -->
       <div class="card" style="overflow:hidden;">
         <div style="padding:20px 24px;border-bottom:1px solid rgba(0,229,255,0.08);display:flex;align-items:center;justify-content:space-between;">
-          <div style="font-size:16px;font-weight:600;color:#f1f5f9;">All Policies</div>
+          <div style="font-size:17px;font-weight:600;color:#f1f5f9;">All Policies</div>
           <div style="display:flex;gap:8px;">
-            <select class="dark-select" id="filter-active" onchange="loadPolicies()" style="width:auto;padding:6px 10px;font-size:13px;">
+            <select class="dark-select" id="filter-active" onchange="loadPolicies()" style="width:auto;padding:6px 10px;font-size:15px;">
               <option value="">All</option>
               <option value="true">Active only</option>
               <option value="false">Inactive only</option>
@@ -97,7 +97,7 @@
           <div style="padding:40px;text-align:center;color:#475569;animation:pulse 1.5s infinite;">Loading policies…</div>
         </div>
         <div id="pagination" style="padding:16px 24px;border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;display:none;">
-          <span id="page-info" style="font-size:13px;color:#475569;"></span>
+          <span id="page-info" style="font-size:15px;color:#475569;"></span>
           <div style="display:flex;gap:8px;">
             <button class="btn-secondary" id="prev-btn" onclick="changePage(-1)" style="padding:6px 12px;">← Prev</button>
             <button class="btn-secondary" id="next-btn" onclick="changePage(1)" style="padding:6px 12px;">Next →</button>
@@ -112,7 +112,7 @@
   <div id="modal" class="modal-backdrop" style="display:none;" onclick="closeModalOnBackdrop(event)">
     <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.1);border-radius:20px;width:580px;max-height:90vh;overflow-y:auto;padding:32px;animation:fadeInUp 0.25s ease;" onclick="event.stopPropagation()">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
-        <h2 id="modal-title" style="font-size:18px;font-weight:700;color:#f1f5f9;margin:0;">New Policy</h2>
+        <h2 id="modal-title" style="font-size:19px;font-weight:700;color:#f1f5f9;margin:0;">New Policy</h2>
         <button class="btn-icon" onclick="closeModal()"><i data-lucide="x" style="width:18px;height:18px;color:#64748b;"></i></button>
       </div>
 
@@ -121,19 +121,19 @@
 
         <!-- Name -->
         <div style="margin-bottom:16px;">
-          <label style="font-size:12px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Policy Name *</label>
+          <label style="font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Policy Name *</label>
           <input id="f-name" class="dark-input" type="text" required placeholder="e.g. SAST High Severity Policy">
         </div>
 
         <!-- Description -->
         <div style="margin-bottom:16px;">
-          <label style="font-size:12px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Description</label>
+          <label style="font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Description</label>
           <textarea id="f-desc" class="dark-input" rows="2" placeholder="Optional description…" style="resize:vertical;"></textarea>
         </div>
 
         <!-- Scan Types -->
         <div style="margin-bottom:16px;">
-          <label style="font-size:12px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px;">Scan Types <span style="font-weight:400;color:#475569;">(empty = all)</span></label>
+          <label style="font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px;">Scan Types <span style="font-weight:400;color:#475569;">(empty = all)</span></label>
           <div style="display:flex;gap:8px;flex-wrap:wrap;" id="scan-type-chips">
             <div class="chip" data-type="sast" onclick="toggleChip(this)"><i data-lucide="code" style="width:12px;height:12px;"></i> SAST</div>
             <div class="chip" data-type="sca" onclick="toggleChip(this)"><i data-lucide="package" style="width:12px;height:12px;"></i> SCA</div>
@@ -146,7 +146,7 @@
         <!-- Min Severity + Action -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
           <div>
-            <label style="font-size:12px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Min Severity</label>
+            <label style="font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Min Severity</label>
             <select id="f-severity" class="dark-select">
               <option value="critical">Critical</option>
               <option value="high">High</option>
@@ -156,7 +156,7 @@
             </select>
           </div>
           <div>
-            <label style="font-size:12px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Action on Violation</label>
+            <label style="font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Action on Violation</label>
             <select id="f-action" class="dark-select">
               <option value="inform">Inform</option>
               <option value="block">Block</option>
@@ -167,21 +167,21 @@
 
         <!-- Blocklist -->
         <div style="margin-bottom:16px;">
-          <label style="font-size:12px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Rule Blocklist <span style="font-weight:400;color:#475569;">(always flag — comma-separated rule IDs or CVEs)</span></label>
+          <label style="font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Rule Blocklist <span style="font-weight:400;color:#475569;">(always flag — comma-separated rule IDs or CVEs)</span></label>
           <input id="f-blocklist" class="dark-input" type="text" placeholder="e.g. CVE-2024-1234, python.lang.security.audit.exec">
         </div>
 
         <!-- Allowlist -->
         <div style="margin-bottom:24px;">
-          <label style="font-size:12px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Rule Allowlist <span style="font-weight:400;color:#475569;">(always ignore — overrides everything)</span></label>
+          <label style="font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Rule Allowlist <span style="font-weight:400;color:#475569;">(always ignore — overrides everything)</span></label>
           <input id="f-allowlist" class="dark-input" type="text" placeholder="e.g. CVE-2023-9999, semgrep.rule.to.ignore">
         </div>
 
         <!-- Active toggle -->
         <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:rgba(0,229,255,0.04);border-radius:10px;margin-bottom:24px;">
           <div>
-            <div style="font-size:14px;font-weight:600;color:#f1f5f9;">Activate policy</div>
-            <div style="font-size:12px;color:#475569;margin-top:2px;">Active policies are evaluated on every scan</div>
+            <div style="font-size:16px;font-weight:600;color:#f1f5f9;">Activate policy</div>
+            <div style="font-size:14px;color:#475569;margin-top:2px;">Active policies are evaluated on every scan</div>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" id="f-active">
@@ -189,7 +189,7 @@
           </label>
         </div>
 
-        <div id="form-error" style="display:none;padding:10px 14px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:8px;color:#f87171;font-size:13px;margin-bottom:16px;"></div>
+        <div id="form-error" style="display:none;padding:10px 14px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:8px;color:#f87171;font-size:15px;margin-bottom:16px;"></div>
 
         <div style="display:flex;gap:10px;justify-content:flex-end;">
           <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
@@ -209,11 +209,11 @@
           <i data-lucide="trash-2" style="width:20px;height:20px;color:#f87171;"></i>
         </div>
         <div>
-          <div style="font-size:16px;font-weight:600;color:#f1f5f9;">Delete Policy</div>
-          <div style="font-size:13px;color:#475569;">This action cannot be undone</div>
+          <div style="font-size:17px;font-weight:600;color:#f1f5f9;">Delete Policy</div>
+          <div style="font-size:15px;color:#475569;">This action cannot be undone</div>
         </div>
       </div>
-      <p style="font-size:14px;color:#94a3b8;margin-bottom:24px;">Are you sure you want to delete <strong id="delete-policy-name" style="color:#f1f5f9;"></strong>?</p>
+      <p style="font-size:16px;color:#94a3b8;margin-bottom:24px;">Are you sure you want to delete <strong id="delete-policy-name" style="color:#f1f5f9;"></strong>?</p>
       <div style="display:flex;gap:10px;justify-content:flex-end;">
         <button class="btn-secondary" onclick="closeDeleteModal()">Cancel</button>
         <button class="btn-danger" onclick="confirmDelete()">Delete</button>
@@ -226,8 +226,8 @@
   <div id="eval-drawer" class="drawer" style="display:none;">
     <div style="padding:24px;border-bottom:1px solid rgba(0,229,255,0.1);display:flex;align-items:center;justify-content:space-between;">
       <div>
-        <div style="font-size:16px;font-weight:700;color:#f1f5f9;" id="drawer-title">Policy Evaluation</div>
-        <div style="font-size:12px;color:#475569;margin-top:2px;" id="drawer-subtitle"></div>
+        <div style="font-size:17px;font-weight:700;color:#f1f5f9;" id="drawer-title">Policy Evaluation</div>
+        <div style="font-size:14px;color:#475569;margin-top:2px;" id="drawer-subtitle"></div>
       </div>
       <button class="btn-icon" onclick="closeDrawer()"><i data-lucide="x" style="width:18px;height:18px;color:#64748b;"></i></button>
     </div>
@@ -261,18 +261,18 @@
       const blocking = data.items.filter(p => p.action === 'block' || p.action === 'both').length;
       document.getElementById('summary-cards').innerHTML = `
         <div class="card" style="padding:20px;">
-          <div style="font-size:12px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Total Policies</div>
+          <div style="font-size:14px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Total Policies</div>
           <div style="font-size:32px;font-weight:700;color:#f1f5f9;">${data.total}</div>
         </div>
         <div class="card" style="padding:20px;">
-          <div style="font-size:12px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Active Policies</div>
+          <div style="font-size:14px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Active Policies</div>
           <div style="font-size:32px;font-weight:700;color:#10b981;">${active}</div>
-          <div style="font-size:12px;color:#475569;margin-top:4px;">of ${data.items.length} loaded</div>
+          <div style="font-size:14px;color:#475569;margin-top:4px;">of ${data.items.length} loaded</div>
         </div>
         <div class="card" style="padding:20px;">
-          <div style="font-size:12px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Blocking Policies</div>
+          <div style="font-size:14px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Blocking Policies</div>
           <div style="font-size:32px;font-weight:700;color:#ef4444;">${blocking}</div>
-          <div style="font-size:12px;color:#475569;margin-top:4px;">block or both action</div>
+          <div style="font-size:14px;color:#475569;margin-top:4px;">block or both action</div>
         </div>`;
     }
 
@@ -281,8 +281,8 @@
       if (policies.length === 0) {
         tbody.innerHTML = `<div style="padding:60px;text-align:center;">
           <i data-lucide="shield-off" style="width:48px;height:48px;color:#1e293b;margin:0 auto 16px;display:block;"></i>
-          <div style="font-size:16px;font-weight:600;color:#334155;margin-bottom:8px;">No policies yet</div>
-          <div style="font-size:14px;color:#475569;">Create your first security policy to get started</div>
+          <div style="font-size:17px;font-weight:600;color:#334155;margin-bottom:8px;">No policies yet</div>
+          <div style="font-size:16px;color:#475569;">Create your first security policy to get started</div>
         </div>`;
         lucide.createIcons();
         return;
@@ -292,12 +292,12 @@
         <table style="width:100%;border-collapse:collapse;">
           <thead>
             <tr style="border-bottom:1px solid rgba(0,229,255,0.08);">
-              <th style="padding:12px 24px;text-align:left;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.5px;">Policy</th>
-              <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.5px;">Scan Types</th>
-              <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.5px;">Min Severity</th>
-              <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.5px;">Action</th>
-              <th style="padding:12px 16px;text-align:center;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.5px;">Active</th>
-              <th style="padding:12px 24px;text-align:right;font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.5px;"></th>
+              <th style="padding:12px 24px;text-align:left;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.5px;">Policy</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.5px;">Scan Types</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.5px;">Min Severity</th>
+              <th style="padding:12px 16px;text-align:left;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.5px;">Action</th>
+              <th style="padding:12px 16px;text-align:center;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.5px;">Active</th>
+              <th style="padding:12px 24px;text-align:right;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.5px;"></th>
             </tr>
           </thead>
           <tbody>
@@ -316,19 +316,19 @@
     function renderRow(p) {
       const scanTypeTags = p.enabled_scan_types.length > 0
         ? p.enabled_scan_types.map(t => `<span class="tag tag-${t}">${t}</span>`).join(' ')
-        : '<span style="font-size:12px;color:#475569;">All</span>';
+        : '<span style="font-size:14px;color:#475569;">All</span>';
       const sevColor = {critical:'#ef4444',high:'#f97316',medium:'#eab308',low:'#22c55e',info:'#64748b'}[p.min_severity] || '#94a3b8';
       const actionTag = `<span class="tag tag-${p.action}">${p.action}</span>`;
       return `
         <tr class="policy-row" style="border-bottom:1px solid rgba(0,229,255,0.06);transition:background 0.15s;">
           <td style="padding:14px 24px;">
-            <div style="font-size:14px;font-weight:600;color:#f1f5f9;">${escHtml(p.name)}</div>
-            ${p.description ? `<div style="font-size:12px;color:#475569;margin-top:2px;">${escHtml(p.description)}</div>` : ''}
-            ${p.rule_blocklist.length > 0 ? `<div style="margin-top:4px;font-size:11px;color:#f87171;">🚫 ${p.rule_blocklist.length} blocklisted</div>` : ''}
-            ${p.rule_allowlist.length > 0 ? `<div style="margin-top:2px;font-size:11px;color:#10b981;">✓ ${p.rule_allowlist.length} allowed</div>` : ''}
+            <div style="font-size:16px;font-weight:600;color:#f1f5f9;">${escHtml(p.name)}</div>
+            ${p.description ? `<div style="font-size:14px;color:#475569;margin-top:2px;">${escHtml(p.description)}</div>` : ''}
+            ${p.rule_blocklist.length > 0 ? `<div style="margin-top:4px;font-size:13px;color:#f87171;">🚫 ${p.rule_blocklist.length} blocklisted</div>` : ''}
+            ${p.rule_allowlist.length > 0 ? `<div style="margin-top:2px;font-size:13px;color:#10b981;">✓ ${p.rule_allowlist.length} allowed</div>` : ''}
           </td>
           <td style="padding:14px 16px;"><div style="display:flex;gap:4px;flex-wrap:wrap;">${scanTypeTags}</div></td>
-          <td style="padding:14px 16px;"><span style="font-size:13px;font-weight:600;color:${sevColor};text-transform:capitalize;">${p.min_severity}+</span></td>
+          <td style="padding:14px 16px;"><span style="font-size:15px;font-weight:600;color:${sevColor};text-transform:capitalize;">${p.min_severity}+</span></td>
           <td style="padding:14px 16px;">${actionTag}</td>
           <td style="padding:14px 16px;text-align:center;">
             <label class="toggle-switch" title="${p.is_active ? 'Deactivate' : 'Activate'}">
@@ -536,23 +536,23 @@
       if (totalViolations === 0) {
         html = `<div style="text-align:center;padding:40px 20px;">
           <i data-lucide="shield-check" style="width:48px;height:48px;color:#10b981;display:block;margin:0 auto 12px;"></i>
-          <div style="font-size:16px;font-weight:600;color:#10b981;margin-bottom:8px;">No violations found</div>
-          <div style="font-size:13px;color:#475569;">All findings are within policy thresholds</div>
+          <div style="font-size:17px;font-weight:600;color:#10b981;margin-bottom:8px;">No violations found</div>
+          <div style="font-size:15px;color:#475569;">All findings are within policy thresholds</div>
         </div>`;
       } else {
         if (anyBlocked) {
           html += `<div style="padding:12px 16px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:10px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
             <i data-lucide="shield-x" style="width:18px;height:18px;color:#f87171;flex-shrink:0;"></i>
-            <span style="font-size:14px;color:#f87171;font-weight:600;">Policy violation — scan would be blocked</span>
+            <span style="font-size:16px;color:#f87171;font-weight:600;">Policy violation — scan would be blocked</span>
           </div>`;
         }
 
         for (const r of results) {
           if (results.length > 1) {
-            html += `<div style="font-size:13px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;margin-top:16px;">${escHtml(r.policy_name)}</div>`;
+            html += `<div style="font-size:15px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;margin-top:16px;">${escHtml(r.policy_name)}</div>`;
           }
           if (r.violations.length === 0) {
-            html += `<div style="padding:10px 14px;background:rgba(16,185,129,0.05);border-radius:8px;font-size:13px;color:#6ee7b7;margin-bottom:8px;">✓ No violations</div>`;
+            html += `<div style="padding:10px 14px;background:rgba(16,185,129,0.05);border-radius:8px;font-size:15px;color:#6ee7b7;margin-bottom:8px;">✓ No violations</div>`;
             continue;
           }
           for (const v of r.violations) {
@@ -560,14 +560,14 @@
             const reasonLabel = v.reason === 'blocklisted_rule' ? '🚫 Blocklisted' : '⚠ Severity';
             html += `<div style="padding:12px;background:rgba(0,229,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;margin-bottom:8px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-                <span style="font-size:13px;font-weight:600;color:#f1f5f9;">${escHtml(v.finding_title)}</span>
-                <span style="font-size:11px;font-weight:600;color:${sevColor};text-transform:uppercase;">${v.severity}</span>
+                <span style="font-size:15px;font-weight:600;color:#f1f5f9;">${escHtml(v.finding_title)}</span>
+                <span style="font-size:13px;font-weight:600;color:${sevColor};text-transform:uppercase;">${v.severity}</span>
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-                <span style="font-size:11px;color:#475569;">${escHtml(v.scanner)} / ${escHtml(v.finding_type)}</span>
-                <span style="font-size:11px;color:#64748b;">${reasonLabel}</span>
-                ${v.rule_id ? `<span style="font-size:11px;color:#475569;font-family:monospace;">${escHtml(v.rule_id)}</span>` : ''}
-                ${v.cve_id ? `<span style="font-size:11px;color:#f97316;">${escHtml(v.cve_id)}</span>` : ''}
+                <span style="font-size:13px;color:#475569;">${escHtml(v.scanner)} / ${escHtml(v.finding_type)}</span>
+                <span style="font-size:13px;color:#64748b;">${reasonLabel}</span>
+                ${v.rule_id ? `<span style="font-size:13px;color:#475569;font-family:monospace;">${escHtml(v.rule_id)}</span>` : ''}
+                ${v.cve_id ? `<span style="font-size:13px;color:#f97316;">${escHtml(v.cve_id)}</span>` : ''}
               </div>
             </div>`;
           }
@@ -585,7 +585,7 @@
       const colors = {success:'#10b981', error:'#ef4444', warning:'#f59e0b', info:'#00e5ff'};
       const icons = {success:'check-circle', error:'alert-circle', warning:'alert-triangle', info:'info'};
       const toast = document.createElement('div');
-      toast.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(13,17,23,0.95);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:#f1f5f9;font-size:14px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.5);`;
+      toast.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(13,17,23,0.95);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:#f1f5f9;font-size:16px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.5);`;
       const _icon = document.createElement('i');
       _icon.setAttribute('data-lucide', icons[type]);
       _icon.style.cssText = `width:18px;height:18px;color:${colors[type]};flex-shrink:0;`;

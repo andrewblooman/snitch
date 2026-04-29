@@ -16,7 +16,7 @@
     .card { background:linear-gradient(145deg,#0f1b34 0%,#080f1d 100%);border:1px solid rgba(0,229,255,0.14);border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,.55),inset 0 1px 0 rgba(0,229,255,.06); }
     .dark-select option { background:#0d1117; }
     .modal-backdrop { position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:center;justify-content:center; }
-    .tag { display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px; }
+    .tag { display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px; }
     .tag-sast { background:rgba(99,102,241,0.2);color:#a5b4fc; }
     .tag-sca { background:rgba(16,185,129,0.2);color:#6ee7b7; }
     .tag-container { background:rgba(245,158,11,0.2);color:#fcd34d; }
@@ -28,23 +28,23 @@
     .sev-medium { color:#eab308; }
     .sev-low { color:#22c55e; }
     .sev-info { color:#64748b; }
-    .sev-badge { display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px; }
-    .tab-btn { background:none;border:none;cursor:pointer;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;color:#64748b;transition:all 0.2s;white-space:nowrap; }
+    .sev-badge { display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px; }
+    .tab-btn { background:none;border:none;cursor:pointer;padding:8px 16px;border-radius:8px;font-size:15px;font-weight:600;color:#64748b;transition:all 0.2s;white-space:nowrap; }
     .tab-btn.active { background:rgba(0,229,255,0.12);color:#00e5ff; }
     .tab-btn:hover:not(.active) { background:rgba(255,255,255,0.05);color:#94a3b8; }
     .rule-card { background:linear-gradient(145deg,#0f1b34 0%,#080f1d 100%);border:1px solid rgba(0,229,255,0.12);border-radius:12px;padding:18px 20px;transition:all 0.2s;animation:fadeInUp 0.3s ease;box-shadow:0 2px 16px rgba(0,0,0,0.4); }
     .rule-card:hover { border-color:rgba(0,229,255,0.28);box-shadow:0 4px 24px rgba(0,229,255,0.07); }
-    .rule-id { font-family:'SF Mono','Fira Code','Fira Mono','Consolas',monospace;font-size:12px;color:#00e5ff;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:6px;padding:3px 8px;display:inline-block;cursor:pointer;transition:all 0.15s; }
+    .rule-id { font-family:'SF Mono','Fira Code','Fira Mono','Consolas',monospace;font-size:14px;color:#00e5ff;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:6px;padding:3px 8px;display:inline-block;cursor:pointer;transition:all 0.15s; }
     .rule-id:hover { background:rgba(0,229,255,0.15); }
-    .source-badge-catalog { background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid rgba(0,229,255,0.25);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600; }
-    .source-badge-discovered { background:rgba(245,158,11,0.1);color:#fbbf24;border:1px solid rgba(245,158,11,0.25);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600; }
-    .member-chip { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;transition:all 0.15s;user-select:none; }
+    .source-badge-catalog { background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid rgba(0,229,255,0.25);border-radius:20px;padding:2px 10px;font-size:13px;font-weight:600; }
+    .source-badge-discovered { background:rgba(245,158,11,0.1);color:#fbbf24;border:1px solid rgba(245,158,11,0.25);border-radius:20px;padding:2px 10px;font-size:13px;font-weight:600; }
+    .member-chip { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s;user-select:none; }
     .member-chip-blocklist { background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.2); }
     .member-chip-blocklist:hover { background:rgba(239,68,68,0.22); }
     .member-chip-allowlist { background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.2); }
     .member-chip-allowlist:hover { background:rgba(16,185,129,0.22); }
     .drawer { position:fixed;top:0;right:0;height:100vh;width:500px;background:#080c18;border-left:1px solid rgba(255,255,255,0.08);z-index:300;overflow-y:auto;animation:slideInRight 0.25s ease; }
-    .dark-label { display:block;font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px; }
+    .dark-label { display:block;font-size:14px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px; }
   </style>
 </head>
 <body style="font-family:var(--font-body,'Fira Sans',system-ui,sans-serif);background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
@@ -60,13 +60,13 @@
     <!-- Header -->
     <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
       <div>
-        <h1 style="font-size:18px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Rules Library</h1>
-        <p style="font-size:11px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// rules.library · detection</p>
+        <h1 style="font-size:19px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Rules Library</h1>
+        <p style="font-size:13px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// rules.library · detection</p>
       </div>
       <div id="header-user-slot" style="display:flex;gap:10px;align-items:center;">
         <div id="rule-counts" style="display:flex;gap:16px;align-items:center;">
-          <span style="font-size:13px;color:#64748b;" id="count-catalog"></span>
-          <span style="font-size:13px;color:#64748b;" id="count-discovered"></span>
+          <span style="font-size:15px;color:#64748b;" id="count-catalog"></span>
+          <span style="font-size:15px;color:#64748b;" id="count-discovered"></span>
         </div>
       </div>
     </header>
@@ -117,7 +117,7 @@
 
       <!-- Pagination -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:20px;">
-        <div style="font-size:13px;color:#475569;" id="page-info"></div>
+        <div style="font-size:15px;color:#475569;" id="page-info"></div>
         <div style="display:flex;gap:8px;">
           <button class="btn-secondary" id="prev-btn" onclick="changePage(-1)" style="padding:6px 12px;">← Prev</button>
           <button class="btn-secondary" id="next-btn" onclick="changePage(1)" style="padding:6px 12px;">Next →</button>
@@ -138,8 +138,8 @@
           <i data-lucide="shield-plus" style="width:18px;height:18px;color:#a5b4fc;"></i>
         </div>
         <div>
-          <div style="font-size:16px;font-weight:700;color:#f1f5f9;">Add to Policy</div>
-          <div id="modal-rule-id" style="font-family:monospace;font-size:12px;color:#64748b;margin-top:2px;"></div>
+          <div style="font-size:17px;font-weight:700;color:#f1f5f9;">Add to Policy</div>
+          <div id="modal-rule-id" style="font-family:monospace;font-size:14px;color:#64748b;margin-top:2px;"></div>
         </div>
       </div>
 
@@ -154,15 +154,15 @@
           <label style="flex:1;display:flex;align-items:center;gap:10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all 0.15s;" id="lbl-blocklist">
             <input type="radio" name="list-type" value="blocklist" checked onchange="updateListTypeUI()" style="accent-color:#ef4444;">
             <div>
-              <div style="font-size:13px;font-weight:600;color:#f87171;">Blocklist</div>
-              <div style="font-size:11px;color:#64748b;margin-top:1px;">Flag regardless of severity</div>
+              <div style="font-size:15px;font-weight:600;color:#f87171;">Blocklist</div>
+              <div style="font-size:13px;color:#64748b;margin-top:1px;">Flag regardless of severity</div>
             </div>
           </label>
           <label style="flex:1;display:flex;align-items:center;gap:10px;background:rgba(16,185,129,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all 0.15s;" id="lbl-allowlist">
             <input type="radio" name="list-type" value="allowlist" onchange="updateListTypeUI()" style="accent-color:#10b981;">
             <div>
-              <div style="font-size:13px;font-weight:600;color:#34d399;">Allowlist</div>
-              <div style="font-size:11px;color:#64748b;margin-top:1px;">Always ignore this rule</div>
+              <div style="font-size:15px;font-weight:600;color:#34d399;">Allowlist</div>
+              <div style="font-size:13px;color:#64748b;margin-top:1px;">Always ignore this rule</div>
             </div>
           </label>
         </div>
@@ -182,8 +182,8 @@
   <div class="drawer" id="detail-drawer" style="display:none;">
     <div style="padding:24px;border-bottom:1px solid rgba(0,229,255,0.1);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
       <div style="flex:1;">
-        <span class="rule-id" id="drawer-rule-id" style="cursor:default;font-size:13px;"></span>
-        <h2 id="drawer-rule-name" style="font-size:18px;font-weight:700;color:#f1f5f9;margin:10px 0 0;line-height:1.35;"></h2>
+        <span class="rule-id" id="drawer-rule-id" style="cursor:default;font-size:15px;"></span>
+        <h2 id="drawer-rule-name" style="font-size:19px;font-weight:700;color:#f1f5f9;margin:10px 0 0;line-height:1.35;"></h2>
       </div>
       <button onclick="closeDrawer()" style="background:none;border:none;cursor:pointer;padding:4px;flex-shrink:0;">
         <i data-lucide="x" style="width:20px;height:20px;color:#64748b;"></i>
@@ -264,7 +264,7 @@
       if (data.items.length === 0) {
         list.innerHTML = `<div style="padding:60px;text-align:center;">
           <i data-lucide="search-x" style="width:40px;height:40px;color:#334155;display:block;margin:0 auto 12px;"></i>
-          <div style="font-size:15px;color:#475569;">No rules match your filters</div>
+          <div style="font-size:17px;color:#475569;">No rules match your filters</div>
         </div>`;
         lucide.createIcons();
         return;
@@ -323,19 +323,19 @@
                 ${escHtml(r.severity)}
               </span>
               ${scanTypeTag(r.scan_type)}
-              <span style="font-size:11px;color:#64748b;background:rgba(255,255,255,0.04);border-radius:20px;padding:2px 8px;">${escHtml(r.scanner)}</span>
-              <span style="font-size:11px;color:#64748b;">${escHtml(r.category)}</span>
+              <span style="font-size:13px;color:#64748b;background:rgba(255,255,255,0.04);border-radius:20px;padding:2px 8px;">${escHtml(r.scanner)}</span>
+              <span style="font-size:13px;color:#64748b;">${escHtml(r.category)}</span>
               ${sourceBadge}
             </div>
-            <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:4px;line-height:1.4;">${escHtml(r.name)}</div>
-            <div style="font-size:13px;color:#64748b;line-height:1.55;">${escHtml(shortDesc)}</div>
+            <div style="font-size:16px;font-weight:600;color:#e2e8f0;margin-bottom:4px;line-height:1.4;">${escHtml(r.name)}</div>
+            <div style="font-size:15px;color:#64748b;line-height:1.55;">${escHtml(shortDesc)}</div>
             <!-- Policy memberships + actions -->
             <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;">
               ${memberChips}
-              <button class="btn-secondary" onclick="openAddModal(${JSON.stringify(String(r.id))})" style="padding:4px 12px;font-size:12px;gap:4px;display:inline-flex;align-items:center;">
+              <button class="btn-secondary" onclick="openAddModal(${JSON.stringify(String(r.id))})" style="padding:4px 12px;font-size:14px;gap:4px;display:inline-flex;align-items:center;">
                 <i data-lucide="plus" style="width:11px;height:11px;"></i> Add to Policy
               </button>
-              <button onclick="openDrawer(${JSON.stringify(String(r.id))})" style="background:none;border:none;cursor:pointer;font-size:12px;color:#475569;padding:4px 8px;border-radius:6px;transition:all 0.15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#475569'">
+              <button onclick="openDrawer(${JSON.stringify(String(r.id))})" style="background:none;border:none;cursor:pointer;font-size:14px;color:#475569;padding:4px 8px;border-radius:6px;transition:all 0.15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#475569'">
                 <i data-lucide="info" style="width:13px;height:13px;vertical-align:middle;margin-right:3px;"></i>Details
               </button>
             </div>
@@ -364,18 +364,18 @@
 
       const members = (rule.policy_memberships || []);
       const memberHtml = members.length === 0
-        ? `<span style="color:#475569;font-size:13px;">Not assigned to any policy</span>`
+        ? `<span style="color:#475569;font-size:15px;">Not assigned to any policy</span>`
         : members.map(m => `<span class="member-chip member-chip-${m.list_type}">${m.policy_name} (${m.list_type})</span>`).join(' ');
 
       document.getElementById('drawer-body').innerHTML = `
         <div>
           <div class="dark-label">Description</div>
-          <p style="font-size:14px;color:#94a3b8;line-height:1.65;margin:0;">${escHtml(rule.description)}</p>
+          <p style="font-size:16px;color:#94a3b8;line-height:1.65;margin:0;">${escHtml(rule.description)}</p>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div style="background:rgba(0,229,255,0.04);border-radius:10px;padding:14px;">
             <div class="dark-label">Severity</div>
-            <span class="sev-badge ${sevClass(rule.severity)}" style="font-size:14px;">
+            <span class="sev-badge ${sevClass(rule.severity)}" style="font-size:16px;">
               <i data-lucide="${sevIcon(rule.severity)}" style="width:14px;height:14px;"></i>
               ${escHtml(rule.severity)}
             </span>
@@ -386,24 +386,24 @@
           </div>
           <div style="background:rgba(0,229,255,0.04);border-radius:10px;padding:14px;">
             <div class="dark-label">Scanner</div>
-            <span style="font-size:13px;color:#e2e8f0;">${escHtml(rule.scanner)}</span>
+            <span style="font-size:15px;color:#e2e8f0;">${escHtml(rule.scanner)}</span>
           </div>
           <div style="background:rgba(0,229,255,0.04);border-radius:10px;padding:14px;">
             <div class="dark-label">Category</div>
-            <span style="font-size:13px;color:#e2e8f0;">${escHtml(rule.category)}</span>
+            <span style="font-size:15px;color:#e2e8f0;">${escHtml(rule.category)}</span>
           </div>
         </div>
         ${rule.remediation ? `
         <div>
           <div class="dark-label">Remediation</div>
           <div style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.15);border-radius:10px;padding:14px;">
-            <p style="font-size:13px;color:#6ee7b7;line-height:1.6;margin:0;">${escHtml(rule.remediation)}</p>
+            <p style="font-size:15px;color:#6ee7b7;line-height:1.6;margin:0;">${escHtml(rule.remediation)}</p>
           </div>
         </div>` : ''}
         ${rule.reference_url ? `
         <div>
           <div class="dark-label">Reference</div>
-          <a href="${escHtml(rule.reference_url)}" target="_blank" style="font-size:13px;color:#00e5ff;text-decoration:none;word-break:break-all;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+          <a href="${escHtml(rule.reference_url)}" target="_blank" style="font-size:15px;color:#00e5ff;text-decoration:none;word-break:break-all;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
             ${escHtml(rule.reference_url)}
           </a>
         </div>` : ''}
@@ -525,7 +525,7 @@
       const colors = {success:'#10b981', error:'#ef4444', warning:'#f59e0b', info:'#00e5ff'};
       const icons = {success:'check-circle', error:'alert-circle', warning:'alert-triangle', info:'info'};
       const toast = document.createElement('div');
-      toast.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(13,17,23,0.95);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:#f1f5f9;font-size:14px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.5);`;
+      toast.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(13,17,23,0.95);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:#f1f5f9;font-size:16px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.5);`;
       const _icon = document.createElement('i');
       _icon.setAttribute('data-lucide', icons[type]);
       _icon.style.cssText = `width:18px;height:18px;color:${colors[type]};flex-shrink:0;`;

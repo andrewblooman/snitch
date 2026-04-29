@@ -304,3 +304,56 @@ async def sync_github(
 
     await db.flush()
     return {"synced": len(raw_findings), "scan_id": str(scan.id)}
+
+
+@router.get("/{app_id}/sbom")
+async def get_sbom(app_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    """Generate a CycloneDX v1.4 SBOM from the application's known vulnerabilities."""
+    result = await db.execute(select(Application).where(Application.id == app_id))
+    app = result.scalar_one_or_none()
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    # Fetch all findings that represent packages (SCA or container)
+    findings_result = await db.execute(
+        select(Finding).where(
+            Finding.application_id == app_id,
+            Finding.finding_type.in_(["sca", "container"])
+        )
+    )
+    findings = findings_result.scalars().all()
+
+    components = []
+    seen = set()
+    for f in findings:
+        if not f.package_name:
+            continue
+        key = f"{f.package_name}@{f.package_version or 'unknown'}"
+        if key in seen:
+            continue
+        seen.add(key)
+        
+        components.append({
+            "type": "library",
+            "name": f.package_name,
+            "version": f.package_version or "unknown",
+            "purl": f"pkg:generic/{f.package_name}@{f.package_version or 'unknown'}"
+        })
+
+    sbom = {
+        "bomFormat": "CycloneDX",
+        "specVersion": "1.4",
+        "serialNumber": f"urn:uuid:{uuid.uuid4()}",
+        "version": 1,
+        "metadata": {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "component": {
+                "type": "application",
+                "name": app.name,
+                "version": "1.0.0"
+            }
+        },
+        "components": components
+    }
+    
+    return sbom
