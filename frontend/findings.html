@@ -135,14 +135,14 @@
         </div>
         <div style="overflow-x:auto;">
           <table style="width:100%;border-collapse:collapse;">
-            <thead>
+            <thead id="findings-thead">
               <tr style="background:rgba(0,0,0,0.15);border-bottom:1px solid rgba(255,255,255,0.06);">
-                <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Severity</th>
+                <th class="sort-th active" data-col="severity" style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;" onclick="setSort('severity')">Severity<span class="sort-arrow">▲</span></th>
                 <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Title</th>
                 <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Application</th>
                 <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Type</th>
                 <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Status</th>
-                <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Discovered</th>
+                <th class="sort-th" data-col="created_at" style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;" onclick="setSort('created_at')">Discovered<span class="sort-arrow">▲</span></th>
               </tr>
             </thead>
             <tbody id="findings-tbody">
@@ -158,6 +158,8 @@
 <script>
 let currentPage = 1;
 let totalPages = 1;
+let sortBy = 'severity';
+let sortDir = 'asc';
 
 function severityBadge(sev){
   const map={critical:{color:'#ef4444',bg:'rgba(239,68,68,0.15)',label:'Critical'},high:{color:'#f59e0b',bg:'rgba(245,158,11,0.15)',label:'High'},medium:{color:'#f97316',bg:'rgba(249,115,22,0.15)',label:'Medium'},low:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)',label:'Low'},info:{color:'#94a3b8',bg:'rgba(148,163,184,0.15)',label:'Info'}};
@@ -220,7 +222,7 @@ async function loadFindings() {
 
   const identifier = new URLSearchParams(window.location.search).get('identifier');
 
-  let url = `/api/v1/findings?page=${currentPage}&page_size=20`;
+  let url = `/api/v1/findings?page=${currentPage}&page_size=20&sort_by=${sortBy}&sort_dir=${sortDir}`;
   if(sev) url += `&severity=${sev}`;
   if(type) url += `&finding_type=${type}`;
   if(status) url += `&status=${status}`;
@@ -280,6 +282,23 @@ function applyFilters() {
   loadFindings();
 }
 
+function setSort(col) {
+  if (sortBy === col) {
+    sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortBy = col;
+    sortDir = 'asc';
+  }
+  // Update header visuals
+  document.querySelectorAll('#findings-thead .sort-th').forEach(th => {
+    th.classList.toggle('active', th.dataset.col === sortBy);
+    const arrow = th.querySelector('.sort-arrow');
+    if (arrow) arrow.textContent = sortDir === 'asc' ? '▲' : '▼';
+  });
+  currentPage = 1;
+  loadFindings();
+}
+
 function changePage(delta) {
   const newPage = currentPage + delta;
   if (newPage >= 1 && newPage <= totalPages) {
@@ -297,7 +316,7 @@ async function openFindingPanel(id) {
   const body = document.getElementById('panel-body');
   body.innerHTML = `<div style="display:flex;justify-content:center;padding:40px;"><div style="animation:spin 1s linear infinite;width:32px;height:32px;border:3px solid rgba(0,229,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></div>`;
   panel.style.display = 'flex';
-  requestAnimationFrame(() => panel.classList.add('open'));
+  requestAnimationFrame(() => requestAnimationFrame(() => panel.classList.add('open')));
 
   try {
     const res = await fetch(`/api/v1/findings/${id}`);
@@ -414,7 +433,7 @@ loadFindings();
 <!-- Finding Detail Panel -->
 <div id="finding-panel" style="display:none;position:fixed;inset:0;z-index:200;justify-content:flex-end;">
   <div onclick="closeFindingPanel()" style="position:absolute;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(2px);"></div>
-  <aside style="position:relative;width:480px;max-width:95vw;height:100%;background:linear-gradient(180deg,#0f1b34 0%,#080f1d 100%);border-left:1px solid rgba(0,229,255,0.15);box-shadow:-8px 0 48px rgba(0,0,0,0.7);display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);" id="panel-aside">
+  <aside style="position:relative;width:480px;max-width:95vw;height:100%;background:linear-gradient(180deg,#0f1b34 0%,#080f1d 100%);border-left:1px solid rgba(0,229,255,0.15);box-shadow:-8px 0 48px rgba(0,0,0,0.7);display:flex;flex-direction:column;" id="panel-aside">
     <div style="padding:16px 24px;border-bottom:1px solid rgba(0,229,255,0.1);display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.2);">
       <div style="font-size:15px;font-weight:700;color:#f1f5f9;font-family:'Fira Code',monospace;">Finding Detail</div>
       <button onclick="closeFindingPanel()" style="background:none;border:none;color:#94a3b8;cursor:pointer;padding:4px;border-radius:6px;display:flex;align-items:center;" onmouseover="this.style.color='#f1f5f9'" onmouseout="this.style.color='#94a3b8'"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
@@ -423,7 +442,12 @@ loadFindings();
   </aside>
 </div>
 <style>
+#panel-aside { transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); }
 #finding-panel.open #panel-aside { transform: translateX(0); }
+.sort-th { cursor:pointer; user-select:none; }
+.sort-th:hover { color: #00e5ff !important; }
+.sort-arrow { display:inline-block; margin-left:4px; opacity:0.5; font-size:11px; }
+.sort-th.active .sort-arrow { opacity:1; color:#00e5ff; }
 </style>
 </body>
 </html>

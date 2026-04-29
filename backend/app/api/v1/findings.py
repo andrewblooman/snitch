@@ -3,7 +3,7 @@ import uuid
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import func, or_, select
+from sqlalchemy import case, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -56,6 +56,8 @@ async def list_findings(
     scanner: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
     identifier: Optional[str] = Query(None),
+    sort_by: Optional[str] = Query("severity", pattern="^(severity|created_at)$"),
+    sort_dir: Optional[str] = Query("asc", pattern="^(asc|desc)$"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -77,9 +79,23 @@ async def list_findings(
     total_result = await db.execute(select(func.count()).select_from(q.subquery()))
     total = total_result.scalar_one()
 
+    sev_order = case(
+        (Finding.severity == "critical", 0),
+        (Finding.severity == "high", 1),
+        (Finding.severity == "medium", 2),
+        (Finding.severity == "low", 3),
+        else_=4,
+    )
+    if sort_by == "severity":
+        primary = sev_order if sort_dir == "asc" else sev_order.desc()
+        secondary = Finding.created_at.desc()
+    else:
+        primary = Finding.created_at.asc() if sort_dir == "asc" else Finding.created_at.desc()
+        secondary = sev_order
+
     q = (
         q.options(selectinload(Finding.application))
-        .order_by(Finding.created_at.desc())
+        .order_by(primary, secondary)
         .offset((page - 1) * page_size)
         .limit(page_size)
     )
