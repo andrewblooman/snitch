@@ -203,10 +203,15 @@ function parseQueryParams() {
   if (ft) document.getElementById('filter-type').value = ft.toLowerCase();
 
   const identifier = params.get('identifier');
-  if (identifier) {
-    const chip = document.getElementById('identifier-chip');
-    if (chip) {
-      chip.textContent = `Filtered by: ${identifier}`;
+  const compTag = params.get('compliance_tag');
+  const chip = document.getElementById('identifier-chip');
+  if (chip) {
+    if (identifier) {
+      chip.textContent = `✕  Filtered by: ${identifier}`;
+      chip.style.display = 'inline-flex';
+    } else if (compTag) {
+      const label = compTag.includes('|') ? compTag.split('|')[1] : compTag;
+      chip.textContent = `✕  ${label}`;
       chip.style.display = 'inline-flex';
     }
   }
@@ -221,6 +226,7 @@ async function loadFindings() {
   const scanner = document.getElementById('filter-scanner').value;
 
   const identifier = new URLSearchParams(window.location.search).get('identifier');
+  const complianceTag = new URLSearchParams(window.location.search).get('compliance_tag');
 
   let url = `/api/v1/findings?page=${currentPage}&page_size=20&sort_by=${sortBy}&sort_dir=${sortDir}`;
   if(sev) url += `&severity=${sev}`;
@@ -228,6 +234,7 @@ async function loadFindings() {
   if(status) url += `&status=${status}`;
   if(scanner) url += `&scanner=${scanner}`;
   if(identifier) url += `&identifier=${encodeURIComponent(identifier)}`;
+  if(complianceTag) url += `&compliance_tag=${encodeURIComponent(complianceTag)}`;
 
   try {
     const res = await fetch(url);

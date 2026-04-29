@@ -238,10 +238,13 @@ async def get_top_vulnerabilities(
 
 @router.get("/compliance")
 async def get_compliance_report(db: AsyncSession = Depends(get_db)):
+    from app.services.compliance import COMPLIANCE_MAPPINGS
+
     findings_result = await db.execute(select(Finding).where(Finding.status == "open"))
     findings = findings_result.scalars().all()
 
-    frameworks = {}
+    # Build framework → control violation map
+    frameworks: dict = {}
     for f in findings:
         tags = f.compliance_tags or []
         for tag in tags:
@@ -249,35 +252,63 @@ async def get_compliance_report(db: AsyncSession = Depends(get_db)):
                 fw, control = tag.split("|", 1)
             except ValueError:
                 continue
-                
             if fw not in frameworks:
                 frameworks[fw] = {"framework": fw, "controls": {}}
-                
             if control not in frameworks[fw]["controls"]:
                 frameworks[fw]["controls"][control] = {
-                    "control": control,
-                    "findings": 0,
-                    "critical": 0,
-                    "high": 0,
-                    "medium": 0,
-                    "low": 0
+                    "control": control, "findings": 0,
+                    "critical": 0, "high": 0, "medium": 0, "low": 0,
                 }
-                
             ctrl = frameworks[fw]["controls"][control]
             ctrl["findings"] += 1
             if f.severity in ctrl:
                 ctrl[f.severity] += 1
-                
-    # Format response
+
+    # Determine total controls per framework from the mapping catalog
+    catalog_controls: dict[str, set] = {}
+    for m in COMPLIANCE_MAPPINGS:
+        catalog_controls.setdefault(m["framework"], set()).add(m["control"])
+
+    # Ensure frameworks with zero violations still appear (all controls clean)
+    for fw_name, controls in catalog_controls.items():
+        if fw_name not in frameworks:
+            frameworks[fw_name] = {"framework": fw_name, "controls": {}}
+
     response = []
     for fw, fw_data in frameworks.items():
         controls_list = list(fw_data["controls"].values())
         controls_list.sort(key=lambda x: (-x["critical"], -x["high"], -x["findings"]))
+        total_controls = len(catalog_controls.get(fw, set()))
+        violated_controls = len(fw_data["controls"])
+        compliant_controls = max(0, total_controls - violated_controls)
+        score = round(compliant_controls / total_controls * 100) if total_controls else 100
         response.append({
             "framework": fw,
             "controls": controls_list,
-            "total_findings": sum(c["findings"] for c in controls_list)
+            "total_findings": sum(c["findings"] for c in controls_list),
+            "total_controls": total_controls,
+            "compliant_controls": compliant_controls,
+            "compliance_score": score,
         })
-        
-    response.sort(key=lambda x: -x["total_findings"])
+
+    response.sort(key=lambda x: x["compliance_score"])
     return response
+
+
+@router.post("/compliance/retag")
+async def retag_compliance(db: AsyncSession = Depends(get_db)):
+    """Re-apply compliance tags to every finding using the current ruleset."""
+    from app.services.compliance import map_finding_to_compliance
+
+    result = await db.execute(select(Finding))
+    findings = result.scalars().all()
+
+    updated = 0
+    for f in findings:
+        tags = map_finding_to_compliance(f)
+        if f.compliance_tags != tags:
+            f.compliance_tags = tags
+            updated += 1
+
+    await db.commit()
+    return {"updated": updated, "total": len(findings)}

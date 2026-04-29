@@ -3,7 +3,7 @@ import uuid
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import case, func, or_, select
+from sqlalchemy import case, cast, func, or_, select, String
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -56,6 +56,7 @@ async def list_findings(
     scanner: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
     identifier: Optional[str] = Query(None),
+    compliance_tag: Optional[str] = Query(None),
     sort_by: Optional[str] = Query("severity", pattern="^(severity|created_at)$"),
     sort_dir: Optional[str] = Query("asc", pattern="^(asc|desc)$"),
     page: int = Query(1, ge=1),
@@ -75,6 +76,8 @@ async def list_findings(
         q = q.where(Finding.status == status)
     if identifier:
         q = q.where(or_(Finding.cve_id == identifier, Finding.rule_id == identifier))
+    if compliance_tag:
+        q = q.where(cast(Finding.compliance_tags, String).contains(compliance_tag))
 
     total_result = await db.execute(select(func.count()).select_from(q.subquery()))
     total = total_result.scalar_one()
@@ -110,7 +113,9 @@ async def list_findings(
 
 @router.get("/{finding_id}", response_model=FindingResponse)
 async def get_finding(finding_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Finding).where(Finding.id == finding_id))
+    result = await db.execute(
+        select(Finding).options(selectinload(Finding.application)).where(Finding.id == finding_id)
+    )
     finding = result.scalar_one_or_none()
     if not finding:
         raise HTTPException(status_code=404, detail="Finding not found")
