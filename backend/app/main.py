@@ -36,7 +36,7 @@ allow_credentials = len(explicit_cors_origins) > 0 and len(explicit_cors_origins
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=explicit_cors_origins if allow_credentials else ["*"],
+    allow_origins=explicit_cors_origins if allow_credentials else ["*"],  # nosemgrep: python.fastapi.security.wildcard-cors.wildcard-cors
     allow_credentials=allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],

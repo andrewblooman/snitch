@@ -51,9 +51,12 @@ jobs:
           S3_BUCKET: ${{ secrets.SNITCH_S3_BUCKET }}
           GITHUB_ORG: ${{ github.repository_owner }}
           GITHUB_REPO: ${{ github.event.repository.name }}
+          GH_RUN_ID: ${{ github.run_id }}
+          GH_SHA: ${{ github.sha }}
+          GH_REF_NAME: ${{ github.ref_name }}
         run: |
           DATE=$(date +%y%m%d)
-          S3_KEY="${GITHUB_ORG}/${GITHUB_REPO}/semgrep/${DATE}-${{ github.run_id }}.json"
+          S3_KEY="${GITHUB_ORG}/${GITHUB_REPO}/semgrep/${DATE}-${GH_RUN_ID}.json"
           aws s3 cp semgrep.json "s3://${S3_BUCKET}/${S3_KEY}" \
-            --metadata "commit-sha=${{ github.sha }},branch=${{ github.ref_name }},workflow-run-id=${{ github.run_id }},ci-provider=github-actions"
+            --metadata "commit-sha=${GH_SHA},branch=${GH_REF_NAME},workflow-run-id=${GH_RUN_ID},ci-provider=github-actions"
           echo "Uploaded scan result to s3://${S3_BUCKET}/${S3_KEY}"
