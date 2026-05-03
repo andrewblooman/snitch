@@ -86,3 +86,18 @@ async def lookup_github_repo(
     if info is None:
         raise HTTPException(status_code=404, detail=f"Repository {owner}/{repo} not found or not accessible")
     return RepoLookupInfo(**info)
+
+
+@router.post("/apps/{app_id}/sync-alerts", status_code=202)
+async def sync_github_alerts(app_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    """Trigger an immediate GitHub security alert sync for a single application."""
+    result = await db.execute(select(Application).where(Application.id == app_id))
+    app = result.scalar_one_or_none()
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+    if not app.github_org or not app.github_repo:
+        raise HTTPException(status_code=400, detail="Application has no GitHub repository configured")
+
+    from app.worker.github_tasks import poll_github_security_task
+    task = poll_github_security_task.delay(str(app_id))
+    return {"task_id": task.id, "status": "queued", "app_id": str(app_id)}

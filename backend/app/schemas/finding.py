@@ -19,6 +19,16 @@ class FindingBase(BaseModel):
     package_version: Optional[str] = None
     fixed_version: Optional[str] = None
     cvss_score: Optional[float] = None
+    epss_score: Optional[float] = None
+    epss_percentile: Optional[float] = None
+    compliance_tags: Optional[List[str]] = None
+    # GitHub Advanced Security fields
+    commit_sha: Optional[str] = None
+    introduced_by: Optional[str] = None
+    pr_number: Optional[int] = None
+    pr_url: Optional[str] = None
+    github_alert_url: Optional[str] = None
+    github_alert_number: Optional[int] = None
 
 
 class FindingCreate(FindingBase):
@@ -39,6 +49,9 @@ class FindingResponse(FindingBase):
     application_name: Optional[str] = None
     scan_id: Optional[uuid.UUID] = None
     status: str
+    epss_score: Optional[float] = None
+    epss_percentile: Optional[float] = None
+    compliance_tags: Optional[List[str]] = None
     first_seen_at: datetime
     last_seen_at: datetime
     fixed_at: Optional[datetime] = None

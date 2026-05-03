@@ -434,9 +434,14 @@
         const privateBadge = r.private ? `<span style="background:rgba(139,92,246,0.1);color:#a78bfa;border:1px solid rgba(139,92,246,0.2);border-radius:6px;padding:2px 8px;font-size:13px;font-weight:500;">Private</span>` : '';
 
         const actionBtn = r.tracked
-          ? `<a href="/applications.html" class="btn-secondary" style="font-size:14px;padding:7px 12px;text-decoration:none;">
-               <i data-lucide="eye" style="width:13px;height:13px;"></i> View
-             </a>`
+          ? `<div style="display:flex;gap:8px;align-items:center;">
+               <a href="/applications.html" class="btn-secondary" style="font-size:14px;padding:7px 12px;text-decoration:none;">
+                 <i data-lucide="eye" style="width:13px;height:13px;"></i> View
+               </a>
+               <button class="btn-secondary" style="font-size:14px;padding:7px 12px;" onclick="syncAlerts('${r.application_id}')" title="Sync GitHub security alerts">
+                 <i data-lucide="shield" style="width:13px;height:13px;color:#00e5ff;"></i>
+               </button>
+             </div>`
           : `<button class="btn-primary" style="font-size:14px;padding:7px 14px;" onclick="openAddModal(${idx})">
                <i data-lucide="plus" style="width:13px;height:13px;"></i> Add to Snitch
              </button>`;
@@ -480,6 +485,17 @@
     function closeModal() {
       document.getElementById('add-modal').style.display = 'none';
       pendingRepo = null;
+    }
+
+    async function syncAlerts(appId) {
+      if (!appId) return;
+      try {
+        const res = await fetch(`/api/v1/github/apps/${appId}/sync-alerts`, { method: 'POST' });
+        if (!res.ok) throw new Error((await res.json()).detail || 'Sync failed');
+        showToast('GitHub security sync queued — findings will appear shortly', 'success');
+      } catch(err) {
+        showToast(`Sync failed: ${err.message}`, 'error');
+      }
     }
 
     async function confirmAdd() {
