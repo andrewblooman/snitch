@@ -855,10 +855,8 @@ async function loadGithubTab(){
   }
   el.innerHTML='<div style="text-align:center;padding:32px;"><div style="animation:spin 1s linear infinite;display:inline-block;width:24px;height:24px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></div>';
   try{
-    const res=await fetch(`/api/v1/findings?application_id=${appId}&page_size=500`);
-    if(!res.ok)throw new Error('Failed to load findings');
-    const data=await res.json();
-    const findings=(data.items||data||[]).filter(f=>f.github_alert_url||f.introduced_by||f.commit_sha);
+    const all=await fetchAllFindings(`/api/v1/applications/${appId}/findings`);
+    const findings=all.filter(f=>f.github_alert_url||f.introduced_by||f.commit_sha);
     renderGithubTab(findings);
   }catch(e){
     el.innerHTML=`<div style="text-align:center;padding:32px;color:#ef4444;">${e.message}</div>`;
@@ -954,6 +952,21 @@ async function syncGithubAlerts(){
   }
 }
 
+async function fetchAllFindings(baseUrl){
+  // Fetch all pages (API max page_size=100)
+  let page=1, items=[], pages=1;
+  do {
+    const sep=baseUrl.includes('?')?'&':'?';
+    const res=await fetch(`${baseUrl}${sep}page=${page}&page_size=100`);
+    if(!res.ok)break;
+    const d=await res.json();
+    items=items.concat(d.items||[]);
+    pages=d.pages||1;
+    page++;
+  } while(page<=pages);
+  return items;
+}
+
 async function loadPage(){
   if(!appId){
     document.getElementById('page-title').textContent='Application Not Found';
@@ -961,23 +974,14 @@ async function loadPage(){
     return;
   }
   try{
-    const [appRes,findingsRes]=await Promise.all([
-      fetch(`/api/v1/applications/${appId}`),
-      fetch(`/api/v1/applications/${appId}/findings`),
-    ]);
+    const appRes=await fetch(`/api/v1/applications/${appId}`);
     if(!appRes.ok)throw new Error('Application not found');
     appData=await appRes.json();
     renderAppInfo(appData);
     renderFindingStats({critical:appData.critical_count||0,high:appData.high_count||0,medium:appData.medium_count||0,low:appData.low_count||0});
 
-    if(findingsRes.ok){
-      const fd=await findingsRes.json();
-      allFindings=fd.items||fd||[];
-      applyFindingFilters();
-    } else {
-      allFindings=[];
-      renderFindingsTable([]);
-    }
+    allFindings=await fetchAllFindings(`/api/v1/applications/${appId}/findings`);
+    applyFindingFilters();
   }catch(e){
     document.getElementById('page-title').textContent='Error Loading App';
     showToast(e.message,'error');
