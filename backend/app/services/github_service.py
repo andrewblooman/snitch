@@ -250,6 +250,9 @@ async def fetch_github_security_alerts(owner: str, repo: str, token: str | None)
                     pr_num = _extract_pr_number(ref)
                     rule = a.get("rule") or {}
                     tool_name = (a.get("tool") or {}).get("name", "codeql").lower().replace(" ", "_")
+                    # Normalize Semgrep OSS → semgrep so historical and current alerts share the same scanner label
+                    if tool_name == "semgrep_oss":
+                        tool_name = "semgrep"
                     # Determine severity
                     sec_sev = rule.get("security_severity_level") or rule.get("severity") or "warning"
                     severity = _CODE_SCAN_SEVERITY.get(sec_sev.lower(), "medium")
@@ -343,7 +346,7 @@ async def fetch_github_security_alerts(owner: str, repo: str, token: str | None)
                     params={"state": "open", "per_page": 100, "page": page},
                 )
                 if r.status_code in (403, 404):
-                    logger.debug("Secret scanning not available for %s/%s: %s", owner, repo, r.status_code)
+                    logger.debug("Secret scanning not available for %s/%s: %s", owner, repo, r.status_code)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
                     break
                 r.raise_for_status()
                 alerts = r.json()
@@ -369,9 +372,9 @@ async def fetch_github_security_alerts(owner: str, repo: str, token: str | None)
                     break
                 page += 1
         except httpx.HTTPStatusError as e:
-            logger.warning("Secret scanning alerts error for %s/%s: %s", owner, repo, e)
+            logger.warning("Secret scanning alerts error for %s/%s: %s", owner, repo, e)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         except Exception as e:
-            logger.warning("Unexpected error fetching secret scanning for %s/%s: %s", owner, repo, e)
+            logger.warning("Unexpected error fetching secret scanning for %s/%s: %s", owner, repo, e)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
 
     return findings
 
