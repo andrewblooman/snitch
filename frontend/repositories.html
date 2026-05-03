@@ -83,7 +83,7 @@
     </div>
 
     <!-- Idle (not yet loaded) -->
-    <div id="idle" style="text-align:center;padding:60px 20px;">
+    <div id="idle" style="display:none;text-align:center;padding:60px 20px;">
       <i data-lucide="refresh-cw" style="width:48px;height:48px;color:#475569;margin:0 auto 16px;display:block;"></i>
       <div style="font-size:19px;font-weight:600;color:#f1f5f9;margin-bottom:8px;">Repositories not loaded</div>
       <div style="color:#64748b;font-size:16px;max-width:400px;margin:0 auto;">Click <strong style="color:#00e5ff;">Refresh</strong> to fetch your GitHub repositories.</div>
@@ -360,7 +360,9 @@
         if (res.status === 400) {
           loading.style.display = 'none';
           noToken.style.display = 'block';
-          refreshIcon.style.animation = '';
+          lucide.createIcons();
+          const icon = document.getElementById('refresh-icon');
+          if (icon) icon.style.animation = '';
           return;
         }
         if (!res.ok) throw new Error(await res.text());
@@ -385,8 +387,10 @@
         grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#ef4444;">${escHtml(msg)}</div>`;
       } finally {
         loading.style.display = 'none';
-        refreshIcon.style.animation = '';
         lucide.createIcons();
+        // Re-query after lucide may have replaced the SVG element
+        const icon = document.getElementById('refresh-icon');
+        if (icon) icon.style.animation = '';
       }
     }
 
@@ -520,6 +524,7 @@
 
     applyTheme(localStorage.getItem('theme')||'dark');
     lucide.createIcons();
+    loadRepos();
   </script>
 </body>
 </html>
