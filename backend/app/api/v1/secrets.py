@@ -1,8 +1,9 @@
 import asyncio
 import math
+import multiprocessing
 import re
 import uuid
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
+from concurrent.futures import ProcessPoolExecutor, TimeoutError as FuturesTimeoutError
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -234,28 +235,32 @@ def _compile_and_match(pattern: str, sample_text: str) -> list:
 
 
 _REDOS_PROBE = "a" * 20 + "!"  # triggers catastrophic backtracking on vulnerable patterns
-_VALIDATION_EXECUTOR = ThreadPoolExecutor(max_workers=2, thread_name_prefix="regex-validate")
+
+
+def _run_regex_in_subprocess(pattern: str) -> str | None:
+    """Top-level function (picklable) — executed in a child process that can be killed on timeout."""
+    try:
+        compiled = re.compile(pattern)
+        compiled.search(_REDOS_PROBE)
+        return None  # safe
+    except re.error as exc:
+        return f"Invalid regex pattern: {exc}"
 
 
 def _validate_pattern_safe(pattern: str) -> str | None:
     """
-    Compile and execute a user-supplied pattern against a ReDoS probe string
-    in a thread with a hard timeout.  Returns an error string on failure or None if safe.
+    Validate a user-supplied pattern against a ReDoS probe string in a child process.
+    The process is forcibly terminated on timeout, giving a true hard stop unlike threads.
+    Returns an error string on failure or None if safe.
     """
-    def _run() -> None:
-        compiled = re.compile(pattern)
-        compiled.search(_REDOS_PROBE)
-
-    future = _VALIDATION_EXECUTOR.submit(_run)
-    try:
-        future.result(timeout=2.0)
-    except re.error as exc:
-        return f"Invalid regex pattern: {exc}"
-    except FuturesTimeoutError:
-        return "Pattern evaluation timed out — the pattern may cause catastrophic backtracking"
-    except Exception as exc:
-        return f"Pattern validation error: {exc}"
-    return None
+    with ProcessPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(_run_regex_in_subprocess, pattern)
+        try:
+            return future.result(timeout=2.0)
+        except FuturesTimeoutError:
+            return "Pattern evaluation timed out — the pattern may cause catastrophic backtracking"
+        except Exception as exc:
+            return f"Pattern validation error: {exc}"
 
 
 @router.post("/patterns/test", response_model=SecretPatternTestResult)

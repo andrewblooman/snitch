@@ -1,3 +1,4 @@
+import asyncio
 import json
 import uuid
 from datetime import datetime, timezone
@@ -6,7 +7,6 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from app.core.auth import get_service_account
 from app.db.session import get_db
@@ -37,6 +37,20 @@ from app.schemas.integration import (
 
 router = APIRouter(tags=["integrations"])
 
+_SLACK_REQUIRED = {"webhook_url"}
+_JIRA_REQUIRED = {"jira_url", "email", "api_token", "project_key"}
+
+
+def _validate_config(integration_type: str, config: dict) -> None:
+    """Raise 422 if required config keys are absent for the given integration type."""
+    required = _SLACK_REQUIRED if integration_type == "slack" else _JIRA_REQUIRED
+    missing = required - config.keys()
+    if missing:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Missing required config fields for {integration_type}: {', '.join(sorted(missing))}",
+        )
+
 
 def _parse_config(integration: Integration) -> dict:
     if isinstance(integration.config, dict):
@@ -64,6 +78,7 @@ async def create_integration(
     sa: ServiceAccount = Depends(get_service_account),
     db: AsyncSession = Depends(get_db),
 ):
+    _validate_config(body.type, body.config)
     integration = Integration(
         id=uuid.uuid4(),
         type=body.type,
@@ -135,10 +150,10 @@ async def test_integration(
 
     if integration.type == "slack":
         from app.services.slack_service import test_webhook
-        success, message = test_webhook(config.get("webhook_url", ""))
+        success, message = await asyncio.to_thread(test_webhook, config.get("webhook_url", ""))
     elif integration.type == "jira":
         from app.services.jira_service import test_connection
-        success, message = test_connection(config)
+        success, message = await asyncio.to_thread(test_connection, config)
     else:
         raise HTTPException(status_code=400, detail=f"Unknown integration type: {integration.type}")
 
@@ -273,7 +288,7 @@ async def create_jira_issue(
     config = _parse_config(integration)
     try:
         from app.services.jira_service import create_issue
-        result = create_issue(config, finding, app)
+        result = await asyncio.to_thread(create_issue, config, finding, app)
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"Jira API error: {exc}")
 
@@ -329,15 +344,15 @@ async def crawl_epic(
     findings_result = await db.execute(findings_q)
     all_findings = findings_result.scalars().all()
 
-    # Crawl the epics
+    # Crawl the epics (sync httpx — offload to thread to avoid blocking event loop)
     try:
         from app.services.jira_service import crawl_epic as jira_crawl_epic, match_findings_to_issues
-        epic_results = jira_crawl_epic(config, body.epic_keys)
+        epic_results = await asyncio.to_thread(jira_crawl_epic, config, body.epic_keys)
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"Jira API error: {exc}")
 
     # Match findings
-    match_result = match_findings_to_issues(epic_results, list(all_findings))
+    match_result = await asyncio.to_thread(match_findings_to_issues, epic_results, list(all_findings))
 
     finding_by_id = {str(f.id): f for f in all_findings}
 

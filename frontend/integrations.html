@@ -139,7 +139,7 @@
 
     <div class="info-alert">
       <i data-lucide="info" style="width:16px;height:16px;color:#6366f1;"></i>
-      <span>Notifications fire automatically after each scan. Use <strong>Notification Rules</strong> on each integration to filter by severity, app, or finding type. Sensitive credentials are masked after saving and never returned by the API.</span>
+      <span>Notifications fire automatically after each scan. Use <strong>Notification Rules</strong> on each integration to filter by severity, app, or finding type. Sensitive credentials are masked after saving; shown only once on creation.</span>
     </div>
 
     <div id="integrations-list">
@@ -271,10 +271,10 @@
 
       <div class="field-group">
         <label class="field-label">Scope</label>
-        <select class="field-input" id="rule-scope">
-          <option value="all">All Applications</option>
+        <select class="field-input" id="rule-scope" multiple size="4" style="height:auto;padding:4px 0;">
+          <option value="all" selected>All Applications</option>
         </select>
-        <p class="field-sub" style="margin-top:6px;">Select "All Applications" or choose specific apps (hold Ctrl/Cmd for multi-select).</p>
+        <p class="field-sub" style="margin-top:6px;">Hold Ctrl/Cmd to select multiple apps, or select "All Applications" for all.</p>
       </div>
 
       <div class="modal-footer">
@@ -528,21 +528,50 @@
         container.innerHTML = '<div style="padding:8px 0 4px;color:#64748b;font-size:14px;">No rules yet. Click "+ Add Rule" to create one.</div>';
         return;
       }
-      var html = '<table><thead><tr><th>Name</th><th>Event</th><th>Min Severity</th><th>Scope</th><th>Status</th><th></th></tr></thead><tbody>';
+      var table = document.createElement('table');
+      table.innerHTML = '<thead><tr><th>Name</th><th>Event</th><th>Min Severity</th><th>Scope</th><th>Status</th><th></th></tr></thead>';
+      var tbody = document.createElement('tbody');
       rules.forEach(function(r) {
         var scope = (!r.application_ids || !r.application_ids.length) ? 'All apps' : r.application_ids.length + ' app(s)';
-        var sevClass = 'sev-' + r.min_severity;
-        html += '<tr>' +
-          '<td>' + escHtml(r.name) + '</td>' +
-          '<td style="color:#94a3b8;">' + r.event_type.replace(/_/g,' ') + '</td>' +
-          '<td><span class="' + sevClass + '" style="font-weight:600;">' + r.min_severity + '</span></td>' +
-          '<td style="color:#94a3b8;">' + scope + '</td>' +
-          '<td>' + (r.is_active ? '<span class="badge badge-active">On</span>' : '<span class="badge badge-inactive">Off</span>') + '</td>' +
-          '<td><button class="btn btn-danger btn-sm" onclick="deleteRule(\'' + intId + '\',\'' + r.id + '\',this)"><i data-lucide="trash-2" style="width:12px;height:12px;"></i></button></td>' +
-          '</tr>';
+        var tr = document.createElement('tr');
+
+        var tdName = document.createElement('td');
+        tdName.textContent = r.name;
+
+        var tdEvent = document.createElement('td');
+        tdEvent.style.color = '#94a3b8';
+        tdEvent.textContent = (r.event_type || '').replace(/_/g, ' ');
+
+        var tdSev = document.createElement('td');
+        var sevSpan = document.createElement('span');
+        sevSpan.className = 'sev-' + r.min_severity;
+        sevSpan.style.fontWeight = '600';
+        sevSpan.textContent = r.min_severity;
+        tdSev.appendChild(sevSpan);
+
+        var tdScope = document.createElement('td');
+        tdScope.style.color = '#94a3b8';
+        tdScope.textContent = scope;
+
+        var tdStatus = document.createElement('td');
+        var statusSpan = document.createElement('span');
+        statusSpan.className = r.is_active ? 'badge badge-active' : 'badge badge-inactive';
+        statusSpan.textContent = r.is_active ? 'On' : 'Off';
+        tdStatus.appendChild(statusSpan);
+
+        var tdAction = document.createElement('td');
+        var delBtn = document.createElement('button');
+        delBtn.className = 'btn btn-danger btn-sm';
+        delBtn.innerHTML = '<i data-lucide="trash-2" style="width:12px;height:12px;"></i>';
+        delBtn.addEventListener('click', function() { deleteRule(intId, r.id, delBtn); });
+        tdAction.appendChild(delBtn);
+
+        tr.append(tdName, tdEvent, tdSev, tdScope, tdStatus, tdAction);
+        tbody.appendChild(tr);
       });
-      html += '</tbody></table>';
-      container.innerHTML = html;
+      table.appendChild(tbody);
+      container.innerHTML = '';
+      container.appendChild(table);
       if (window.lucide) lucide.createIcons();
     } catch(e) {
       container.innerHTML = '<div style="color:#ef4444;font-size:14px;padding:6px 0;">Failed to load rules</div>';
@@ -707,7 +736,9 @@
 
     var scopeEl = document.getElementById('rule-scope');
     var appIds = [];
-    if (scopeEl.value && scopeEl.value !== 'all') appIds = [scopeEl.value];
+    Array.from(scopeEl.selectedOptions).forEach(function(opt) {
+      if (opt.value && opt.value !== 'all') appIds.push(opt.value);
+    });
 
     var body = {
       name: name,
@@ -825,17 +856,48 @@
       ct.innerHTML = '<p style="color:#64748b;font-size:15px;">No matched findings.</p>';
     }
 
-    // External table
+    // External table — build via DOM to prevent XSS via javascript:/data: URLs
     var et = document.getElementById('external-table');
     if (data.external.length) {
-      var html3 = '<table><thead><tr><th>Key</th><th>Summary</th><th>Status</th></tr></thead><tbody>';
-      data.external.forEach(function(e) {
-        html3 += '<tr><td><a href="' + escHtml(e.url) + '" target="_blank" style="color:#6366f1;font-family:monospace;">' + escHtml(e.key) + '</a></td><td>' + escHtml(e.summary) + '</td><td style="color:#94a3b8;">' + escHtml(e.status) + '</td></tr>';
+      var extTable = document.createElement('table');
+      extTable.innerHTML = '<thead><tr><th>Key</th><th>Summary</th><th>Status</th></tr></thead>';
+      var extBody = document.createElement('tbody');
+      data.external.forEach(function(issue) {
+        var tr = document.createElement('tr');
+
+        var tdKey = document.createElement('td');
+        var safeUrl = _safeUrl(issue.url);
+        if (safeUrl) {
+          var a = document.createElement('a');
+          a.href = safeUrl;
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.style.cssText = 'color:#6366f1;font-family:monospace;';
+          a.textContent = issue.key;
+          tdKey.appendChild(a);
+        } else {
+          tdKey.textContent = issue.key;
+        }
+
+        var tdSummary = document.createElement('td');
+        tdSummary.textContent = issue.summary;
+
+        var tdStatus = document.createElement('td');
+        tdStatus.style.color = '#94a3b8';
+        tdStatus.textContent = issue.status;
+
+        tr.append(tdKey, tdSummary, tdStatus);
+        extBody.appendChild(tr);
       });
-      html3 += '</tbody></table>';
-      et.innerHTML = html3;
+      extTable.appendChild(extBody);
+      et.innerHTML = '';
+      et.appendChild(extTable);
     } else {
-      et.innerHTML = '<p style="color:#64748b;font-size:15px;">No unmatched external issues.</p>';
+      et.textContent = '';
+      var p = document.createElement('p');
+      p.style.cssText = 'color:#64748b;font-size:15px;';
+      p.textContent = 'No unmatched external issues.';
+      et.appendChild(p);
     }
 
     // AI plan
@@ -902,6 +964,14 @@
       .replace(/</g,'&lt;')
       .replace(/>/g,'&gt;')
       .replace(/"/g,'&quot;');
+  }
+
+  function _safeUrl(url) {
+    if (!url) return null;
+    try {
+      var parsed = new URL(url);
+      return (parsed.protocol === 'https:' || parsed.protocol === 'http:') ? url : null;
+    } catch(_) { return null; }
   }
 
   // Close modals on overlay click
