@@ -33,6 +33,33 @@ def list_accessible_repos(token: str) -> list[dict]:
         return []
 
 
+def lookup_public_repo(owner: str, repo_name: str, token: str | None = None) -> dict | None:
+    """Fetch metadata for any public GitHub repository. Works without a token for public repos."""
+    try:
+        from github import Github, GithubException, UnknownObjectException
+
+        g = Github(token) if token else Github()
+        try:
+            repo = g.get_repo(f"{owner}/{repo_name}")
+        except UnknownObjectException:
+            return None
+        return {
+            "github_org": repo.owner.login,
+            "github_repo": repo.name,
+            "full_name": repo.full_name,
+            "description": repo.description,
+            "language": repo.language,
+            "repo_url": repo.html_url,
+            "private": repo.private,
+            "archived": repo.archived,
+            "default_branch": repo.default_branch,
+            "updated_at": repo.updated_at.isoformat() if repo.updated_at else None,
+        }
+    except Exception as e:
+        logger.error("Failed to look up repo %s/%s: %s", owner, repo_name, e)
+        return None
+
+
 def sync_github_security_alerts(app: Application, token: str) -> list[dict]:
     """Fetch code scanning alerts from GitHub and convert to internal finding format."""
     try:

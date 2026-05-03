@@ -116,7 +116,7 @@ backend/app/
     ├── policy_evaluator.py # Evaluate policy rules against findings
     ├── rule_catalog.py    # Static catalog of ~37 rules (Checkov/IaC, Semgrep/SAST, Gitleaks/secrets)
     ├── ai_remediation.py  # Claude integration; falls back to mock plan if no API key
-    ├── github_service.py  # GitHub code scanning sync + branch/PR creation via PyGitHub
+    ├── github_service.py  # GitHub code scanning sync + branch/PR creation via PyGitHub; lookup_public_repo() fetches any public repo (no token required)
     ├── compliance.py      # 30 compliance mapping rules across OWASP/PCI-DSS/CIS/DORA/SOC2
     ├── slack_service.py   # Slack Block Kit notifications via incoming webhook (httpx)
     ├── jira_service.py    # Jira REST API v3 client — create issues, crawl epics, dedup via JiraIssueLink
@@ -187,6 +187,10 @@ The migration `c2b28485c8a7_add_epss_and_compliance` adds `epss_score` (Float), 
 
 ### Global Findings API
 `GET /api/v1/findings` is the platform-wide findings list endpoint. Supported query params: `application_id`, `severity`, `finding_type`, `scanner`, `status`, `identifier` (matches `cve_id OR rule_id`), `compliance_tag` (text search within the JSON array), `sort_by` (`severity` | `created_at`, default `severity`), `sort_dir` (`asc` | `desc`), `page`, `page_size`. Severity sort uses a SQL `CASE` expression (critical=0 → info=4). The endpoint eagerly loads the `application` relationship via `selectinload` so `application_name` is populated in the response.
+
+### GitHub Repos API
+`GET /api/v1/github/repos` lists all repos accessible to `GITHUB_TOKEN` with tracking status. The underlying PyGitHub call is run via `asyncio.to_thread()` to avoid blocking the async event loop.
+`GET /api/v1/github/repos/lookup?owner=ORG&repo=REPO` fetches metadata for any public (or private, if the token has access) GitHub repository. Works without a `GITHUB_TOKEN` for public repos (unauthenticated GitHub API, 60 req/hr per IP). Used by the "Track Public Repo" modal on `repositories.html`.
 
 ### Integrations API
 `/api/v1/integrations` manages Slack and Jira integration configurations. Config JSON is stored as `Text` in the DB (never returned in API responses — GET responses return `config_summary` with sensitive keys masked as `***`). The full config is returned **only once** on `POST /integrations` (similar to service account token reveal). Notification rules (`/integrations/{id}/rules`) define what triggers notifications: `event_type`, `min_severity`, `finding_types` (empty = all), `application_ids` (empty = all apps). After every scan, `dispatch_finding_notifications` Celery task evaluates all active rules and dispatches to matching integrations. Jira deduplication uses the `jira_issue_links` table — if a finding already has a link for that integration, a comment is added instead of creating a duplicate ticket. The epic crawler (`POST /integrations/jira/{id}/crawl-epic`) uses JQL `parent = "{epic_key}"` to fetch child issues and matches against open findings by CVE ID, `snitch-finding-{id}` label, and package name.
