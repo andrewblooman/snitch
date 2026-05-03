@@ -38,9 +38,11 @@ jobs:
 
       # Scan code and emit SARIF for GitHub Code Scanning
       - name: Run Semgrep
-        run: |
-          pip install semgrep
-          semgrep scan --config auto --sarif --output semgrep.sarif || true
+        uses: semgrep/semgrep-action@v1
+        with:
+          generateSarif: "1"
+        env:
+          SEMGREP_RULES: auto
 
       # Upload SARIF file generated in previous step
       - name: Upload SARIF file

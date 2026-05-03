@@ -250,6 +250,9 @@ async def fetch_github_security_alerts(owner: str, repo: str, token: str | None)
                     pr_num = _extract_pr_number(ref)
                     rule = a.get("rule") or {}
                     tool_name = (a.get("tool") or {}).get("name", "codeql").lower().replace(" ", "_")
+                    # Normalize Semgrep OSS → semgrep so historical and current alerts share the same scanner label
+                    if tool_name == "semgrep_oss":
+                        tool_name = "semgrep"
                     # Determine severity
                     sec_sev = rule.get("security_severity_level") or rule.get("severity") or "warning"
                     severity = _CODE_SCAN_SEVERITY.get(sec_sev.lower(), "medium")
