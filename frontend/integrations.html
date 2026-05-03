@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snitch — Integrations</title>
+  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
+  <link rel="stylesheet" href="/static/css/theme.css">
+  <script src="/static/js/lucide.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    @keyframes fadeInUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    .card { background:linear-gradient(145deg,#0f1b34 0%,#080f1d 100%);border:1px solid rgba(0,229,255,0.14);border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,.55),inset 0 1px 0 rgba(0,229,255,.06); }
+    .page-title { font-size:22px;font-weight:700;color:#f1f5f9;margin:0; }
+    .page-sub { font-size:16px;color:#64748b;margin:4px 0 0; }
+
+    .btn { display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s; }
+    .btn-primary { background:linear-gradient(135deg,#00e5ff,#6366f1);color:#fff; }
+    .btn-primary:hover { opacity:0.88;transform:translateY(-1px); }
+    .btn-ghost { background:transparent;color:#94a3b8;border:1px solid rgba(255,255,255,0.12); }
+    .btn-ghost:hover { border-color:rgba(0,229,255,0.4);color:#00e5ff; }
+    .btn-danger { background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.2); }
+    .btn-danger:hover { background:rgba(239,68,68,0.2); }
+    .btn-sm { padding:5px 11px;font-size:14px; }
+    .btn:disabled { opacity:0.5;cursor:not-allowed;transform:none !important; }
+
+    .badge { display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:13px;font-weight:600; }
+    .badge-ok { background:rgba(0,229,255,0.12);color:#00e5ff;border:1px solid rgba(0,229,255,0.25); }
+    .badge-error { background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.2); }
+    .badge-untested { background:rgba(100,116,139,0.15);color:#94a3b8;border:1px solid rgba(100,116,139,0.25); }
+    .badge-active { background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.25); }
+    .badge-inactive { background:rgba(100,116,139,0.12);color:#64748b;border:1px solid rgba(100,116,139,0.18); }
+    .sev-critical { color:#ff3333; } .sev-high { color:#ff9f43; } .sev-medium { color:#ff6b35; } .sev-low { color:#54a0ff; }
+
+    /* Integration cards */
+    .integration-card { margin-bottom:18px;animation:fadeInUp 0.35s ease both; }
+    .int-header { display:flex;align-items:center;gap:14px;padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.06); }
+    .int-icon { width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px; }
+    .int-icon-slack { background:rgba(79,193,109,0.15);color:#4fc16d; }
+    .int-icon-jira { background:rgba(0,82,204,0.2);color:#4f8bff; }
+    .int-name { font-size:17px;font-weight:700;color:#f1f5f9;flex:1; }
+    .int-actions { display:flex;gap:8px;align-items:center; }
+    .int-meta { font-size:14px;color:#64748b;margin-top:2px; }
+
+    /* Rules table */
+    .rules-panel { padding:0 24px 20px; }
+    .rules-panel-header { display:flex;align-items:center;justify-content:space-between;padding:14px 0 10px;cursor:pointer;user-select:none; }
+    .rules-panel-title { font-size:15px;font-weight:600;color:#94a3b8;display:flex;align-items:center;gap:8px; }
+    table { width:100%;border-collapse:collapse; }
+    th { padding:8px 12px;text-align:left;font-size:13px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid rgba(255,255,255,0.07); }
+    td { padding:11px 12px;font-size:15px;color:#cbd5e1;border-bottom:1px solid rgba(255,255,255,0.04); }
+    tr:last-child td { border-bottom:none; }
+
+    /* Epic crawler */
+    .crawler-panel { padding:0 24px 24px; }
+    .crawler-header { display:flex;align-items:center;justify-content:space-between;padding:14px 0 10px;cursor:pointer;user-select:none; }
+    .crawler-title { font-size:15px;font-weight:600;color:#94a3b8;display:flex;align-items:center;gap:8px; }
+    .epic-input-row { display:flex;gap:10px;margin-bottom:16px; }
+    .epic-input-row .field-input { flex:1; }
+    .crawl-results { margin-top:16px; }
+    .crawl-stat-row { display:flex;gap:12px;margin-bottom:16px; }
+    .crawl-stat { flex:1;text-align:center;padding:12px;border-radius:10px; }
+    .crawl-stat.covered { background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2); }
+    .crawl-stat.uncovered { background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.18); }
+    .crawl-stat.external { background:rgba(100,116,139,0.08);border:1px solid rgba(100,116,139,0.18); }
+    .crawl-stat-num { font-size:26px;font-weight:700;font-family:'Fira Code',monospace; }
+    .crawl-stat-label { font-size:13px;color:#64748b;margin-top:2px; }
+    .plan-box { background:rgba(0,0,0,0.3);border:1px solid rgba(0,229,255,0.12);border-radius:10px;padding:16px 20px;font-family:'Fira Code',monospace;font-size:14px;color:#94a3b8;white-space:pre-wrap;word-break:break-word;max-height:400px;overflow-y:auto;margin-top:12px;line-height:1.6; }
+    .plan-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:8px; }
+    .plan-title { font-size:15px;font-weight:600;color:#f1f5f9; }
+    details { margin-bottom:10px; }
+    details summary { cursor:pointer;padding:8px 0;font-size:15px;font-weight:600;color:#94a3b8;list-style:none;display:flex;align-items:center;gap:6px; }
+    details[open] summary { color:#f1f5f9; }
+
+    /* Modal */
+    .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity 0.2s; }
+    .modal-overlay.open { opacity:1;pointer-events:all; }
+    .modal { background:#0d1117;border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:32px;width:min(560px,92vw);animation:fadeInUp 0.25s ease;max-height:90vh;overflow-y:auto; }
+    .modal-title { font-size:19px;font-weight:700;color:#f1f5f9;margin:0 0 6px; }
+    .modal-sub { font-size:15px;color:#64748b;margin:0 0 22px; }
+    .field-label { font-size:13px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px; }
+    .field-sub { font-size:14px;color:#475569;margin-bottom:8px; }
+    .field-input { width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 14px;color:#f1f5f9;font-size:16px;outline:none;transition:border-color 0.2s; }
+    .field-input:focus { border-color:#00e5ff; }
+    select.field-input { cursor:pointer; }
+    .field-group { margin-bottom:16px; }
+    .token-row { display:flex;gap:8px;align-items:center; }
+    .token-row .field-input { flex:1; }
+    .modal-footer { display:flex;gap:10px;justify-content:flex-end;margin-top:24px; }
+    .type-tabs { display:flex;gap:8px;margin-bottom:22px; }
+    .type-tab { flex:1;padding:10px;border:2px solid rgba(255,255,255,0.1);border-radius:10px;text-align:center;cursor:pointer;font-size:15px;font-weight:600;color:#64748b;background:transparent;transition:all 0.18s; }
+    .type-tab.active { border-color:#00e5ff;color:#00e5ff;background:rgba(0,229,255,0.07); }
+
+    /* Rule modal severity select */
+    .sev-options { display:flex;gap:8px;flex-wrap:wrap;margin-top:4px; }
+    .sev-opt { padding:5px 12px;border-radius:20px;font-size:14px;font-weight:600;cursor:pointer;border:2px solid transparent;transition:all 0.15s; }
+    .sev-opt.critical { background:rgba(255,51,51,0.1);color:#ff3333;border-color:rgba(255,51,51,0.2); }
+    .sev-opt.high { background:rgba(255,159,67,0.1);color:#ff9f43;border-color:rgba(255,159,67,0.2); }
+    .sev-opt.medium { background:rgba(255,107,53,0.1);color:#ff6b35;border-color:rgba(255,107,53,0.2); }
+    .sev-opt.low { background:rgba(84,160,255,0.1);color:#54a0ff;border-color:rgba(84,160,255,0.2); }
+    .sev-opt.selected { border-color:currentColor;box-shadow:0 0 0 3px rgba(currentcolor,0.1); }
+
+    .info-alert { background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);border-radius:10px;padding:14px 18px;font-size:15px;color:#a5b4fc;display:flex;gap:10px;align-items:flex-start;margin-bottom:24px; }
+    .empty-state { text-align:center;padding:48px 24px;color:#475569; }
+    .spinner { width:18px;height:18px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00e5ff;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block; }
+    .status-msg { font-size:14px;margin-top:8px;min-height:18px; }
+    .status-ok { color:#10b981; } .status-err { color:#ef4444; }
+
+    [data-theme="light"] .page-title { color:#0f172a; }
+    [data-theme="light"] .card { background:rgba(255,255,255,0.92);border-color:rgba(0,0,0,0.08); }
+    [data-theme="light"] td { color:#334155; }
+    [data-theme="light"] .modal { background:#fff;border-color:rgba(0,0,0,0.1); }
+    [data-theme="light"] .field-input { background:#f8fafc;border-color:rgba(0,0,0,0.15);color:#0f172a; }
+    [data-theme="light"] .plan-box { background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.1);color:#334155; }
+  </style>
+</head>
+<body style="font-family:var(--font-body,'Fira Sans',system-ui,sans-serif);background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
+
+  <div id="sidebar-mount"></div>
+  <script src="/static/js/sidebar.js"></script>
+  <script src="/static/js/header.js"></script>
+
+  <main style="margin-left:260px;padding:32px;min-height:100vh;">
+    <header style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;">
+      <div>
+        <h1 class="page-title">Integrations</h1>
+        <p class="page-sub">Connect Snitch to Slack and Jira for automatic notifications and issue tracking.</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div id="header-user-slot"></div>
+        <button class="btn btn-primary" onclick="openAddModal()">
+          <i data-lucide="plus" style="width:16px;height:16px;"></i>
+          Add Integration
+        </button>
+      </div>
+    </header>
+
+    <div class="info-alert">
+      <i data-lucide="info" style="width:16px;height:16px;color:#6366f1;"></i>
+      <span>Notifications fire automatically after each scan. Use <strong>Notification Rules</strong> on each integration to filter by severity, app, or finding type. Sensitive credentials are masked after saving and never returned by the API.</span>
+    </div>
+
+    <div id="integrations-list">
+      <div class="empty-state" id="empty-state" style="display:none;">
+        <div style="opacity:0.3;margin-bottom:12px;"><i data-lucide="plug" style="width:48px;height:48px;"></i></div>
+        <div style="font-size:16px;font-weight:600;">No integrations yet</div>
+        <div style="font-size:15px;margin-top:4px;">Add a Slack or Jira integration to get started.</div>
+      </div>
+      <div id="list-spinner" style="text-align:center;padding:40px;"><span class="spinner"></span></div>
+    </div>
+  </main>
+
+  <!-- ===================== ADD / EDIT INTEGRATION MODAL ===================== -->
+  <div class="modal-overlay" id="int-modal">
+    <div class="modal">
+      <h2 class="modal-title" id="int-modal-title">Add Integration</h2>
+      <p class="modal-sub">Configure a new Slack or Jira connection.</p>
+
+      <div class="type-tabs" id="type-tabs">
+        <button class="type-tab active" onclick="selectType('slack')">
+          <i data-lucide="message-square" style="width:14px;height:14px;vertical-align:-2px;margin-right:5px;"></i>Slack
+        </button>
+        <button class="type-tab" onclick="selectType('jira')">
+          <i data-lucide="ticket" style="width:14px;height:14px;vertical-align:-2px;margin-right:5px;"></i>Jira
+        </button>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Integration Name</label>
+        <input class="field-input" type="text" id="int-name" placeholder="e.g. Security Alerts Slack">
+      </div>
+
+      <!-- Slack fields -->
+      <div id="slack-fields">
+        <div class="field-group">
+          <label class="field-label">Webhook URL</label>
+          <p class="field-sub">Create an Incoming Webhook in your Slack App settings.</p>
+          <div class="token-row">
+            <input class="field-input" type="password" id="slack-webhook" placeholder="https://hooks.slack.com/services/…">
+            <button class="btn btn-ghost btn-sm" onclick="toggleVis('slack-webhook')" type="button">
+              <i data-lucide="eye" style="width:14px;height:14px;"></i>
+            </button>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Channel (optional)</label>
+          <input class="field-input" type="text" id="slack-channel" placeholder="#security-alerts">
+        </div>
+      </div>
+
+      <!-- Jira fields -->
+      <div id="jira-fields" style="display:none;">
+        <div class="field-group">
+          <label class="field-label">Jira URL</label>
+          <input class="field-input" type="url" id="jira-url" placeholder="https://yourorg.atlassian.net">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Email</label>
+          <input class="field-input" type="email" id="jira-email" placeholder="you@company.com">
+        </div>
+        <div class="field-group">
+          <label class="field-label">API Token</label>
+          <p class="field-sub">Generate at <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank" style="color:#6366f1;">Atlassian Account Settings</a>.</p>
+          <div class="token-row">
+            <input class="field-input" type="password" id="jira-token" placeholder="ATATT3x…">
+            <button class="btn btn-ghost btn-sm" onclick="toggleVis('jira-token')" type="button">
+              <i data-lucide="eye" style="width:14px;height:14px;"></i>
+            </button>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;">
+          <div class="field-group" style="flex:1;">
+            <label class="field-label">Project Key</label>
+            <input class="field-input" type="text" id="jira-project" placeholder="SEC">
+          </div>
+          <div class="field-group" style="flex:1;">
+            <label class="field-label">Issue Type</label>
+            <select class="field-input" id="jira-issue-type">
+              <option>Bug</option>
+              <option>Task</option>
+              <option>Story</option>
+              <option>Security Vulnerability</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeIntModal()">Cancel</button>
+        <button class="btn btn-primary" id="int-save-btn" onclick="saveIntegration()">Save Integration</button>
+      </div>
+      <div class="status-msg" id="int-save-status"></div>
+    </div>
+  </div>
+
+  <!-- ===================== ADD RULE MODAL ===================== -->
+  <div class="modal-overlay" id="rule-modal">
+    <div class="modal">
+      <h2 class="modal-title">Add Notification Rule</h2>
+      <p class="modal-sub">Define when this integration should fire.</p>
+
+      <input type="hidden" id="rule-integration-id">
+
+      <div class="field-group">
+        <label class="field-label">Rule Name</label>
+        <input class="field-input" type="text" id="rule-name" placeholder="e.g. Critical Findings Alert">
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Event Type</label>
+        <select class="field-input" id="rule-event-type">
+          <option value="new_finding">New Finding</option>
+          <option value="scan_complete">Scan Complete</option>
+          <option value="risk_spike">Risk Score Spike</option>
+          <option value="policy_violation">Policy Violation</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Minimum Severity</label>
+        <div class="sev-options">
+          <span class="sev-opt critical" onclick="selectSev(this,'critical')">Critical</span>
+          <span class="sev-opt high selected" onclick="selectSev(this,'high')">High</span>
+          <span class="sev-opt medium" onclick="selectSev(this,'medium')">Medium</span>
+          <span class="sev-opt low" onclick="selectSev(this,'low')">Low</span>
+        </div>
+        <input type="hidden" id="rule-min-severity" value="high">
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Scope</label>
+        <select class="field-input" id="rule-scope">
+          <option value="all">All Applications</option>
+        </select>
+        <p class="field-sub" style="margin-top:6px;">Select "All Applications" or choose specific apps (hold Ctrl/Cmd for multi-select).</p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeRuleModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveRule()">Save Rule</button>
+      </div>
+      <div class="status-msg" id="rule-save-status"></div>
+    </div>
+  </div>
+
+  <!-- ===================== EPIC CRAWLER MODAL ===================== -->
+  <div class="modal-overlay" id="crawler-modal">
+    <div class="modal" style="width:min(720px,94vw);">
+      <h2 class="modal-title">Jira Epic Crawler</h2>
+      <p class="modal-sub">Crawl epic child issues, match against Snitch findings, and generate an AI remediation plan for gaps.</p>
+
+      <input type="hidden" id="crawler-integration-id">
+      <div class="field-group">
+        <label class="field-label">Epic Key(s)</label>
+        <p class="field-sub">Enter one or more Jira epic keys separated by commas (e.g. <code style="font-family:monospace">SEC-42, SEC-43</code>).</p>
+        <input class="field-input" type="text" id="crawler-epics" placeholder="SEC-42, SEC-43">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Scope (optional)</label>
+        <select class="field-input" id="crawler-app">
+          <option value="">All Applications</option>
+        </select>
+      </div>
+
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;">
+        <button class="btn btn-primary" id="crawl-btn" onclick="runCrawl()">
+          <i data-lucide="search" style="width:15px;height:15px;"></i>
+          Crawl Epics
+        </button>
+        <span id="crawl-spinner" style="display:none;"><span class="spinner"></span></span>
+        <span id="crawl-status" class="status-msg" style="margin:0;"></span>
+      </div>
+
+      <div id="crawl-results" style="display:none;">
+        <div class="crawl-stat-row">
+          <div class="crawl-stat covered">
+            <div class="crawl-stat-num" id="stat-covered" style="color:#10b981;">0</div>
+            <div class="crawl-stat-label">Covered by Jira</div>
+          </div>
+          <div class="crawl-stat uncovered">
+            <div class="crawl-stat-num" id="stat-uncovered" style="color:#ef4444;">0</div>
+            <div class="crawl-stat-label">No Jira Issue</div>
+          </div>
+          <div class="crawl-stat external">
+            <div class="crawl-stat-num" id="stat-external" style="color:#94a3b8;">0</div>
+            <div class="crawl-stat-label">External Jira Issues</div>
+          </div>
+        </div>
+
+        <details id="uncovered-details">
+          <summary><i data-lucide="alert-triangle" style="width:14px;height:14px;color:#ef4444;"></i> Uncovered Findings (need Jira issues)</summary>
+          <div id="uncovered-table" style="margin-top:8px;"></div>
+        </details>
+
+        <details id="covered-details">
+          <summary><i data-lucide="check-circle" style="width:14px;height:14px;color:#10b981;"></i> Covered Findings</summary>
+          <div id="covered-table" style="margin-top:8px;"></div>
+        </details>
+
+        <details id="external-details">
+          <summary><i data-lucide="external-link" style="width:14px;height:14px;color:#94a3b8;"></i> External Jira Issues (not matched to Snitch findings)</summary>
+          <div id="external-table" style="margin-top:8px;"></div>
+        </details>
+
+        <div class="plan-header" style="margin-top:18px;">
+          <span class="plan-title"><i data-lucide="sparkles" style="width:14px;height:14px;color:#6366f1;vertical-align:-2px;margin-right:5px;"></i>AI Remediation Plan</span>
+          <button class="btn btn-ghost btn-sm" id="copy-plan-btn" onclick="copyPlan()">
+            <i data-lucide="copy" style="width:13px;height:13px;"></i> Copy
+          </button>
+        </div>
+        <div class="plan-box" id="plan-text"></div>
+
+        <div style="margin-top:14px;display:flex;gap:10px;">
+          <button class="btn btn-primary btn-sm" id="create-uncovered-btn" onclick="createUncoveredIssues()" style="display:none;">
+            <i data-lucide="ticket-plus" style="width:14px;height:14px;"></i>
+            Create Jira Issues for Uncovered
+          </button>
+        </div>
+        <div class="status-msg" id="bulk-create-status"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeCrawlerModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // ─── State ────────────────────────────────────────────────────────────────
+  var integrations = [];
+  var applications = [];
+  var editingIntId = null;
+  var currentType = 'slack';
+  var crawlData = null;
+
+  function getToken() {
+    return localStorage.getItem('snitch_sa_token') || '';
+  }
+
+  function authHeaders() {
+    var t = getToken();
+    return t ? { 'Authorization': 'Bearer ' + t, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+  }
+
+  // ─── Init ─────────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    loadIntegrations();
+    loadApplications();
+    if (window.lucide) lucide.createIcons();
+  });
+
+  async function loadIntegrations() {
+    try {
+      var resp = await fetch('/api/v1/integrations', { headers: authHeaders() });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      integrations = await resp.json();
+    } catch(e) {
+      integrations = [];
+    }
+    renderList();
+  }
+
+  async function loadApplications() {
+    try {
+      var resp = await fetch('/api/v1/applications?page_size=100', { headers: authHeaders() });
+      if (!resp.ok) return;
+      var data = await resp.json();
+      applications = data.items || [];
+      populateAppSelects();
+    } catch(e) {}
+  }
+
+  function populateAppSelects() {
+    ['rule-scope', 'crawler-app'].forEach(function(id) {
+      var sel = document.getElementById(id);
+      if (!sel) return;
+      var isScope = id === 'rule-scope';
+      var existing = sel.innerHTML;
+      var html = isScope ? '<option value="all">All Applications</option>' : '<option value="">All Applications</option>';
+      applications.forEach(function(a) {
+        html += '<option value="' + a.id + '">' + escHtml(a.name) + '</option>';
+      });
+      sel.innerHTML = html;
+    });
+  }
+
+  // ─── Render ───────────────────────────────────────────────────────────────
+  function renderList() {
+    document.getElementById('list-spinner').style.display = 'none';
+    var container = document.getElementById('integrations-list');
+    var empty = document.getElementById('empty-state');
+
+    // Remove old cards
+    container.querySelectorAll('.integration-card').forEach(function(c) { c.remove(); });
+
+    if (!integrations.length) {
+      empty.style.display = 'block';
+      if (window.lucide) lucide.createIcons();
+      return;
+    }
+    empty.style.display = 'none';
+
+    integrations.forEach(function(intg) {
+      var card = renderIntegrationCard(intg);
+      container.appendChild(card);
+    });
+    if (window.lucide) lucide.createIcons();
+  }
+
+  function renderIntegrationCard(intg) {
+    var isSlack = intg.type === 'slack';
+    var statusBadge = intg.last_test_status === 'ok'
+      ? '<span class="badge badge-ok"><i data-lucide="check-circle-2" style="width:11px;height:11px;"></i> Connected</span>'
+      : intg.last_test_status === 'error'
+        ? '<span class="badge badge-error"><i data-lucide="x-circle" style="width:11px;height:11px;"></i> Error</span>'
+        : '<span class="badge badge-untested">Untested</span>';
+    var activeBadge = intg.is_active
+      ? '<span class="badge badge-active">Active</span>'
+      : '<span class="badge badge-inactive">Inactive</span>';
+
+    var div = document.createElement('div');
+    div.className = 'card integration-card';
+    div.dataset.id = intg.id;
+
+    var iconClass = isSlack ? 'int-icon-slack' : 'int-icon-jira';
+    var iconName = isSlack ? 'message-square' : 'ticket';
+    var typeLabel = isSlack ? 'Slack' : 'Jira';
+    var metaInfo = intg.last_tested_at
+      ? 'Tested ' + new Date(intg.last_tested_at).toLocaleString()
+      : 'Never tested';
+
+    var crawlerBtn = !isSlack
+      ? '<button class="btn btn-ghost btn-sm" onclick="openCrawlerModal(\'' + intg.id + '\')"><i data-lucide="search" style="width:13px;height:13px;"></i> Epic Crawler</button>'
+      : '';
+
+    div.innerHTML =
+      '<div class="int-header">' +
+        '<div class="int-icon ' + iconClass + '"><i data-lucide="' + iconName + '" style="width:20px;height:20px;"></i></div>' +
+        '<div style="flex:1;">' +
+          '<div class="int-name">' + escHtml(intg.name) + '</div>' +
+          '<div class="int-meta">' + typeLabel + ' · ' + metaInfo + '</div>' +
+        '</div>' +
+        '<div class="int-actions">' + statusBadge + ' ' + activeBadge + '</div>' +
+        '<div class="int-actions" style="margin-left:12px;">' +
+          crawlerBtn +
+          '<button class="btn btn-ghost btn-sm" onclick="testIntegration(\'' + intg.id + '\', this)"><i data-lucide="zap" style="width:13px;height:13px;"></i> Test</button>' +
+          '<button class="btn btn-ghost btn-sm" onclick="openEditModal(\'' + intg.id + '\')"><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>' +
+          '<button class="btn btn-danger btn-sm" onclick="deleteIntegration(\'' + intg.id + '\')"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="rules-panel">' +
+        '<div class="rules-panel-header" onclick="toggleRules(\'' + intg.id + '\')">' +
+          '<span class="rules-panel-title"><i data-lucide="bell" style="width:13px;height:13px;"></i> Notification Rules</span>' +
+          '<div style="display:flex;align-items:center;gap:8px;">' +
+            '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openRuleModal(\'' + intg.id + '\')" style="font-size:13px;">+ Add Rule</button>' +
+            '<i data-lucide="chevron-down" style="width:14px;height:14px;" id="rules-chevron-' + intg.id + '"></i>' +
+          '</div>' +
+        '</div>' +
+        '<div id="rules-body-' + intg.id + '" style="display:none;"></div>' +
+      '</div>';
+
+    return div;
+  }
+
+  function toggleRules(intId) {
+    var body = document.getElementById('rules-body-' + intId);
+    var chevron = document.getElementById('rules-chevron-' + intId);
+    if (body.style.display === 'none') {
+      body.style.display = 'block';
+      loadRules(intId, body);
+      if (chevron) chevron.setAttribute('data-lucide', 'chevron-up');
+    } else {
+      body.style.display = 'none';
+      if (chevron) chevron.setAttribute('data-lucide', 'chevron-down');
+    }
+    if (window.lucide) lucide.createIcons();
+  }
+
+  async function loadRules(intId, container) {
+    container.innerHTML = '<div style="padding:8px 0;color:#64748b;font-size:14px;">Loading…</div>';
+    try {
+      var resp = await fetch('/api/v1/integrations/' + intId + '/rules', { headers: authHeaders() });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      var rules = await resp.json();
+      if (!rules.length) {
+        container.innerHTML = '<div style="padding:8px 0 4px;color:#64748b;font-size:14px;">No rules yet. Click "+ Add Rule" to create one.</div>';
+        return;
+      }
+      var html = '<table><thead><tr><th>Name</th><th>Event</th><th>Min Severity</th><th>Scope</th><th>Status</th><th></th></tr></thead><tbody>';
+      rules.forEach(function(r) {
+        var scope = (!r.application_ids || !r.application_ids.length) ? 'All apps' : r.application_ids.length + ' app(s)';
+        var sevClass = 'sev-' + r.min_severity;
+        html += '<tr>' +
+          '<td>' + escHtml(r.name) + '</td>' +
+          '<td style="color:#94a3b8;">' + r.event_type.replace(/_/g,' ') + '</td>' +
+          '<td><span class="' + sevClass + '" style="font-weight:600;">' + r.min_severity + '</span></td>' +
+          '<td style="color:#94a3b8;">' + scope + '</td>' +
+          '<td>' + (r.is_active ? '<span class="badge badge-active">On</span>' : '<span class="badge badge-inactive">Off</span>') + '</td>' +
+          '<td><button class="btn btn-danger btn-sm" onclick="deleteRule(\'' + intId + '\',\'' + r.id + '\',this)"><i data-lucide="trash-2" style="width:12px;height:12px;"></i></button></td>' +
+          '</tr>';
+      });
+      html += '</tbody></table>';
+      container.innerHTML = html;
+      if (window.lucide) lucide.createIcons();
+    } catch(e) {
+      container.innerHTML = '<div style="color:#ef4444;font-size:14px;padding:6px 0;">Failed to load rules</div>';
+    }
+  }
+
+  // ─── Integration CRUD ─────────────────────────────────────────────────────
+  function openAddModal() {
+    editingIntId = null;
+    document.getElementById('int-modal-title').textContent = 'Add Integration';
+    document.getElementById('int-name').value = '';
+    document.getElementById('slack-webhook').value = '';
+    document.getElementById('slack-channel').value = '';
+    document.getElementById('jira-url').value = '';
+    document.getElementById('jira-email').value = '';
+    document.getElementById('jira-token').value = '';
+    document.getElementById('jira-project').value = '';
+    document.getElementById('int-save-status').textContent = '';
+    selectType('slack');
+    document.getElementById('int-modal').classList.add('open');
+  }
+
+  function openEditModal(intId) {
+    editingIntId = intId;
+    var intg = integrations.find(function(i) { return i.id === intId; });
+    if (!intg) return;
+    document.getElementById('int-modal-title').textContent = 'Edit Integration';
+    document.getElementById('int-name').value = intg.name;
+    var cs = intg.config_summary || {};
+    document.getElementById('slack-webhook').value = cs.webhook_url || '';
+    document.getElementById('slack-channel').value = cs.channel || '';
+    document.getElementById('jira-url').value = cs.jira_url || '';
+    document.getElementById('jira-email').value = cs.email || '';
+    document.getElementById('jira-token').value = '';  // never pre-fill token
+    document.getElementById('jira-project').value = cs.project_key || '';
+    if (cs.issue_type) {
+      document.getElementById('jira-issue-type').value = cs.issue_type;
+    }
+    document.getElementById('int-save-status').textContent = '';
+    selectType(intg.type);
+    // Disable type switch when editing
+    document.getElementById('type-tabs').style.pointerEvents = 'none';
+    document.getElementById('type-tabs').style.opacity = '0.5';
+    document.getElementById('int-modal').classList.add('open');
+  }
+
+  function closeIntModal() {
+    document.getElementById('int-modal').classList.remove('open');
+    document.getElementById('type-tabs').style.pointerEvents = '';
+    document.getElementById('type-tabs').style.opacity = '';
+  }
+
+  function selectType(type) {
+    currentType = type;
+    document.querySelectorAll('.type-tab').forEach(function(t, i) {
+      t.classList.toggle('active', (i === 0 && type === 'slack') || (i === 1 && type === 'jira'));
+    });
+    document.getElementById('slack-fields').style.display = type === 'slack' ? 'block' : 'none';
+    document.getElementById('jira-fields').style.display = type === 'jira' ? 'block' : 'none';
+  }
+
+  async function saveIntegration() {
+    var name = document.getElementById('int-name').value.trim();
+    if (!name) { setStatus('int-save-status', 'Name is required', 'err'); return; }
+
+    var config = {};
+    if (currentType === 'slack') {
+      var wh = document.getElementById('slack-webhook').value.trim();
+      if (!wh && !editingIntId) { setStatus('int-save-status', 'Webhook URL is required', 'err'); return; }
+      if (wh) config.webhook_url = wh;
+      var ch = document.getElementById('slack-channel').value.trim();
+      if (ch) config.channel = ch;
+    } else {
+      config.jira_url = document.getElementById('jira-url').value.trim();
+      config.email = document.getElementById('jira-email').value.trim();
+      var tok = document.getElementById('jira-token').value.trim();
+      if (tok) config.api_token = tok; else if (!editingIntId) { setStatus('int-save-status', 'API token is required', 'err'); return; }
+      config.project_key = document.getElementById('jira-project').value.trim().toUpperCase();
+      config.issue_type = document.getElementById('jira-issue-type').value;
+      if (!config.jira_url || !config.email || !config.project_key) {
+        setStatus('int-save-status', 'Jira URL, email, and project key are required', 'err'); return;
+      }
+    }
+
+    var btn = document.getElementById('int-save-btn');
+    btn.disabled = true;
+    setStatus('int-save-status', '', '');
+
+    try {
+      var url = editingIntId ? '/api/v1/integrations/' + editingIntId : '/api/v1/integrations';
+      var method = editingIntId ? 'PUT' : 'POST';
+      var resp = await fetch(url, {
+        method: method,
+        headers: authHeaders(),
+        body: JSON.stringify({ type: currentType, name: name, config: config }),
+      });
+      if (!resp.ok) {
+        var err = await resp.json().catch(function() { return {}; });
+        throw new Error(err.detail || 'HTTP ' + resp.status);
+      }
+      await loadIntegrations();
+      closeIntModal();
+    } catch(e) {
+      setStatus('int-save-status', 'Error: ' + e.message, 'err');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  async function deleteIntegration(intId) {
+    if (!confirm('Delete this integration? All notification rules and Jira issue links will also be removed.')) return;
+    try {
+      await fetch('/api/v1/integrations/' + intId, { method: 'DELETE', headers: authHeaders() });
+      await loadIntegrations();
+    } catch(e) { alert('Delete failed: ' + e.message); }
+  }
+
+  async function testIntegration(intId, btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;"></span>';
+    try {
+      var resp = await fetch('/api/v1/integrations/' + intId + '/test', { method: 'POST', headers: authHeaders() });
+      var data = await resp.json();
+      alert(data.success ? '✅ ' + data.message : '❌ ' + data.message);
+      await loadIntegrations();
+    } catch(e) {
+      alert('Test failed: ' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="zap" style="width:13px;height:13px;"></i> Test';
+      if (window.lucide) lucide.createIcons();
+    }
+  }
+
+  // ─── Rules ────────────────────────────────────────────────────────────────
+  function openRuleModal(intId) {
+    document.getElementById('rule-integration-id').value = intId;
+    document.getElementById('rule-name').value = '';
+    document.getElementById('rule-event-type').value = 'new_finding';
+    document.getElementById('rule-min-severity').value = 'high';
+    document.getElementById('rule-save-status').textContent = '';
+    document.querySelectorAll('.sev-opt').forEach(function(el) {
+      el.classList.toggle('selected', el.dataset.sev === 'high' || el.textContent.toLowerCase() === 'high');
+    });
+    document.getElementById('rule-modal').classList.add('open');
+  }
+
+  function closeRuleModal() {
+    document.getElementById('rule-modal').classList.remove('open');
+  }
+
+  function selectSev(el, sev) {
+    document.querySelectorAll('.sev-opt').forEach(function(o) { o.classList.remove('selected'); });
+    el.classList.add('selected');
+    document.getElementById('rule-min-severity').value = sev;
+  }
+
+  async function saveRule() {
+    var intId = document.getElementById('rule-integration-id').value;
+    var name = document.getElementById('rule-name').value.trim();
+    if (!name) { setStatus('rule-save-status', 'Name is required', 'err'); return; }
+
+    var scopeEl = document.getElementById('rule-scope');
+    var appIds = [];
+    if (scopeEl.value && scopeEl.value !== 'all') appIds = [scopeEl.value];
+
+    var body = {
+      name: name,
+      event_type: document.getElementById('rule-event-type').value,
+      min_severity: document.getElementById('rule-min-severity').value,
+      finding_types: [],
+      application_ids: appIds,
+    };
+
+    try {
+      var resp = await fetch('/api/v1/integrations/' + intId + '/rules', {
+        method: 'POST', headers: authHeaders(), body: JSON.stringify(body),
+      });
+      if (!resp.ok) { var e = await resp.json().catch(function(){return{};}); throw new Error(e.detail || 'HTTP ' + resp.status); }
+      closeRuleModal();
+      // Reload rules in the open panel
+      var body2 = document.getElementById('rules-body-' + intId);
+      if (body2 && body2.style.display !== 'none') loadRules(intId, body2);
+    } catch(e) {
+      setStatus('rule-save-status', 'Error: ' + e.message, 'err');
+    }
+  }
+
+  async function deleteRule(intId, ruleId, btn) {
+    if (!confirm('Delete this rule?')) return;
+    btn.disabled = true;
+    try {
+      await fetch('/api/v1/integrations/' + intId + '/rules/' + ruleId, { method: 'DELETE', headers: authHeaders() });
+      var body = document.getElementById('rules-body-' + intId);
+      if (body) loadRules(intId, body);
+    } catch(e) {
+      alert('Delete failed: ' + e.message);
+    } finally { btn.disabled = false; }
+  }
+
+  // ─── Epic Crawler ─────────────────────────────────────────────────────────
+  function openCrawlerModal(intId) {
+    document.getElementById('crawler-integration-id').value = intId;
+    document.getElementById('crawler-epics').value = '';
+    document.getElementById('crawl-results').style.display = 'none';
+    document.getElementById('crawl-status').textContent = '';
+    document.getElementById('bulk-create-status').textContent = '';
+    crawlData = null;
+    document.getElementById('crawler-modal').classList.add('open');
+    if (window.lucide) lucide.createIcons();
+  }
+
+  function closeCrawlerModal() {
+    document.getElementById('crawler-modal').classList.remove('open');
+  }
+
+  async function runCrawl() {
+    var intId = document.getElementById('crawler-integration-id').value;
+    var epicsRaw = document.getElementById('crawler-epics').value.trim();
+    if (!epicsRaw) { setStatus('crawl-status', 'Enter at least one epic key', 'err'); return; }
+
+    var epicKeys = epicsRaw.split(',').map(function(k) { return k.trim().toUpperCase(); }).filter(Boolean);
+    var appId = document.getElementById('crawler-app').value || null;
+
+    document.getElementById('crawl-btn').disabled = true;
+    document.getElementById('crawl-spinner').style.display = 'inline';
+    document.getElementById('crawl-results').style.display = 'none';
+    setStatus('crawl-status', 'Crawling epics and matching findings…', '');
+
+    try {
+      var body = { epic_keys: epicKeys };
+      if (appId) body.application_id = appId;
+      var resp = await fetch('/api/v1/integrations/jira/' + intId + '/crawl-epic', {
+        method: 'POST', headers: authHeaders(), body: JSON.stringify(body),
+      });
+      if (!resp.ok) { var e = await resp.json().catch(function(){return{};}); throw new Error(e.detail || 'HTTP ' + resp.status); }
+      crawlData = await resp.json();
+      renderCrawlResults(crawlData, intId);
+      setStatus('crawl-status', '', '');
+    } catch(e) {
+      setStatus('crawl-status', 'Error: ' + e.message, 'err');
+    } finally {
+      document.getElementById('crawl-btn').disabled = false;
+      document.getElementById('crawl-spinner').style.display = 'none';
+    }
+  }
+
+  function renderCrawlResults(data, intId) {
+    document.getElementById('stat-covered').textContent = data.covered.length;
+    document.getElementById('stat-uncovered').textContent = data.uncovered.length;
+    document.getElementById('stat-external').textContent = data.external.length;
+
+    // Uncovered table
+    var ut = document.getElementById('uncovered-table');
+    if (data.uncovered.length) {
+      var html = '<table><thead><tr><th>Severity</th><th>Title</th><th>CVE / Package</th></tr></thead><tbody>';
+      data.uncovered.forEach(function(f) {
+        var id = f.cve_id || (f.package_name ? f.package_name : '—');
+        html += '<tr><td><span class="sev-' + f.severity + '" style="font-weight:700;">' + f.severity.toUpperCase() + '</span></td><td>' + escHtml(f.title) + '</td><td style="font-family:monospace;font-size:14px;color:#00e5ff;">' + escHtml(id) + '</td></tr>';
+      });
+      html += '</tbody></table>';
+      ut.innerHTML = html;
+      document.getElementById('create-uncovered-btn').style.display = 'inline-flex';
+      document.getElementById('create-uncovered-btn').dataset.intId = intId;
+    } else {
+      ut.innerHTML = '<p style="color:#10b981;font-size:15px;">All findings have Jira coverage!</p>';
+      document.getElementById('create-uncovered-btn').style.display = 'none';
+    }
+
+    // Covered table
+    var ct = document.getElementById('covered-table');
+    if (data.covered.length) {
+      var html2 = '<table><thead><tr><th>Severity</th><th>Title</th></tr></thead><tbody>';
+      data.covered.forEach(function(f) {
+        html2 += '<tr><td><span class="sev-' + f.severity + '" style="font-weight:700;">' + f.severity.toUpperCase() + '</span></td><td>' + escHtml(f.title) + '</td></tr>';
+      });
+      html2 += '</tbody></table>';
+      ct.innerHTML = html2;
+    } else {
+      ct.innerHTML = '<p style="color:#64748b;font-size:15px;">No matched findings.</p>';
+    }
+
+    // External table
+    var et = document.getElementById('external-table');
+    if (data.external.length) {
+      var html3 = '<table><thead><tr><th>Key</th><th>Summary</th><th>Status</th></tr></thead><tbody>';
+      data.external.forEach(function(e) {
+        html3 += '<tr><td><a href="' + escHtml(e.url) + '" target="_blank" style="color:#6366f1;font-family:monospace;">' + escHtml(e.key) + '</a></td><td>' + escHtml(e.summary) + '</td><td style="color:#94a3b8;">' + escHtml(e.status) + '</td></tr>';
+      });
+      html3 += '</tbody></table>';
+      et.innerHTML = html3;
+    } else {
+      et.innerHTML = '<p style="color:#64748b;font-size:15px;">No unmatched external issues.</p>';
+    }
+
+    // AI plan
+    document.getElementById('plan-text').textContent = data.remediation_plan || '(no plan generated)';
+
+    document.getElementById('crawl-results').style.display = 'block';
+    if (window.lucide) lucide.createIcons();
+    // Auto-open uncovered if there are any
+    if (data.uncovered.length) document.getElementById('uncovered-details').open = true;
+  }
+
+  async function createUncoveredIssues() {
+    if (!crawlData || !crawlData.uncovered.length) return;
+    var btn = document.getElementById('create-uncovered-btn');
+    var intId = btn.dataset.intId;
+    btn.disabled = true;
+    setStatus('bulk-create-status', 'Creating Jira issues…', '');
+
+    var created = 0, skipped = 0, errors = 0;
+    for (var i = 0; i < crawlData.uncovered.length; i++) {
+      var f = crawlData.uncovered[i];
+      try {
+        var resp = await fetch('/api/v1/integrations/jira/' + intId + '/create-issue', {
+          method: 'POST', headers: authHeaders(), body: JSON.stringify({ finding_id: f.finding_id }),
+        });
+        if (resp.status === 409) { skipped++; continue; }
+        if (!resp.ok) { errors++; continue; }
+        created++;
+      } catch(e) { errors++; }
+    }
+    setStatus('bulk-create-status', 'Done — ' + created + ' created, ' + skipped + ' already existed, ' + errors + ' errors', errors ? 'err' : 'ok');
+    btn.disabled = false;
+  }
+
+  function copyPlan() {
+    var text = document.getElementById('plan-text').textContent;
+    navigator.clipboard.writeText(text).then(function() {
+      document.getElementById('copy-plan-btn').innerHTML = '<i data-lucide="check" style="width:13px;height:13px;"></i> Copied';
+      setTimeout(function() {
+        document.getElementById('copy-plan-btn').innerHTML = '<i data-lucide="copy" style="width:13px;height:13px;"></i> Copy';
+        if (window.lucide) lucide.createIcons();
+      }, 2000);
+      if (window.lucide) lucide.createIcons();
+    });
+  }
+
+  // ─── Helpers ─────────────────────────────────────────────────────────────
+  function toggleVis(id) {
+    var el = document.getElementById(id);
+    el.type = el.type === 'password' ? 'text' : 'password';
+  }
+
+  function setStatus(id, msg, type) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = msg;
+    el.className = 'status-msg' + (type === 'ok' ? ' status-ok' : type === 'err' ? ' status-err' : '');
+  }
+
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  // Close modals on overlay click
+  ['int-modal','rule-modal','crawler-modal'].forEach(function(id) {
+    document.getElementById(id).addEventListener('click', function(e) {
+      if (e.target === this) {
+        this.classList.remove('open');
+      }
+    });
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.open').forEach(function(m) { m.classList.remove('open'); });
+    }
+  });
+  </script>
+</body>
+</html>

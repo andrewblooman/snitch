@@ -598,12 +598,12 @@ class RealScannerService:
 import random
 
 GITLEAKS_RULES = [
-    ("aws-access-token", "AWS Access Key", "AKIA1234567890ABCDEF", "config/aws.py"),
-    ("github-pat", "GitHub Personal Access Token", "ghp_1234567890abcdef", ".env"),
-    ("generic-api-key", "Generic API Key", "api_key_xYzAbC123456", "src/config.py"),
-    ("stripe-access-token", "Stripe API Key", "sk_live_123456789abc", "payments/client.py"),
-    ("slack-webhook", "Slack Webhook URL", "https://hooks.slack.com/services/T00/B00/xxx", "notify.py"),
-    ("private-key", "Private Key", "-----BEGIN RSA PRIVATE KEY-----", "certs/server.key"),
+    ("aws-access-token", "AWS Access Key", "<redacted-mock-value>", "config/aws.py"),
+    ("github-pat", "GitHub Personal Access Token", "<redacted-mock-value>", ".env"),
+    ("generic-api-key", "Generic API Key", "<redacted-mock-value>", "src/config.py"),
+    ("stripe-access-token", "Stripe API Key", "<redacted-mock-value>", "payments/client.py"),
+    ("slack-webhook", "Slack Webhook URL", "<redacted-mock-value>", "notify.py"),
+    ("private-key", "Private Key", "<redacted-mock-value>", "certs/server.key"),
 ]
 
 SEMGREP_RULES = [
