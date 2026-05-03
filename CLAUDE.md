@@ -33,6 +33,11 @@ Snitch is an AppSec platform that aggregates security findings from Semgrep (SAS
 - **EPSS Integration** — after each scan, CVE-bearing findings have their Exploit Prediction Scoring System (EPSS) score and percentile fetched from first.org and stored on the finding. The risk score calculator applies a boost (+15 or +5 pts) for findings with high EPSS percentiles.
 - **SBOM Generation** — `GET /api/v1/applications/{id}/sbom` returns a CycloneDX v1.4 JSON SBOM of all SCA/container findings for an application.
 
+**New features (v1.7+):**
+- **Integrations** (`/integrations.html`) — configure Slack (incoming webhook) and Jira (REST API v3) integrations. Notifications fire automatically after every scan via Celery. Per-integration **Notification Rules** filter by event type (new finding, scan complete, risk spike, policy violation), minimum severity, finding type, and app scope. Jira integration includes deduplication (no duplicate tickets per finding) — if a finding already has a Jira issue, a comment is added instead.
+- **Jira Epic Crawler** — input one or more Jira epic keys; Snitch crawls child issues, matches against open Snitch findings (by CVE ID, `snitch-finding-{id}` label, and package name), and classifies findings as: **Covered** (have a Jira issue), **Uncovered** (need a Jira issue), or **External** (Jira issues with no matching Snitch finding). Generates an AI remediation plan (Claude) for uncovered findings with suggested Jira issue titles, effort estimates, and thematic groupings. Bulk "Create Jira Issues for Uncovered" button available from the crawler UI.
+- **Security fixes** — `defusedxml` replaces `xml.etree.ElementTree` for RSS feed parsing (XXE prevention); ReDoS-safe regex validation in secrets patterns endpoint using `ThreadPoolExecutor` with 2-second timeout.
+
 **Design System:** The UI follows a cybersecurity HUD aesthetic — near-black page background (`#03040c`), cards with `linear-gradient(145deg, #0f1b34, #080f1d)` and a `rgba(0,229,255,0.14)` cyan border, electric cyan accent `#00e5ff`, and **Fira Code** monospace font for all metric numbers, labels, and headings. These are injected globally via `sidebar.js`. The dashboard and app-detail pages use a "Threat Intelligence Strip" (horizontal panel) instead of four stat tiles — severity counts in 52px Fira Code with a dynamic threat-level indicator and SVG arc gauge. Do not revert to generic SaaS tile layouts. Design tokens live in `frontend/static/css/theme.css`; new cybersecurity utility classes (`.mono-id`, `.terminal-label`, `.card-threat-c/h/m/l`, `.threat-pulse`, `.scan-line`, `.glitch-hover`) are defined there too.
 
 The sidebar is a shared JS component defined in `frontend/static/js/sidebar.js`. Each HTML page uses `<div id="sidebar-mount"></div>` followed by `<script src="/static/js/sidebar.js"></script>` — the script renders the full sidebar, auto-detects the active nav link, injects Google Fonts (Fira Code + Fira Sans), and defines `window.applyTheme()`. Do not duplicate sidebar HTML across pages; edit `sidebar.js` for any sidebar changes.
@@ -95,13 +100,14 @@ backend/app/
 ├── main.py          # FastAPI app, CORS, static mount, lifespan (creates tables on startup)
 ├── core/config.py   # pydantic-settings: DATABASE_URL, GITHUB_TOKEN, ANTHROPIC_API_KEY, REDIS_URL
 ├── db/session.py    # async SQLAlchemy engine + get_db() dependency
-├── models/          # SQLAlchemy ORM: Application, Scan, Finding, Remediation, CiCdScan, Policy, SecretPattern
+├── models/          # SQLAlchemy ORM: Application, Scan, Finding, Remediation, CiCdScan, Policy, SecretPattern,
+│                    #                 Integration, NotificationRule, JiraIssueLink
 ├── schemas/         # Pydantic request/response schemas (mirrors models/)
 ├── api/v1/          # Route handlers; all mounted under /api/v1/ via router.py
 │   │                # includes: applications, findings, scans, remediation, reports,
 │   │                #           cicd_scans, policies, secrets, github, seed, rules,
-│   │                #           service_accounts, auth, threat_intel
-├── worker/          # Celery task definitions (scans, periodic scheduled jobs, EPSS fetch)
+│   │                #           service_accounts, auth, threat_intel, integrations
+├── worker/          # Celery task definitions (scans, EPSS fetch, notification dispatch)
 └── services/
     ├── scanner.py         # Semgrep/Trivy/Govulncheck/Gitleaks/Checkov/Grype + MockScannerService
     ├── scoring.py         # Risk score calculator (includes EPSS boost)
@@ -112,6 +118,9 @@ backend/app/
     ├── ai_remediation.py  # Claude integration; falls back to mock plan if no API key
     ├── github_service.py  # GitHub code scanning sync + branch/PR creation via PyGitHub
     ├── compliance.py      # 30 compliance mapping rules across OWASP/PCI-DSS/CIS/DORA/SOC2
+    ├── slack_service.py   # Slack Block Kit notifications via incoming webhook (httpx)
+    ├── jira_service.py    # Jira REST API v3 client — create issues, crawl epics, dedup via JiraIssueLink
+    └── epic_remediation.py # AI remediation plan generator for uncovered findings from Jira epic crawl
     └── epss.py            # Async EPSS score fetcher from api.first.org
 ```
 
@@ -174,7 +183,10 @@ Uses `claude-3-5-sonnet-20241022` with extended thinking (`budget_tokens=10000`)
 Loaded from `.env` via `pydantic-settings`. See `.env.example`. Optional: `GITHUB_TOKEN`, `ANTHROPIC_API_KEY`. `DATABASE_URL` defaults to the Docker Compose PostgreSQL instance.
 
 ### Database Migrations
-The migration `c2b28485c8a7_add_epss_and_compliance` adds `epss_score` (Float), `epss_percentile` (Float), and `compliance_tags` (JSON) to the `findings` table. Always run `alembic upgrade head` inside the backend container after pulling changes that include new migrations. **After applying a migration that adds columns to a model already in use, restart the Celery worker container** (`docker restart snitch-worker-1`) — the worker forks processes at startup and will have a stale SQLAlchemy mapper that doesn't know about the new columns, causing `AttributeError` on access.
+The migration `c2b28485c8a7_add_epss_and_compliance` adds `epss_score` (Float), `epss_percentile` (Float), and `compliance_tags` (JSON) to the `findings` table. The migration `009_add_integrations` creates the `integrations`, `notification_rules`, and `jira_issue_links` tables. Always run `alembic upgrade head` inside the backend container after pulling changes that include new migrations. **After applying a migration that adds columns to a model already in use, restart the Celery worker container** (`docker restart snitch-worker-1`) — the worker forks processes at startup and will have a stale SQLAlchemy mapper that doesn't know about the new columns, causing `AttributeError` on access.
 
 ### Global Findings API
 `GET /api/v1/findings` is the platform-wide findings list endpoint. Supported query params: `application_id`, `severity`, `finding_type`, `scanner`, `status`, `identifier` (matches `cve_id OR rule_id`), `compliance_tag` (text search within the JSON array), `sort_by` (`severity` | `created_at`, default `severity`), `sort_dir` (`asc` | `desc`), `page`, `page_size`. Severity sort uses a SQL `CASE` expression (critical=0 → info=4). The endpoint eagerly loads the `application` relationship via `selectinload` so `application_name` is populated in the response.
+
+### Integrations API
+`/api/v1/integrations` manages Slack and Jira integration configurations. Config JSON is stored as `Text` in the DB (never returned in API responses — GET responses return `config_summary` with sensitive keys masked as `***`). The full config is returned **only once** on `POST /integrations` (similar to service account token reveal). Notification rules (`/integrations/{id}/rules`) define what triggers notifications: `event_type`, `min_severity`, `finding_types` (empty = all), `application_ids` (empty = all apps). After every scan, `dispatch_finding_notifications` Celery task evaluates all active rules and dispatches to matching integrations. Jira deduplication uses the `jira_issue_links` table — if a finding already has a link for that integration, a comment is added instead of creating a duplicate ticket. The epic crawler (`POST /integrations/jira/{id}/crawl-epic`) uses JQL `parent = "{epic_key}"` to fetch child issues and matches against open findings by CVE ID, `snitch-finding-{id}` label, and package name.

@@ -28,6 +28,9 @@
 | 🌐 **REST API** | Full OpenAPI/Swagger docs at `/docs` |
 | 🎨 **Cybersecurity UI** | Shared sidebar (`sidebar.js`) and header (`header.js`) components with Fira Code typography, near-black backgrounds, cyan-border gradient cards, and HUD-style Threat Intelligence Strip — designed with the [ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) Claude Code skill |
 | ⚙️ **Settings Page** | Admin configuration page for platform integrations (GitHub, Anthropic), scan defaults, and system status |
+| 🔔 **Slack Notifications** | Automatic Block Kit alerts to Slack on new findings — filter by severity, app, and event type via notification rules |
+| 🎫 **Jira Integration** | Auto-create Jira issues after scans with deduplication (no duplicate tickets per finding); on-demand issue creation per finding |
+| 🕷️ **Jira Epic Crawler** | Crawl epic child issues, match against Snitch findings, identify coverage gaps, and generate an AI remediation plan with Claude |
 | 📋 **Applications List View** | Sortable table view for the applications portfolio — click any column header to re-sort |
 | 📚 **Developer Docs** | Built-in documentation page (`/help.html`) with Quick Start, GitHub Actions CI/CD guide (2-stage auth+push), General Usage, and API Reference |
 | ℹ️ **About & Changelog** | About page (`/about.html`) with tech stack overview and release notes for all major versions |

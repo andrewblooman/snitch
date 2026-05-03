@@ -250,11 +250,18 @@ def scan_application_task(self, app_id: str, scan_type: str = "all") -> dict:
                 policy_summary = {"skipped": True, "reason": f"partial scan ({scan_type})"}
 
             db.commit()
-            
+
             # Fetch EPSS scores for any new CVEs
             cve_ids = list(set(f.get("cve_id") for f in raw_findings if f.get("cve_id")))
             if cve_ids:
                 fetch_epss_scores_task.delay(str(application_id), cve_ids)
+
+            # Dispatch Slack/Jira notifications for new findings
+            try:
+                from app.worker.notification_tasks import dispatch_finding_notifications
+                dispatch_finding_notifications.delay(str(scan_id), False)
+            except Exception as _notify_err:
+                logger.warning("Could not dispatch notification task: %s", _notify_err)
 
             return {
                 "scan_id": str(scan_id),

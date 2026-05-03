@@ -1,7 +1,9 @@
 import asyncio
 import math
+import multiprocessing
 import re
 import uuid
+from concurrent.futures import ProcessPoolExecutor, TimeoutError as FuturesTimeoutError
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -169,10 +171,11 @@ async def list_patterns(
 
 @router.post("/patterns", response_model=SecretPatternResponse, status_code=201)
 async def create_pattern(payload: SecretPatternCreate, db: AsyncSession = Depends(get_db)):
-    try:
-        re.compile(payload.pattern)
-    except re.error as e:
-        raise HTTPException(status_code=422, detail=f"Invalid regex pattern: {e}")
+    err = await asyncio.get_running_loop().run_in_executor(
+        None, _validate_pattern_safe, payload.pattern
+    )
+    if err:
+        raise HTTPException(status_code=422, detail=err)
 
     pattern = SecretPattern(**payload.model_dump())
     db.add(pattern)
@@ -202,10 +205,11 @@ async def update_pattern(
         raise HTTPException(status_code=404, detail="Pattern not found")
 
     if payload.pattern is not None:
-        try:
-            re.compile(payload.pattern)
-        except re.error as e:
-            raise HTTPException(status_code=422, detail=f"Invalid regex pattern: {e}")
+        err = await asyncio.get_running_loop().run_in_executor(
+            None, _validate_pattern_safe, payload.pattern
+        )
+        if err:
+            raise HTTPException(status_code=422, detail=err)
 
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(pattern, field, value)
@@ -228,6 +232,35 @@ async def delete_pattern(pattern_id: uuid.UUID, db: AsyncSession = Depends(get_d
 def _compile_and_match(pattern: str, sample_text: str) -> list:
     compiled = re.compile(pattern)
     return compiled.findall(sample_text)
+
+
+_REDOS_PROBE = "a" * 20 + "!"  # triggers catastrophic backtracking on vulnerable patterns
+
+
+def _run_regex_in_subprocess(pattern: str) -> str | None:
+    """Top-level function (picklable) — executed in a child process that can be killed on timeout."""
+    try:
+        compiled = re.compile(pattern)
+        compiled.search(_REDOS_PROBE)
+        return None  # safe
+    except re.error as exc:
+        return f"Invalid regex pattern: {exc}"
+
+
+def _validate_pattern_safe(pattern: str) -> str | None:
+    """
+    Validate a user-supplied pattern against a ReDoS probe string in a child process.
+    The process is forcibly terminated on timeout, giving a true hard stop unlike threads.
+    Returns an error string on failure or None if safe.
+    """
+    with ProcessPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(_run_regex_in_subprocess, pattern)
+        try:
+            return future.result(timeout=2.0)
+        except FuturesTimeoutError:
+            return "Pattern evaluation timed out — the pattern may cause catastrophic backtracking"
+        except Exception as exc:
+            return f"Pattern validation error: {exc}"
 
 
 @router.post("/patterns/test", response_model=SecretPatternTestResult)

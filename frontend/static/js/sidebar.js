@@ -48,6 +48,7 @@
       label: 'Admin',
       items: [
         { href: '/settings.html',          icon: 'settings',     label: 'Settings',          matchPaths: ['/settings.html'] },
+        { href: '/integrations.html',      icon: 'plug',         label: 'Integrations',      matchPaths: ['/integrations.html'] },
         { href: '/repositories.html',      icon: 'git-branch',   label: 'Repositories',      matchPaths: ['/repositories.html'] },
         { href: '/service-accounts.html',  icon: 'bot',          label: 'Service Accounts',  matchPaths: ['/service-accounts.html'] },
       ]

@@ -85,6 +85,13 @@ async def push_cicd_scan(
     if scan.status == "failed":
         raise HTTPException(status_code=500, detail=f"Ingestion failed: {scan.error_message}")
 
+    try:
+        from app.worker.notification_tasks import dispatch_finding_notifications
+        dispatch_finding_notifications.delay(str(scan.id), True)
+    except Exception as _celery_err:
+        import logging as _log
+        _log.getLogger(__name__).warning("Could not dispatch notification task: %s", _celery_err)
+
     return scan
 
 

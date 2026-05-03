@@ -7,7 +7,7 @@ celery_app = Celery(
     "snitch",
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
-    include=["app.worker.tasks"],
+    include=["app.worker.tasks", "app.worker.notification_tasks"],
 )
 
 celery_app.conf.update(
