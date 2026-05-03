@@ -114,6 +114,9 @@
           <button class="tab-btn" id="tab-remediations" onclick="switchTab('remediations')">
             <i data-lucide="wrench" style="width:15px;height:15px;display:inline;vertical-align:middle;margin-right:6px;"></i>Remediations
           </button>
+          <button class="tab-btn" id="tab-github" onclick="switchTab('github')">
+            <i data-lucide="github" style="width:15px;height:15px;display:inline;vertical-align:middle;margin-right:6px;"></i>GitHub Security
+          </button>
         </div>
 
         <!-- Findings Tab -->
@@ -171,6 +174,20 @@
         <!-- Remediations Tab -->
         <div id="pane-remediations" style="display:none;">
           <div id="remediations-grid"><div style="text-align:center;padding:32px;"><div style="animation:spin 1s linear infinite;display:inline-block;width:24px;height:24px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></div></div>
+        </div>
+
+        <!-- GitHub Security Tab -->
+        <div id="pane-github" style="display:none;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+            <div>
+              <div style="font-size:16px;font-weight:600;color:#f1f5f9;">GitHub Advanced Security Alerts</div>
+              <div id="github-sync-info" style="font-size:13px;color:#475569;margin-top:2px;">Sync to load alerts from GHAS, Dependabot, and Secret Scanning.</div>
+            </div>
+            <button id="sync-alerts-btn" onclick="syncGithubAlerts()" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(0,229,255,0.12),rgba(99,102,241,0.12));border:1px solid rgba(0,229,255,0.25);color:#00e5ff;padding:9px 18px;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='linear-gradient(135deg,rgba(0,229,255,0.2),rgba(99,102,241,0.2))'" onmouseout="this.style.background='linear-gradient(135deg,rgba(0,229,255,0.12),rgba(99,102,241,0.12))'">
+              <i data-lucide="shield-check" style="width:15px;height:15px;"></i> Sync GitHub Alerts
+            </button>
+          </div>
+          <div id="github-alerts-list"><div style="text-align:center;padding:48px;color:#475569;"><i data-lucide="github" style="width:40px;height:40px;display:block;margin:0 auto 12px;opacity:0.25;"></i><div style="font-size:16px;color:#64748b;">Click "Sync GitHub Alerts" to load findings from GitHub Advanced Security</div></div></div>
         </div>
       </div>
     </main>
@@ -480,6 +497,16 @@ function renderFindingsTable(findings){
             </div>
           </div>
           ${f.fixed_version?`<div style="margin-top:12px;"><span style="background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2);padding:3px 10px;border-radius:6px;font-size:14px;font-weight:500;"><i data-lucide="package" style="width:12px;height:12px;display:inline;vertical-align:middle;margin-right:4px;"></i>Fix version: ${f.fixed_version}</span></div>`:''}
+          ${(f.introduced_by||f.commit_sha||f.pr_url||f.github_alert_url)?`
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:13px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i data-lucide="github" style="width:13px;height:13px;"></i> GitHub Intelligence</div>
+            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:16px;">
+              ${f.introduced_by?`<div style="display:flex;align-items:center;gap:8px;"><img src="https://github.com/${escHtml(f.introduced_by)}.png?size=28" width="28" height="28" style="border-radius:50%;border:1px solid rgba(0,229,255,0.2);" onerror="this.style.display='none'"><div><div style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:0.6px;">Introduced by</div><a href="https://github.com/${escHtml(f.introduced_by)}" target="_blank" style="font-size:14px;color:#00e5ff;text-decoration:none;font-family:'Fira Code',monospace;">@${escHtml(f.introduced_by)}</a></div></div>`:''}
+              ${f.commit_sha?`<div><div style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:2px;">Commit</div><span style="font-size:13px;color:#94a3b8;font-family:'Fira Code',monospace;">${escHtml(f.commit_sha.substring(0,8))}</span></div>`:''}
+              ${f.pr_url?`<a href="${escHtml(f.pr_url)}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);color:#a5b4fc;padding:6px 12px;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none;" onmouseover="this.style.background='rgba(99,102,241,0.18)'" onmouseout="this.style.background='rgba(99,102,241,0.1)'"><i data-lucide="git-pull-request" style="width:13px;height:13px;"></i>PR #${f.pr_number||''}</a>`:''}
+              ${f.github_alert_url?`<a href="${escHtml(f.github_alert_url)}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);color:#00e5ff;padding:6px 12px;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none;" onmouseover="this.style.background='rgba(0,229,255,0.15)'" onmouseout="this.style.background='rgba(0,229,255,0.08)'"><i data-lucide="external-link" style="width:13px;height:13px;"></i>View Alert on GitHub</a>`:''}
+            </div>
+          </div>`:''}
         </div>
       </td>
     </tr>
@@ -727,12 +754,13 @@ function resetRemediationModal(){
 
 // ── Tabs ───────────────────────────────────────────────────────────────────────
 function switchTab(tab){
-  ['findings','scans','remediations'].forEach(t=>{
+  ['findings','scans','remediations','github'].forEach(t=>{
     document.getElementById(`pane-${t}`).style.display=t===tab?'block':'none';
     document.getElementById(`tab-${t}`).className=`tab-btn${t===tab?' active':''}`;
   });
   if(tab==='scans')loadScansTab();
   if(tab==='remediations')loadRemediationsTab();
+  if(tab==='github')loadGithubTab();
 }
 
 async function runScan(){
@@ -813,6 +841,116 @@ async function loadRemediationsTab(){
     el.innerHTML='';
 
     el.appendChild(_errDiv);
+  }
+}
+
+async function loadGithubTab(){
+  const el=document.getElementById('github-alerts-list');
+  const infoEl=document.getElementById('github-sync-info');
+  // Update last sync info from appData
+  if(appData&&appData.last_github_sync_at){
+    infoEl.innerHTML=`<i data-lucide="clock" style="width:11px;height:11px;display:inline;vertical-align:middle;margin-right:3px;"></i>Last synced ${timeAgo(appData.last_github_sync_at)}`;
+  } else {
+    infoEl.textContent='Sync to load alerts from GHAS, Dependabot, and Secret Scanning.';
+  }
+  el.innerHTML='<div style="text-align:center;padding:32px;"><div style="animation:spin 1s linear infinite;display:inline-block;width:24px;height:24px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></div>';
+  try{
+    const res=await fetch(`/api/v1/findings?application_id=${appId}&page_size=500`);
+    if(!res.ok)throw new Error('Failed to load findings');
+    const data=await res.json();
+    const findings=(data.items||data||[]).filter(f=>f.github_alert_url||f.introduced_by||f.commit_sha);
+    renderGithubTab(findings);
+  }catch(e){
+    el.innerHTML=`<div style="text-align:center;padding:32px;color:#ef4444;">${e.message}</div>`;
+  }
+}
+
+function renderGithubTab(findings){
+  const el=document.getElementById('github-alerts-list');
+  if(!findings||findings.length===0){
+    el.innerHTML=`<div style="text-align:center;padding:60px;color:#475569;">
+      <i data-lucide="github" style="width:44px;height:44px;display:block;margin:0 auto 14px;opacity:0.2;"></i>
+      <div style="font-size:17px;font-weight:500;color:#f1f5f9;margin-bottom:8px;">No GitHub Security Alerts</div>
+      <p style="max-width:400px;margin:0 auto;">Click "Sync GitHub Alerts" to import findings from GitHub Advanced Security, Dependabot, and Secret Scanning.</p>
+    </div>`;
+    lucide.createIcons();return;
+  }
+
+  // Group by PR number (null = unattributed)
+  const prGroups={};
+  findings.forEach(f=>{
+    const key=f.pr_number?String(f.pr_number):'__none__';
+    if(!prGroups[key])prGroups[key]={pr_number:f.pr_number,pr_url:f.pr_url,author:f.introduced_by,findings:[]};
+    prGroups[key].findings.push(f);
+    // Use first author found for the group
+    if(!prGroups[key].author&&f.introduced_by)prGroups[key].author=f.introduced_by;
+    if(!prGroups[key].pr_url&&f.pr_url)prGroups[key].pr_url=f.pr_url;
+  });
+
+  // Sort: PRs with most findings first, unattributed last
+  const sorted=Object.values(prGroups).sort((a,b)=>{
+    if(a.pr_number===null)return 1;
+    if(b.pr_number===null)return -1;
+    return b.findings.length-a.findings.length;
+  });
+
+  const severityOrder={critical:0,high:1,medium:2,low:3,info:4};
+  el.innerHTML=sorted.map(group=>{
+    const sortedFindings=[...group.findings].sort((a,b)=>(severityOrder[a.severity]??4)-(severityOrder[b.severity]??4));
+    const hasAttribution=group.pr_number||group.author;
+    const groupLabel=group.pr_number
+      ?`<a href="${escHtml(group.pr_url||'#')}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;color:#a5b4fc;text-decoration:none;font-size:16px;font-weight:600;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'"><i data-lucide="git-pull-request" style="width:16px;height:16px;"></i>PR #${group.pr_number}</a>`
+      :`<span style="font-size:16px;font-weight:600;color:#64748b;display:inline-flex;align-items:center;gap:7px;"><i data-lucide="alert-circle" style="width:16px;height:16px;"></i>Unattributed Alerts</span>`;
+    const authorHtml=group.author?`
+      <div style="display:flex;align-items:center;gap:7px;">
+        <img src="https://github.com/${escHtml(group.author)}.png?size=22" width="22" height="22" style="border-radius:50%;border:1px solid rgba(0,229,255,0.2);" onerror="this.style.display='none'">
+        <a href="https://github.com/${escHtml(group.author)}" target="_blank" style="font-size:13px;color:#00e5ff;text-decoration:none;font-family:'Fira Code',monospace;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">@${escHtml(group.author)}</a>
+      </div>`:'';
+
+    const findingRows=sortedFindings.map(f=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+        ${severityBadge(f.severity)}
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:14px;font-weight:500;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(f.title||'—')}</div>
+          ${f.file_path?`<div style="font-size:12px;color:#475569;font-family:'Fira Code',monospace;">${escHtml(f.file_path)}${f.line_number?':'+f.line_number:''}</div>`:''}
+          ${f.cve_id?`<div style="font-size:12px;color:#f59e0b;font-family:'Fira Code',monospace;">${escHtml(f.cve_id)}</div>`:''}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+          ${scannerBadge(f.scanner)}
+          ${f.commit_sha?`<span style="font-size:12px;color:#475569;font-family:'Fira Code',monospace;">${escHtml(f.commit_sha.substring(0,8))}</span>`:''}
+          ${f.github_alert_url?`<a href="${escHtml(f.github_alert_url)}" target="_blank" title="View alert on GitHub" style="color:#475569;display:flex;align-items:center;" onmouseover="this.style.color='#00e5ff'" onmouseout="this.style.color='#475569'"><i data-lucide="external-link" style="width:14px;height:14px;"></i></a>`:''}
+        </div>
+      </div>
+    `).join('');
+
+    return `<div style="background:linear-gradient(145deg,#0f1b34,#080f1d);border:1px solid rgba(0,229,255,0.1);border-radius:14px;margin-bottom:16px;overflow:hidden;">
+      <div style="padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          ${groupLabel}
+          ${authorHtml}
+        </div>
+        <span style="font-size:12px;color:#475569;background:rgba(255,255,255,0.04);padding:3px 10px;border-radius:20px;">${group.findings.length} alert${group.findings.length!==1?'s':''}</span>
+      </div>
+      <div style="padding:6px 4px;">${findingRows}</div>
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+async function syncGithubAlerts(){
+  const btn=document.getElementById('sync-alerts-btn');
+  btn.disabled=true;
+  btn.innerHTML='<div style="animation:spin 1s linear infinite;width:15px;height:15px;border:2px solid rgba(255,255,255,0.3);border-top-color:#00e5ff;border-radius:50%;"></div> Syncing...';
+  try{
+    const res=await fetch(`/api/v1/github/apps/${appId}/sync-alerts`,{method:'POST'});
+    if(!res.ok)throw new Error((await res.json()).detail||'Sync failed');
+    showToast('GitHub alerts sync started — refreshing in 5s…','success');
+    setTimeout(()=>loadGithubTab(),5000);
+  }catch(e){showToast(e.message,'error');}
+  finally{
+    btn.disabled=false;
+    btn.innerHTML='<i data-lucide="shield-check" style="width:15px;height:15px;"></i> Sync GitHub Alerts';
+    lucide.createIcons();
   }
 }
 
