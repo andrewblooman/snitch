@@ -82,6 +82,13 @@
       </div>
     </div>
 
+    <!-- Idle (not yet loaded) -->
+    <div id="idle" style="text-align:center;padding:60px 20px;">
+      <i data-lucide="refresh-cw" style="width:48px;height:48px;color:#475569;margin:0 auto 16px;display:block;"></i>
+      <div style="font-size:19px;font-weight:600;color:#f1f5f9;margin-bottom:8px;">Repositories not loaded</div>
+      <div style="color:#64748b;font-size:16px;max-width:400px;margin:0 auto;">Click <strong style="color:#00e5ff;">Refresh</strong> to fetch your GitHub repositories.</div>
+    </div>
+
     <!-- Loading -->
     <div id="loading" style="display:none;text-align:center;padding:60px 20px;">
       <div style="width:32px;height:32px;border:3px solid rgba(0,229,255,0.2);border-top-color:#00e5ff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
@@ -334,9 +341,11 @@
       const grid = document.getElementById('repo-grid');
       const loading = document.getElementById('loading');
       const noToken = document.getElementById('no-token');
+      const idle = document.getElementById('idle');
       const refreshIcon = document.getElementById('refresh-icon');
 
       grid.innerHTML = '';
+      idle.style.display = 'none';
       loading.style.display = 'block';
       noToken.style.display = 'none';
       refreshIcon.style.animation = 'spin 0.8s linear infinite';
@@ -511,7 +520,6 @@
 
     applyTheme(localStorage.getItem('theme')||'dark');
     lucide.createIcons();
-    loadRepos();
   </script>
 </body>
 </html>
