@@ -39,6 +39,7 @@ class ApplicationResponse(ApplicationBase):
     risk_level: str
     scan_schedule: str
     last_scan_at: Optional[datetime] = None
+    last_github_sync_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 

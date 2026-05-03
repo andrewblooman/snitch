@@ -32,6 +32,7 @@
 | 🎫 **Jira Integration** | Auto-create Jira issues after scans with deduplication (no duplicate tickets per finding); on-demand issue creation per finding |
 | 🕷️ **Jira Epic Crawler** | Crawl epic child issues, match against Snitch findings, identify coverage gaps, and generate an AI remediation plan with Claude |
 | 📋 **Applications List View** | Sortable table view for the applications portfolio — click any column header to re-sort |
+| 🌍 **Track Public Repos** | Add any open source GitHub repository by URL or `org/repo` — no token needed for public repos; metadata auto-fetched via `/api/v1/github/repos/lookup` |
 | 📚 **Developer Docs** | Built-in documentation page (`/help.html`) with Quick Start, GitHub Actions CI/CD guide (2-stage auth+push), General Usage, and API Reference |
 | ℹ️ **About & Changelog** | About page (`/about.html`) with tech stack overview and release notes for all major versions |
 

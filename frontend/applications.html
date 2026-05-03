@@ -352,8 +352,11 @@ function appRow(app) {
         <button onclick="location.href='/app-detail.html?id=${app.id}'" class="btn-secondary" style="padding:6px 10px;font-size:14px;margin-right:4px;" title="View details">
           <i data-lucide="eye" style="width:14px;height:14px;"></i>
         </button>
-        <button onclick="runScan(event,'${app.id}','${app.name||'app'}')" id="scan-btn-${app.id}" class="btn-secondary" style="padding:6px 10px;font-size:14px;" title="Run scan">
+        <button onclick="runScan(event,'${app.id}','${app.name||'app'}')" id="scan-btn-${app.id}" class="btn-secondary" style="padding:6px 10px;font-size:14px;margin-right:4px;" title="Run scan">
           <i data-lucide="play" style="width:14px;height:14px;color:#00e5ff;"></i>
+        </button>
+        <button onclick="deleteApp(event,'${app.id}',${JSON.stringify(app.name||'app').replace(/"/g,'&quot;')})" class="btn-secondary" style="padding:6px 10px;font-size:14px;" title="Remove application">
+          <i data-lucide="trash-2" style="width:14px;height:14px;color:#ef4444;"></i>
         </button>
       </td>
     </tr>
@@ -377,6 +380,21 @@ async function runScan(e, id, name) {
     btn.disabled = false;
     btn.innerHTML = '<i data-lucide="play" style="width:14px;height:14px;color:#00e5ff;"></i>';
     lucide.createIcons();
+  }
+}
+
+// ── Delete Application ─────────────────────────────────────────────────────────
+async function deleteApp(e, id, name) {
+  e.stopPropagation();
+  if (!confirm(`Remove "${name}" and all its scans and findings? This cannot be undone.`)) return;
+  try {
+    const res = await fetch(`/api/v1/applications/${id}`, { method: 'DELETE' });
+    if (!res.ok && res.status !== 204) throw new Error(`Server returned ${res.status}`);
+    allApps = allApps.filter(a => a.id !== id);
+    applyFilters();
+    showToast(`"${name}" removed`, 'success');
+  } catch(err) {
+    showToast(`Failed to remove application: ${err.message}`, 'error');
   }
 }
 

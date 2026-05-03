@@ -7,7 +7,7 @@ celery_app = Celery(
     "snitch",
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
-    include=["app.worker.tasks", "app.worker.notification_tasks"],
+    include=["app.worker.tasks", "app.worker.notification_tasks", "app.worker.github_tasks"],
 )
 
 celery_app.conf.update(
@@ -22,6 +22,11 @@ celery_app.conf.update(
             "task": "app.worker.tasks.weekly_scan_all",
             # Every Sunday at 02:00 UTC
             "schedule": crontab(hour=2, minute=0, day_of_week=0),
+        },
+        "poll-github-security-alerts": {
+            "task": "app.worker.github_tasks.poll_github_security_task",
+            # Every 5 minutes
+            "schedule": crontab(minute="*/5"),
         },
     },
 )

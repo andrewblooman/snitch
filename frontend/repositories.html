@@ -11,14 +11,19 @@
   <style>
     * { box-sizing: border-box; }
     @keyframes fadeInUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+    @keyframes fadeInDown { from{transform:translateY(-20px);opacity:0} to{transform:translateY(0);opacity:1} }
     @keyframes spin { to{transform:rotate(360deg)} }
     .card-hover:hover { border-color:rgba(0,229,255,0.3) !important; transform:translateY(-2px); transition:all 0.3s; }
     .card { background:linear-gradient(145deg,#0f1b34 0%,#080f1d 100%);border:1px solid rgba(0,229,255,0.14);border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,.55),inset 0 1px 0 rgba(0,229,255,.06); }
     .dark-select option { background:#0d1117; }
     .modal-backdrop { position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);z-index:200;display:flex;align-items:center;justify-content:center; }
+    #toast { position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:999;display:none;animation:fadeInDown 0.3s ease; }
   </style>
 </head>
 <body style="font-family:var(--font-body,'Fira Sans',system-ui,sans-serif);background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
+
+  <!-- Success toast -->
+  <div id="toast"></div>
 
   <!-- Sidebar -->
   <div id="sidebar-mount"></div>
@@ -33,6 +38,9 @@
         <p style="font-size:13px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// github.repositories · discovery</p>
       </div>
       <div id="header-user-slot" style="display:flex;align-items:center;gap:12px;">
+        <button class="btn-secondary" onclick="openPublicRepoModal()" style="font-size:14px;">
+          <i data-lucide="globe" style="width:15px;height:15px;"></i> Track Public Repo
+        </button>
         <button class="btn-primary" onclick="loadRepos()">
           <i data-lucide="refresh-cw" style="width:16px;height:16px;" id="refresh-icon"></i> Refresh
         </button>
@@ -72,6 +80,13 @@
       <div style="color:#64748b;font-size:16px;max-width:400px;margin:0 auto;">
         Set <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;">GITHUB_TOKEN</code> in your <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;">.env</code> file and restart to discover repositories.
       </div>
+    </div>
+
+    <!-- Idle (not yet loaded) -->
+    <div id="idle" style="display:none;text-align:center;padding:60px 20px;">
+      <i data-lucide="refresh-cw" style="width:48px;height:48px;color:#475569;margin:0 auto 16px;display:block;"></i>
+      <div style="font-size:19px;font-weight:600;color:#f1f5f9;margin-bottom:8px;">Repositories not loaded</div>
+      <div style="color:#64748b;font-size:16px;max-width:400px;margin:0 auto;">Click <strong style="color:#00e5ff;">Refresh</strong> to fetch your GitHub repositories.</div>
     </div>
 
     <!-- Loading -->
@@ -119,9 +134,67 @@
     </div>
   </div>
 
+  <!-- Track Public Repo modal -->
+  <div id="public-repo-modal" class="modal-backdrop" style="display:none;" onclick="if(event.target===this)closePublicRepoModal()">
+    <div class="card" style="width:520px;max-width:95vw;padding:28px;position:relative;" onclick="event.stopPropagation()">
+      <button onclick="closePublicRepoModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:#64748b;cursor:pointer;padding:4px;">
+        <i data-lucide="x" style="width:18px;height:18px;"></i>
+      </button>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(99,102,241,0.15));border:1px solid rgba(0,229,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+          <i data-lucide="globe" style="width:18px;height:18px;color:#00e5ff;"></i>
+        </div>
+        <div>
+          <div style="font-size:17px;font-weight:600;color:#f1f5f9;">Track Public Repo</div>
+          <div style="font-size:14px;color:#64748b;">Add any open source GitHub repository</div>
+        </div>
+      </div>
+
+      <!-- Step 1: URL input -->
+      <div id="public-step-1">
+        <div style="margin-bottom:16px;">
+          <label style="font-size:14px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">GitHub URL or org/repo</label>
+          <input type="text" id="public-repo-url" placeholder="e.g. https://github.com/org/repo  or  org/repo" class="dark-input" style="width:100%;" oninput="clearPublicLookupError()">
+          <div id="public-lookup-error" style="display:none;font-size:13px;color:#ef4444;margin-top:6px;"></div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn-secondary" style="flex:1;justify-content:center;" onclick="closePublicRepoModal()">Cancel</button>
+          <button class="btn-primary" style="flex:1;justify-content:center;" id="public-lookup-btn" onclick="lookupPublicRepo()">
+            <i data-lucide="search" style="width:14px;height:14px;"></i> Look Up
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Confirm metadata -->
+      <div id="public-step-2" style="display:none;">
+        <div id="public-repo-meta" style="background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.12);border-radius:10px;padding:14px;margin-bottom:16px;"></div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;">
+          <div>
+            <label style="font-size:14px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Team Name</label>
+            <input type="text" id="public-modal-team" placeholder="e.g. platform, security, backend" class="dark-input" style="width:100%;">
+          </div>
+          <div>
+            <label style="font-size:14px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Scan Schedule</label>
+            <select id="public-modal-schedule" class="dark-select" style="width:100%;">
+              <option value="none">Manual only</option>
+              <option value="weekly">Weekly (every Sunday 2am UTC)</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn-secondary" style="flex:1;justify-content:center;" onclick="backToPublicStep1()">← Back</button>
+          <button class="btn-primary" style="flex:1;justify-content:center;" id="public-confirm-btn" onclick="confirmPublicAdd()">
+            <i data-lucide="plus" style="width:14px;height:14px;"></i> Add to Snitch
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     let allRepos = [];
     let pendingRepo = null;
+    let pendingPublicRepo = null;
 
     const LANG_COLORS = {
       Python:'#3776ab',JavaScript:'#f7df1e',TypeScript:'#3178c6',Go:'#00add8',
@@ -129,24 +202,167 @@
       C:'#555555','C#':'#178600',PHP:'#4f5d95',Kotlin:'#7f52ff',Swift:'#f05138',
     };
 
+    // ── Public repo modal ────────────────────────────────────────────────────
+    function openPublicRepoModal() {
+      document.getElementById('public-repo-url').value = '';
+      document.getElementById('public-lookup-error').style.display = 'none';
+      document.getElementById('public-step-1').style.display = 'block';
+      document.getElementById('public-step-2').style.display = 'none';
+      pendingPublicRepo = null;
+      document.getElementById('public-repo-modal').style.display = 'flex';
+      lucide.createIcons();
+    }
+
+    function closePublicRepoModal() {
+      document.getElementById('public-repo-modal').style.display = 'none';
+      pendingPublicRepo = null;
+    }
+
+    function backToPublicStep1() {
+      document.getElementById('public-step-2').style.display = 'none';
+      document.getElementById('public-step-1').style.display = 'block';
+    }
+
+    function clearPublicLookupError() {
+      document.getElementById('public-lookup-error').style.display = 'none';
+    }
+
+    function parseGithubInput(raw) {
+      // Accepts: https://github.com/org/repo, github.com/org/repo, or org/repo
+      const clean = raw.trim().replace(/\.git$/, '');
+      const match = clean.match(/(?:github\.com\/)?([^/\s]+)\/([^/\s]+)/);
+      return match ? { owner: match[1], repo: match[2] } : null;
+    }
+
+    async function lookupPublicRepo() {
+      const raw = document.getElementById('public-repo-url').value;
+      const parsed = parseGithubInput(raw);
+      const errEl = document.getElementById('public-lookup-error');
+
+      if (!parsed) {
+        errEl.textContent = 'Enter a valid GitHub URL or "org/repo" format.';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      const btn = document.getElementById('public-lookup-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block;"></div> Looking up…';
+
+      try {
+        const res = await fetch(`/api/v1/github/repos/lookup?owner=${encodeURIComponent(parsed.owner)}&repo=${encodeURIComponent(parsed.repo)}`);
+        if (res.status === 404) throw new Error(`Repository ${parsed.owner}/${parsed.repo} not found.`);
+        if (!res.ok) throw new Error(await res.text());
+
+        pendingPublicRepo = await res.json();
+
+        // Populate metadata preview
+        const langColor = LANG_COLORS[pendingPublicRepo.language] || '#64748b';
+        document.getElementById('public-repo-meta').innerHTML = `
+          <div style="font-size:16px;font-weight:600;color:#f1f5f9;margin-bottom:6px;">${escHtml(pendingPublicRepo.full_name)}</div>
+          ${pendingPublicRepo.description ? `<div style="font-size:14px;color:#94a3b8;margin-bottom:8px;">${escHtml(pendingPublicRepo.description)}</div>` : ''}
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            ${pendingPublicRepo.language ? `<span style="display:flex;align-items:center;gap:5px;font-size:13px;color:#94a3b8;"><span style="width:8px;height:8px;border-radius:50%;background:${langColor};display:inline-block;"></span>${escHtml(pendingPublicRepo.language)}</span>` : ''}
+            ${pendingPublicRepo.private ? '<span style="font-size:13px;color:#a78bfa;">Private</span>' : '<span style="font-size:13px;color:#10b981;">Public</span>'}
+            ${pendingPublicRepo.archived ? '<span style="font-size:13px;color:#fbbf24;">Archived</span>' : ''}
+          </div>`;
+
+        document.getElementById('public-modal-team').value = pendingPublicRepo.github_org;
+        document.getElementById('public-modal-schedule').value = 'weekly';
+        document.getElementById('public-step-1').style.display = 'none';
+        document.getElementById('public-step-2').style.display = 'block';
+        lucide.createIcons();
+      } catch (e) {
+        errEl.textContent = e.message;
+        errEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="search" style="width:14px;height:14px;"></i> Look Up';
+        lucide.createIcons();
+      }
+    }
+
+    async function confirmPublicAdd() {
+      if (!pendingPublicRepo) return;
+      const btn = document.getElementById('public-confirm-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block;"></div> Adding…';
+
+      const team = document.getElementById('public-modal-team').value.trim() || pendingPublicRepo.github_org;
+      const schedule = document.getElementById('public-modal-schedule').value;
+
+      try {
+        const res = await fetch('/api/v1/applications', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            name: pendingPublicRepo.github_repo,
+            description: pendingPublicRepo.description || '',
+            github_org: pendingPublicRepo.github_org,
+            github_repo: pendingPublicRepo.github_repo,
+            repo_url: pendingPublicRepo.repo_url,
+            team_name: team,
+            language: pendingPublicRepo.language || null,
+            scan_schedule: schedule,
+          }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const repoName = pendingPublicRepo.github_repo;
+        closePublicRepoModal();
+        showToast(`<i data-lucide="check-circle" style="width:16px;height:16px;"></i> <strong>${escHtml(repoName)}</strong> added — <a href="/applications.html" style="color:inherit;text-decoration:underline;">View in Applications →</a>`);
+        lucide.createIcons();
+      } catch(e) {
+        alert('Failed to add repository: ' + e.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="plus" style="width:14px;height:14px;"></i> Add to Snitch';
+        lucide.createIcons();
+      }
+    }
+
+    function escHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    let _toastTimer = null;
+    function showToast(html, type = 'success') {
+      const el = document.getElementById('toast');
+      const bg = type === 'success' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)';
+      const border = type === 'success' ? 'rgba(16,185,129,0.35)' : 'rgba(239,68,68,0.35)';
+      const color = type === 'success' ? '#10b981' : '#ef4444';
+      el.innerHTML = `<div style="background:${bg};border:1px solid ${border};color:${color};border-radius:10px;padding:12px 20px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:0 4px 24px rgba(0,0,0,0.6);white-space:nowrap;">${html}</div>`;
+      el.style.display = 'block';
+      if (_toastTimer) clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+
+    // ── Existing repo list ───────────────────────────────────────────────────
     async function loadRepos() {
       const grid = document.getElementById('repo-grid');
       const loading = document.getElementById('loading');
       const noToken = document.getElementById('no-token');
+      const idle = document.getElementById('idle');
       const refreshIcon = document.getElementById('refresh-icon');
 
       grid.innerHTML = '';
+      idle.style.display = 'none';
       loading.style.display = 'block';
       noToken.style.display = 'none';
       refreshIcon.style.animation = 'spin 0.8s linear infinite';
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
       try {
         const showArchived = document.getElementById('show-archived').checked;
-        const res = await fetch(`/api/v1/github/repos?include_archived=${showArchived}`);
+        const res = await fetch(`/api/v1/github/repos?include_archived=${showArchived}`, { signal: controller.signal });
+        clearTimeout(timeoutId);
         if (res.status === 400) {
           loading.style.display = 'none';
           noToken.style.display = 'block';
-          refreshIcon.style.animation = '';
+          lucide.createIcons();
+          const icon = document.getElementById('refresh-icon');
+          if (icon) icon.style.animation = '';
           return;
         }
         if (!res.ok) throw new Error(await res.text());
@@ -164,11 +380,17 @@
 
         renderRepos();
       } catch (e) {
-        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#ef4444;">${e.message}</div>`;
+        clearTimeout(timeoutId);
+        const msg = e.name === 'AbortError'
+          ? 'GitHub API timed out (30s). Check your GITHUB_TOKEN or try again.'
+          : e.message;
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#ef4444;">${escHtml(msg)}</div>`;
       } finally {
         loading.style.display = 'none';
-        refreshIcon.style.animation = '';
         lucide.createIcons();
+        // Re-query after lucide may have replaced the SVG element
+        const icon = document.getElementById('refresh-icon');
+        if (icon) icon.style.animation = '';
       }
     }
 
@@ -212,9 +434,14 @@
         const privateBadge = r.private ? `<span style="background:rgba(139,92,246,0.1);color:#a78bfa;border:1px solid rgba(139,92,246,0.2);border-radius:6px;padding:2px 8px;font-size:13px;font-weight:500;">Private</span>` : '';
 
         const actionBtn = r.tracked
-          ? `<a href="/applications.html" class="btn-secondary" style="font-size:14px;padding:7px 12px;text-decoration:none;">
-               <i data-lucide="eye" style="width:13px;height:13px;"></i> View
-             </a>`
+          ? `<div style="display:flex;gap:8px;align-items:center;">
+               <a href="/applications.html" class="btn-secondary" style="font-size:14px;padding:7px 12px;text-decoration:none;">
+                 <i data-lucide="eye" style="width:13px;height:13px;"></i> View
+               </a>
+               <button class="btn-secondary" style="font-size:14px;padding:7px 12px;" onclick="syncAlerts('${r.application_id}')" title="Sync GitHub security alerts">
+                 <i data-lucide="shield" style="width:13px;height:13px;color:#00e5ff;"></i>
+               </button>
+             </div>`
           : `<button class="btn-primary" style="font-size:14px;padding:7px 14px;" onclick="openAddModal(${idx})">
                <i data-lucide="plus" style="width:13px;height:13px;"></i> Add to Snitch
              </button>`;
@@ -260,6 +487,17 @@
       pendingRepo = null;
     }
 
+    async function syncAlerts(appId) {
+      if (!appId) return;
+      try {
+        const res = await fetch(`/api/v1/github/apps/${appId}/sync-alerts`, { method: 'POST' });
+        if (!res.ok) throw new Error((await res.json()).detail || 'Sync failed');
+        showToast('GitHub security sync queued — findings will appear shortly', 'success');
+      } catch(err) {
+        showToast(`Sync failed: ${err.message}`, 'error');
+      }
+    }
+
     async function confirmAdd() {
       if (!pendingRepo) return;
       const btn = document.getElementById('modal-confirm-btn');
@@ -285,8 +523,13 @@
           }),
         });
         if (!res.ok) throw new Error(await res.text());
+        const added = pendingRepo;
         closeModal();
-        await loadRepos();
+        // Mark the card as tracked without re-fetching all repos
+        allRepos = allRepos.map(r => r.full_name === added.full_name ? {...r, tracked: true} : r);
+        renderRepos();
+        showToast(`<i data-lucide="check-circle" style="width:16px;height:16px;"></i> <strong>${escHtml(added.github_repo)}</strong> added — <a href="/applications.html" style="color:inherit;text-decoration:underline;">View in Applications →</a>`);
+        lucide.createIcons();
       } catch(e) {
         alert('Failed to add repository: ' + e.message);
         btn.disabled = false;

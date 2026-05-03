@@ -116,7 +116,7 @@ backend/app/
     ├── policy_evaluator.py # Evaluate policy rules against findings
     ├── rule_catalog.py    # Static catalog of ~37 rules (Checkov/IaC, Semgrep/SAST, Gitleaks/secrets)
     ├── ai_remediation.py  # Claude integration; falls back to mock plan if no API key
-    ├── github_service.py  # GitHub code scanning sync + branch/PR creation via PyGitHub
+    ├── github_service.py  # GitHub code scanning sync + branch/PR creation via PyGitHub; lookup_public_repo() fetches any public repo (no token required); fetch_github_security_alerts() polls GHAS APIs (code scanning, Dependabot, secret scanning) via httpx
     ├── compliance.py      # 30 compliance mapping rules across OWASP/PCI-DSS/CIS/DORA/SOC2
     ├── slack_service.py   # Slack Block Kit notifications via incoming webhook (httpx)
     ├── jira_service.py    # Jira REST API v3 client — create issues, crawl epics, dedup via JiraIssueLink
@@ -187,6 +187,24 @@ The migration `c2b28485c8a7_add_epss_and_compliance` adds `epss_score` (Float), 
 
 ### Global Findings API
 `GET /api/v1/findings` is the platform-wide findings list endpoint. Supported query params: `application_id`, `severity`, `finding_type`, `scanner`, `status`, `identifier` (matches `cve_id OR rule_id`), `compliance_tag` (text search within the JSON array), `sort_by` (`severity` | `created_at`, default `severity`), `sort_dir` (`asc` | `desc`), `page`, `page_size`. Severity sort uses a SQL `CASE` expression (critical=0 → info=4). The endpoint eagerly loads the `application` relationship via `selectinload` so `application_name` is populated in the response.
+
+### GitHub Repos API
+`GET /api/v1/github/repos` lists all repos accessible to `GITHUB_TOKEN` with tracking status. The underlying PyGitHub call is run via `asyncio.to_thread()` to avoid blocking the async event loop. Capped at 200 repos (`per_page=100`).
+`GET /api/v1/github/repos/lookup?owner=ORG&repo=REPO` fetches metadata for any public (or private, if the token has access) GitHub repository. Works without a `GITHUB_TOKEN` for public repos (unauthenticated GitHub API, 60 req/hr per IP). Used by the "Track Public Repo" modal on `repositories.html`.
+
+### GitHub Advanced Security (GHAS) Polling
+`GITHUB_TOKEN` requires `security_events` + `vulnerability_alerts` scopes for full access. Three alert types are polled every 5 minutes via Celery Beat:
+- **Code Scanning** (`scanner=codeql` or tool name, `finding_type=sast`) — CodeQL, Semgrep, etc.
+- **Dependabot** (`scanner=dependabot`, `finding_type=sca`) — CVE/SCA alerts
+- **Secret Scanning** (`scanner=github_secret_scanning`, `finding_type=secrets`)
+
+Each finding includes: `commit_sha` (SHA that introduced it), `introduced_by` (GitHub username), `pr_number` + `pr_url` (if finding was in a PR ref), `github_alert_url` (direct link), `github_alert_number` (dedup key).
+
+Dedup key: `(application_id, scanner, github_alert_number)`. If a token lacks scope for an alert type, that type is silently skipped. Commit author is fetched via `GET /repos/{owner}/{repo}/commits/{sha}` — not fetched for Dependabot (no commit SHA available).
+
+`POST /api/v1/github/apps/{app_id}/sync-alerts` triggers an immediate sync for one app (returns task ID). The beat schedule fires every 5 minutes for all tracked apps. Last sync time stored in `Application.last_github_sync_at`.
+
+New Finding fields (migration 010): `commit_sha`, `introduced_by`, `pr_number`, `pr_url`, `github_alert_url`, `github_alert_number`. New Application field: `last_github_sync_at`.
 
 ### Integrations API
 `/api/v1/integrations` manages Slack and Jira integration configurations. Config JSON is stored as `Text` in the DB (never returned in API responses — GET responses return `config_summary` with sensitive keys masked as `***`). The full config is returned **only once** on `POST /integrations` (similar to service account token reveal). Notification rules (`/integrations/{id}/rules`) define what triggers notifications: `event_type`, `min_severity`, `finding_types` (empty = all), `application_ids` (empty = all apps). After every scan, `dispatch_finding_notifications` Celery task evaluates all active rules and dispatches to matching integrations. Jira deduplication uses the `jira_issue_links` table — if a finding already has a link for that integration, a comment is added instead of creating a duplicate ticket. The epic crawler (`POST /integrations/jira/{id}/crawl-epic`) uses JQL `parent = "{epic_key}"` to fetch child issues and matches against open findings by CVE ID, `snitch-finding-{id}` label, and package name.

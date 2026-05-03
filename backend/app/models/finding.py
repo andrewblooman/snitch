@@ -41,6 +41,14 @@ class Finding(Base):
     epss_percentile: Mapped[float | None] = mapped_column(Float, nullable=True)
     compliance_tags: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
 
+    # GitHub Advanced Security fields
+    commit_sha: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    introduced_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    pr_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    pr_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    github_alert_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    github_alert_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
     status: Mapped[str] = mapped_column(String(50), default="open", nullable=False)
 
     first_seen_at: Mapped[datetime] = mapped_column(
