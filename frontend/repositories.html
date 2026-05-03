@@ -11,14 +11,19 @@
   <style>
     * { box-sizing: border-box; }
     @keyframes fadeInUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+    @keyframes fadeInDown { from{transform:translateY(-20px);opacity:0} to{transform:translateY(0);opacity:1} }
     @keyframes spin { to{transform:rotate(360deg)} }
     .card-hover:hover { border-color:rgba(0,229,255,0.3) !important; transform:translateY(-2px); transition:all 0.3s; }
     .card { background:linear-gradient(145deg,#0f1b34 0%,#080f1d 100%);border:1px solid rgba(0,229,255,0.14);border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,.55),inset 0 1px 0 rgba(0,229,255,.06); }
     .dark-select option { background:#0d1117; }
     .modal-backdrop { position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);z-index:200;display:flex;align-items:center;justify-content:center; }
+    #toast { position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:999;display:none;animation:fadeInDown 0.3s ease; }
   </style>
 </head>
 <body style="font-family:var(--font-body,'Fira Sans',system-ui,sans-serif);background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
+
+  <!-- Success toast -->
+  <div id="toast"></div>
 
   <!-- Sidebar -->
   <div id="sidebar-mount"></div>
@@ -295,8 +300,10 @@
           }),
         });
         if (!res.ok) throw new Error(await res.text());
+        const repoName = pendingPublicRepo.github_repo;
         closePublicRepoModal();
-        await loadRepos();
+        showToast(`<i data-lucide="check-circle" style="width:16px;height:16px;"></i> <strong>${escHtml(repoName)}</strong> added — <a href="/applications.html" style="color:inherit;text-decoration:underline;">View in Applications →</a>`);
+        lucide.createIcons();
       } catch(e) {
         alert('Failed to add repository: ' + e.message);
         btn.disabled = false;
@@ -308,6 +315,18 @@
     function escHtml(str) {
       if (!str) return '';
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    let _toastTimer = null;
+    function showToast(html, type = 'success') {
+      const el = document.getElementById('toast');
+      const bg = type === 'success' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)';
+      const border = type === 'success' ? 'rgba(16,185,129,0.35)' : 'rgba(239,68,68,0.35)';
+      const color = type === 'success' ? '#10b981' : '#ef4444';
+      el.innerHTML = `<div style="background:${bg};border:1px solid ${border};color:${color};border-radius:10px;padding:12px 20px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:0 4px 24px rgba(0,0,0,0.6);white-space:nowrap;">${html}</div>`;
+      el.style.display = 'block';
+      if (_toastTimer) clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(() => { el.style.display = 'none'; }, 5000);
     }
 
     // ── Existing repo list ───────────────────────────────────────────────────
@@ -322,9 +341,13 @@
       noToken.style.display = 'none';
       refreshIcon.style.animation = 'spin 0.8s linear infinite';
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
       try {
         const showArchived = document.getElementById('show-archived').checked;
-        const res = await fetch(`/api/v1/github/repos?include_archived=${showArchived}`);
+        const res = await fetch(`/api/v1/github/repos?include_archived=${showArchived}`, { signal: controller.signal });
+        clearTimeout(timeoutId);
         if (res.status === 400) {
           loading.style.display = 'none';
           noToken.style.display = 'block';
@@ -346,7 +369,11 @@
 
         renderRepos();
       } catch (e) {
-        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#ef4444;">${e.message}</div>`;
+        clearTimeout(timeoutId);
+        const msg = e.name === 'AbortError'
+          ? 'GitHub API timed out (30s). Check your GITHUB_TOKEN or try again.'
+          : e.message;
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#ef4444;">${escHtml(msg)}</div>`;
       } finally {
         loading.style.display = 'none';
         refreshIcon.style.animation = '';
@@ -467,8 +494,13 @@
           }),
         });
         if (!res.ok) throw new Error(await res.text());
+        const added = pendingRepo;
         closeModal();
-        await loadRepos();
+        // Mark the card as tracked without re-fetching all repos
+        allRepos = allRepos.map(r => r.full_name === added.full_name ? {...r, tracked: true} : r);
+        renderRepos();
+        showToast(`<i data-lucide="check-circle" style="width:16px;height:16px;"></i> <strong>${escHtml(added.github_repo)}</strong> added — <a href="/applications.html" style="color:inherit;text-decoration:underline;">View in Applications →</a>`);
+        lucide.createIcons();
       } catch(e) {
         alert('Failed to add repository: ' + e.message);
         btn.disabled = false;

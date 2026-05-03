@@ -7,12 +7,15 @@ from app.models.application import Application
 logger = logging.getLogger(__name__)
 
 
+_REPO_LIST_LIMIT = 200
+
+
 def list_accessible_repos(token: str) -> list[dict]:
-    """Return all repos accessible to the given GitHub token."""
+    """Return up to the most-recently-updated 200 repos accessible to the given GitHub token."""
     try:
         from github import Github
 
-        g = Github(token)
+        g = Github(token, per_page=100)
         repos = []
         for repo in g.get_user().get_repos(sort="updated"):
             repos.append({
@@ -27,6 +30,8 @@ def list_accessible_repos(token: str) -> list[dict]:
                 "default_branch": repo.default_branch,
                 "updated_at": repo.updated_at.isoformat() if repo.updated_at else None,
             })
+            if len(repos) >= _REPO_LIST_LIMIT:
+                break
         return repos
     except Exception as e:
         logger.error("Failed to list accessible repos: %s", e)
