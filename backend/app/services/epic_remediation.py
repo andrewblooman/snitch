@@ -8,24 +8,25 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def generate_epic_remediation_plan(
+async def generate_epic_remediation_plan(
     uncovered_findings: list["Finding"],
     epic_results: list[dict],
     app_name: str,
 ) -> str:
+    from app.services.llm_provider import MockProvider, get_llm_provider
+
+    provider = get_llm_provider()
+    if isinstance(provider, MockProvider):
+        return _template_plan(uncovered_findings, epic_results, app_name)
+
     try:
-        from anthropic import Anthropic
-        from app.core.config import settings
-        if not settings.ANTHROPIC_API_KEY:
-            raise ValueError("No API key")
-        client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-        return _ai_plan(client, uncovered_findings, epic_results, app_name)
+        return await _ai_plan(provider, uncovered_findings, epic_results, app_name)
     except Exception as exc:
         logger.warning("AI remediation plan unavailable (%s), using template", exc)
         return _template_plan(uncovered_findings, epic_results, app_name)
 
 
-def _ai_plan(client: "Anthropic", uncovered_findings: list["Finding"], epic_results: list[dict], app_name: str) -> str:  # noqa: F821
+async def _ai_plan(provider, uncovered_findings: list["Finding"], epic_results: list[dict], app_name: str) -> str:
     findings_text = _format_findings(uncovered_findings)
     epic_text = _format_epic_issues(epic_results)
 
@@ -49,12 +50,8 @@ Produce a remediation plan that:
 
 Format as markdown."""
 
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=4096,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return response.content[0].text
+    result = await provider.complete(prompt, max_tokens=4096)
+    return result.text
 
 
 def _template_plan(uncovered_findings: list["Finding"], epic_results: list[dict], app_name: str) -> str:

@@ -62,7 +62,7 @@ The `/findings.html` page is the Global Findings Hub — lists all findings plat
 
 The `/compliance.html` page shows compliance posture across 5 frameworks. Each framework card has an SVG score ring (% controls passing), a control breakdown table, and "View findings →" links that navigate to the filtered findings page. The "Reapply Tags" button calls `POST /api/v1/reports/compliance/retag` to re-apply the current rule set to all findings. Tags are stored as JSON arrays on each `Finding` row (e.g. `["OWASP Top 10 2021|A03 — Injection"]`) and applied at scan time by `apply_compliance_tags()` in `services/compliance.py`.
 
-The `/threat-intel.html` page aggregates live RSS from 7 cybersecurity news sources and renders them as cards alongside a 3D globe (globe.gl) showing threat locations. Locations are extracted by Claude AI (`/api/v1/threat-intel/locations`) if `ANTHROPIC_API_KEY` is set, otherwise a keyword-based fallback is used.
+The `/threat-intel.html` page aggregates live RSS from 7 cybersecurity news sources and renders them as cards alongside a 3D globe (globe.gl) showing threat locations. Locations are extracted by the configured LLM provider (`/api/v1/threat-intel/locations`) — works with Anthropic or Ollama; falls back to a keyword matcher if no provider is configured.
 
 ## Commands
 
@@ -100,7 +100,7 @@ cd backend && alembic revision --autogenerate -m "description"
 ```
 backend/app/
 ├── main.py          # FastAPI app, CORS, static mount, lifespan (creates tables on startup)
-├── core/config.py   # pydantic-settings: DATABASE_URL, GITHUB_TOKEN, ANTHROPIC_API_KEY, REDIS_URL
+├── core/config.py   # pydantic-settings: DATABASE_URL, GITHUB_TOKEN, ANTHROPIC_API_KEY, OLLAMA_URL, OLLAMA_MODEL, REDIS_URL
 ├── db/session.py    # async SQLAlchemy engine + get_db() dependency
 ├── models/          # SQLAlchemy ORM: Application, Scan, Finding, Remediation, CiCdScan, Policy, SecretPattern,
 │                    #                 Integration, NotificationRule, JiraIssueLink
@@ -117,7 +117,7 @@ backend/app/
     ├── cicd_normaliser.py # Normalise Semgrep/Grype/Checkov CI/CD JSON output
     ├── policy_evaluator.py # Evaluate policy rules against findings
     ├── rule_catalog.py    # Static catalog of ~37 rules (Checkov/IaC, Semgrep/SAST, Gitleaks/secrets)
-    ├── ai_remediation.py  # Claude integration; falls back to mock plan if no API key
+    ├── ai_remediation.py  # LLM remediation; uses llm_provider.py abstraction (Anthropic/Ollama/mock)
     ├── github_service.py  # GitHub code scanning sync + branch/PR creation via PyGitHub; lookup_public_repo() fetches any public repo (no token required); fetch_github_security_alerts() polls GHAS APIs (code scanning, Dependabot, secret scanning) via httpx
     ├── compliance.py      # 30 compliance mapping rules across OWASP/PCI-DSS/CIS/DORA/SOC2
     ├── slack_service.py   # Slack Block Kit notifications via incoming webhook (httpx)
@@ -173,7 +173,7 @@ Grype scans a container image by name (e.g. `nginx:latest`, `ghcr.io/org/app:sha
 `Policy` model stores rules (min_severity, enabled_scan_types, rule_blocklist, rule_allowlist, action). `policy_evaluator.evaluate_policy()` is called after every scan in `scan_application_task`. Actions: `inform` (log only) or `block` (sets blocked=True in task result). Scan type labels: `sast`, `sca`, `container`, `secrets`, `iac`.
 
 ### AI Remediation
-Uses `claude-3-5-sonnet-20241022` with extended thinking (`budget_tokens=10000`). When `ANTHROPIC_API_KEY` is not set, `_mock_plan()` is returned — no error is raised. The Anthropic client is imported lazily inside the function.
+Provider abstraction lives in `services/llm_provider.py`. `get_llm_provider()` returns `AnthropicProvider` if `ANTHROPIC_API_KEY` is set, `OllamaProvider` if `OLLAMA_URL` is set, or `MockProvider` (template fallback). All providers implement `async complete(prompt, max_tokens, use_thinking)`. Extended thinking (`budget_tokens=10000`) is only enabled for `AnthropicProvider` when `use_thinking=True`; Ollama ignores this flag. When `MockProvider` is active, `ai_remediation.py` returns `_mock_plan()` (structured from actual findings) and `epic_remediation.py` returns `_template_plan()`. No error is raised when no provider is configured. New config vars: `OLLAMA_URL` (optional), `OLLAMA_MODEL` (default `llama3.1`).
 
 ### Testing
 - `pytest-asyncio` with `asyncio_mode = auto` (set in `pytest.ini`).
@@ -182,7 +182,7 @@ Uses `claude-3-5-sonnet-20241022` with extended thinking (`budget_tokens=10000`)
 - HTTP client uses `httpx.AsyncClient` with `ASGITransport`.
 
 ### Settings
-Loaded from `.env` via `pydantic-settings`. See `.env.example`. Optional: `GITHUB_TOKEN`, `ANTHROPIC_API_KEY`. `DATABASE_URL` defaults to the Docker Compose PostgreSQL instance.
+Loaded from `.env` via `pydantic-settings`. See `.env.example`. Optional: `GITHUB_TOKEN`, `ANTHROPIC_API_KEY`, `OLLAMA_URL`, `OLLAMA_MODEL` (default `llama3.1`). `DATABASE_URL` defaults to the Docker Compose PostgreSQL instance.
 
 ### Database Migrations
 The migration `c2b28485c8a7_add_epss_and_compliance` adds `epss_score` (Float), `epss_percentile` (Float), and `compliance_tags` (JSON) to the `findings` table. The migration `009_add_integrations` creates the `integrations`, `notification_rules`, and `jira_issue_links` tables. Always run `alembic upgrade head` inside the backend container after pulling changes that include new migrations. **After applying a migration that adds columns to a model already in use, restart the Celery worker container** (`docker restart snitch-worker-1`) — the worker forks processes at startup and will have a stale SQLAlchemy mapper that doesn't know about the new columns, causing `AttributeError` on access.

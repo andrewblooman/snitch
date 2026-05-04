@@ -1,13 +1,10 @@
 import logging
 from typing import List, Optional
 
-from app.core.config import settings
 from app.models.application import Application
 from app.models.finding import Finding
 
 logger = logging.getLogger(__name__)
-
-AI_MODEL = "claude-3-5-sonnet-20241022"
 
 
 def _build_prompt(app: Application, findings: List[Finding]) -> str:
@@ -82,7 +79,7 @@ def _mock_plan(app: Application, findings: List[Finding]) -> str:
 
     lines = [
         f"# Security Remediation Plan for {app.name}",
-        f"> **Note:** This is a mock plan (ANTHROPIC_API_KEY not configured).",
+        f"> **Note:** This is a template plan — no AI provider available. Set `ANTHROPIC_API_KEY` or `OLLAMA_URL` to enable AI-powered remediation.",
         "",
         f"## Summary",
         f"- **Critical:** {severity_counts['critical']} findings",
@@ -127,34 +124,16 @@ async def generate_remediation_plan(
     app: Application,
     findings: List[Finding],
 ) -> tuple[str, Optional[str]]:
-    """
-    Generate AI remediation plan using Claude.
-    Returns (plan_text, model_used).
-    Falls back to mock plan when API key is not configured.
-    """
-    if not settings.ANTHROPIC_API_KEY:
+    from app.services.llm_provider import MockProvider, get_llm_provider
+
+    provider = get_llm_provider()
+    if isinstance(provider, MockProvider):
         return _mock_plan(app, findings), None
 
     try:
-        import anthropic
-
-        client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
         prompt = _build_prompt(app, findings)
-
-        response = client.messages.create(
-            model=AI_MODEL,
-            max_tokens=16000,
-            thinking={"type": "enabled", "budget_tokens": 10000},
-            messages=[{"role": "user", "content": prompt}],
-        )
-
-        plan_text = ""
-        for block in response.content:
-            if block.type == "text":
-                plan_text += block.text
-
-        return plan_text, AI_MODEL
-
+        result = await provider.complete(prompt, max_tokens=16000, use_thinking=True)
+        return result.text, result.model or None
     except Exception as e:
         logger.error("AI remediation failed: %s", e)
         return _mock_plan(app, findings), None

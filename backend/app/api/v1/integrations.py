@@ -399,7 +399,7 @@ async def crawl_epic(
             app_name = app_obj.name
 
     from app.services.epic_remediation import generate_epic_remediation_plan
-    remediation_plan = generate_epic_remediation_plan(uncovered_findings_objs, epic_results, app_name)
+    remediation_plan = await generate_epic_remediation_plan(uncovered_findings_objs, epic_results, app_name)
 
     return JiraCrawlResponse(
         epic_keys=body.epic_keys,
