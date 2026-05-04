@@ -253,15 +253,15 @@ Risk scores are calculated from open findings:
 
 ## AI Remediation Flow
 
-1. Developer clicks **"Plan Remediation"** on the Application detail page
+1. Developer clicks **"Plan Remediation"** on the Application detail page (header button or the in-page card)
 2. Selected findings are sent to `POST /api/v1/remediation/plan`
-3. The AI service builds a structured prompt and calls `claude-3-5-sonnet-20241022`
-4. The AI plan (Markdown) is displayed in a modal
-5. Developer clicks **"Execute Remediation"**
+3. The AI service builds a structured prompt and calls the configured LLM (Anthropic Claude or Ollama)
+4. The app-detail page shows a **Remediation Card** (between the info/score cards and the stats strip) with a short summary of the plan, status, and an "Open PR" button. A **Remediation Section** at the bottom of the page renders the full plan in a scrollable code block.
+5. Developer clicks **"View full plan ↓"** to smooth-scroll to the full section, or **"Open PR"** to create a GitHub branch + PR immediately
 6. Snitch calls the GitHub API to create a branch and open a Pull Request
-7. PR is tracked in the Reports → Pull Requests view
+7. If a PR already exists, "Open PR" becomes a direct link to the PR URL
 
-> If `ANTHROPIC_API_KEY` is not set, a realistic mock plan is returned for demo purposes.
+> If no AI provider is configured, a structured template plan is returned based on actual finding data.
 
 ---
 
