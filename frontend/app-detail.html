@@ -383,10 +383,6 @@ function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/<
 function getRiskColor(s){return s>=75?'#ef4444':s>=50?'#f59e0b':s>=25?'#f97316':'#10b981';}
 function getRiskLevel(s){if(s>=75)return{label:'Critical',color:'#ef4444',bg:'rgba(239,68,68,0.15)'};if(s>=50)return{label:'High',color:'#f59e0b',bg:'rgba(245,158,11,0.15)'};if(s>=25)return{label:'Medium',color:'#f97316',bg:'rgba(249,115,22,0.15)'};return{label:'Low',color:'#10b981',bg:'rgba(16,185,129,0.15)'};}
 
-function escapeHtml(str){
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
 function severityBadge(sev){
   const map={critical:{color:'#ef4444',bg:'rgba(239,68,68,0.15)',label:'Critical'},high:{color:'#f59e0b',bg:'rgba(245,158,11,0.15)',label:'High'},medium:{color:'#f97316',bg:'rgba(249,115,22,0.15)',label:'Medium'},low:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)',label:'Low'},info:{color:'#94a3b8',bg:'rgba(148,163,184,0.15)',label:'Info'}};
   const s=map[sev?.toLowerCase()]||map.info;
@@ -718,7 +714,7 @@ async function triggerScan(){
 
 // ── Remediations ───────────────────────────────────────────────────────────────
 function remStatusBadge(status){
-  const m={pending:{color:'#f97316',bg:'rgba(249,115,22,0.1)',label:'Pending'},in_progress:{color:'#00e5ff',bg:'rgba(0,229,255,0.1)',label:'In Progress'},completed:{color:'#10b981',bg:'rgba(16,185,129,0.1)',label:'Completed'},failed:{color:'#ef4444',bg:'rgba(239,68,68,0.1)',label:'Failed'}};
+  const m={planned:{color:'#f97316',bg:'rgba(249,115,22,0.1)',label:'Planned'},pending:{color:'#f97316',bg:'rgba(249,115,22,0.1)',label:'Pending'},in_progress:{color:'#00e5ff',bg:'rgba(0,229,255,0.1)',label:'In Progress'},pr_created:{color:'#6366f1',bg:'rgba(99,102,241,0.1)',label:'PR Created'},completed:{color:'#10b981',bg:'rgba(16,185,129,0.1)',label:'Completed'},failed:{color:'#ef4444',bg:'rgba(239,68,68,0.1)',label:'Failed'}};
   const s=m[status]||m.pending;
   return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}44;padding:3px 10px;border-radius:6px;font-size:13px;font-weight:600;">${s.label}</span>`;
 }
@@ -1153,12 +1149,18 @@ function _remSummary(aiPlan){
   return out;
 }
 
+function _safeUrl(url){
+  try{const u=new URL(url);return(u.protocol==='https:'||u.protocol==='http:')?url:'';}catch{return'';}
+}
+
 function _prButton(plan,size){
   const style=size==='sm'?'padding:8px 14px;font-size:14px;':'';
   if(plan.pr_url){
-    return`<a href="${plan.pr_url}" target="_blank" rel="noopener noreferrer" class="btn-primary" style="${style}display:inline-flex;align-items:center;gap:6px;text-decoration:none;"><i data-lucide="git-pull-request" style="width:14px;height:14px;"></i> View PR</a>`;
+    const safeHref=escHtml(_safeUrl(plan.pr_url));
+    if(!safeHref)return'';
+    return`<a href="${safeHref}" target="_blank" rel="noopener noreferrer" class="btn-primary" style="${style}display:inline-flex;align-items:center;gap:6px;text-decoration:none;"><i data-lucide="git-pull-request" style="width:14px;height:14px;"></i> View PR</a>`;
   }
-  return`<button class="btn-primary" style="${style}" onclick="executeRemediationById('${plan.id}',true)"><i data-lucide="git-pull-request" style="width:14px;height:14px;"></i> Open PR</button>`;
+  return`<button class="btn-primary" style="${style}" onclick="executeRemediationById('${escHtml(plan.id)}',true)"><i data-lucide="git-pull-request" style="width:14px;height:14px;"></i> Open PR</button>`;
 }
 
 function renderRemediationCardEmpty(el){
@@ -1184,8 +1186,8 @@ function renderRemediationCardEmpty(el){
 
 function renderRemediationCardWithPlan(el,plan){
   const findingCount=(plan.finding_ids||[]).length;
-  const modelPill=plan.ai_model?`<span style="background:rgba(99,102,241,0.12);color:#a78bfa;border:1px solid rgba(99,102,241,0.25);padding:2px 9px;border-radius:6px;font-size:12px;font-weight:500;font-family:'Fira Code',monospace;">${plan.ai_model}</span>`:'';
-  const summary=_remSummary(plan.ai_plan);
+  const modelPill=plan.ai_model?`<span style="background:rgba(99,102,241,0.12);color:#a78bfa;border:1px solid rgba(99,102,241,0.25);padding:2px 9px;border-radius:6px;font-size:12px;font-weight:500;font-family:'Fira Code',monospace;">${escHtml(plan.ai_model)}</span>`:'';
+  const summary=escHtml(_remSummary(plan.ai_plan));
   el.innerHTML=`
   <div class="card" style="padding:22px 28px;border-color:rgba(99,102,241,0.25);background:linear-gradient(145deg,rgba(99,102,241,0.07),rgba(15,27,52,0.9));">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap;">
@@ -1216,7 +1218,7 @@ function renderRemediationCardWithPlan(el,plan){
 
 function renderRemediationSection(el,plan){
   const findingCount=(plan.finding_ids||[]).length;
-  const modelPill=plan.ai_model?`<span style="background:rgba(99,102,241,0.12);color:#a78bfa;border:1px solid rgba(99,102,241,0.25);padding:3px 10px;border-radius:6px;font-size:13px;font-weight:500;font-family:'Fira Code',monospace;">${plan.ai_model}</span>`:'';
+  const modelPill=plan.ai_model?`<span style="background:rgba(99,102,241,0.12);color:#a78bfa;border:1px solid rgba(99,102,241,0.25);padding:3px 10px;border-radius:6px;font-size:13px;font-weight:500;font-family:'Fira Code',monospace;">${escHtml(plan.ai_model)}</span>`:'';
   el.style.display='block';
   el.innerHTML=`
   <div class="card" style="padding:28px;border-color:rgba(99,102,241,0.2);" id="remediation-section-anchor">
@@ -1235,7 +1237,7 @@ function renderRemediationSection(el,plan){
       ${_prButton(plan,'')}
     </div>
     <div style="background:rgba(0,0,0,0.45);border:1px solid rgba(0,229,255,0.08);border-radius:12px;padding:24px;max-height:560px;overflow-y:auto;">
-      <pre style="margin:0;font-size:14px;line-height:1.75;color:#e2e8f0;white-space:pre-wrap;font-family:'Fira Code',monospace;">${escapeHtml(plan.ai_plan||'No plan content available.')}</pre>
+      <pre style="margin:0;font-size:14px;line-height:1.75;color:#e2e8f0;white-space:pre-wrap;font-family:'Fira Code',monospace;">${escHtml(plan.ai_plan||'No plan content available.')}</pre>
     </div>
   </div>`;
   lucide.createIcons();
