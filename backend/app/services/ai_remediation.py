@@ -79,7 +79,7 @@ def _mock_plan(app: Application, findings: List[Finding]) -> str:
 
     lines = [
         f"# Security Remediation Plan for {app.name}",
-        f"> **Note:** This is a mock plan (ANTHROPIC_API_KEY not configured).",
+        f"> **Note:** This is a template plan — no AI provider available. Set `ANTHROPIC_API_KEY` or `OLLAMA_URL` to enable AI-powered remediation.",
         "",
         f"## Summary",
         f"- **Critical:** {severity_counts['critical']} findings",

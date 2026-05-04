@@ -34,9 +34,7 @@ services:
     restart: on-failure
 
   ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
+    image: ollama/ollama:0.23.0
     volumes:
       - ollama_data:/root/.ollama
     environment:
@@ -54,6 +52,7 @@ services:
       timeout: 5s
       retries: 15
       start_period: 20s
+    profiles: [ollama]
     restart: unless-stopped
 
   backend:
@@ -65,7 +64,7 @@ services:
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
+      OLLAMA_URL: ${OLLAMA_URL:-}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1}
       REDIS_URL: redis://redis:6379/0
       CORS_ORIGINS: '["http://localhost:3000","http://localhost:8000","*"]'
@@ -89,7 +88,7 @@ services:
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
+      OLLAMA_URL: ${OLLAMA_URL:-}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1}
       REDIS_URL: redis://redis:6379/0
     volumes:

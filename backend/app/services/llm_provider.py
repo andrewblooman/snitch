@@ -8,9 +8,6 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-_ANTHROPIC_DEFAULT_MODEL = "claude-sonnet-4-6"
-
-
 @dataclass
 class LLMResponse:
     text: str
@@ -24,7 +21,7 @@ class LLMProvider(ABC):
 
 
 class AnthropicProvider(LLMProvider):
-    def __init__(self, api_key: str, model: str = _ANTHROPIC_DEFAULT_MODEL):
+    def __init__(self, api_key: str, model: str):
         self._api_key = api_key
         self._model = model
 
@@ -72,7 +69,7 @@ class MockProvider(LLMProvider):
 
 def get_llm_provider() -> LLMProvider:
     if settings.ANTHROPIC_API_KEY:
-        return AnthropicProvider(settings.ANTHROPIC_API_KEY)
+        return AnthropicProvider(settings.ANTHROPIC_API_KEY, settings.ANTHROPIC_MODEL)
     if settings.OLLAMA_URL:
         return OllamaProvider(settings.OLLAMA_URL, settings.OLLAMA_MODEL)
     return MockProvider()

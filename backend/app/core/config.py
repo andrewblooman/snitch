@@ -13,6 +13,7 @@ class Settings(BaseSettings):
 
     GITHUB_TOKEN: Optional[str] = None
     ANTHROPIC_API_KEY: Optional[str] = None
+    ANTHROPIC_MODEL: str = "claude-sonnet-4-6"
     OLLAMA_URL: Optional[str] = None
     OLLAMA_MODEL: str = "llama3.1"
     REDIS_URL: str = "redis://redis:6379/0"
