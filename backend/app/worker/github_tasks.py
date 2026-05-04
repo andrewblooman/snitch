@@ -87,13 +87,15 @@ def poll_github_security_task(self, app_id: str | None = None):
         db.close()
 
 
-_GHAS_SCANNERS = frozenset({"codeql", "github_secret_scanning", "dependabot"})
-
-
 def _has_native_duplicate(db, app_id, finding: dict) -> bool:
-    """Return True if a native (non-GHAS) scanner already tracks an equivalent finding."""
+    """Return True if a native (non-GHAS) scanner already tracks an equivalent finding.
+
+    Uses github_alert_number IS NULL as the native-finding discriminator — all GHAS
+    findings have a non-null alert number; native scanner findings never do.
+    Uses .scalars().first() to safely handle multiple matching rows.
+    """
     scanner = finding.get("scanner", "")
-    finding_type = finding.get("finding_type", "")
+    finding_type = (finding.get("finding_type") or "").lower()
 
     if scanner == "github_secret_scanning":
         return False
@@ -109,10 +111,10 @@ def _has_native_duplicate(db, app_id, finding: dict) -> bool:
                     Finding.application_id == app_id,
                     Finding.cve_id == cve_id,
                     Finding.package_name == package_name,
-                    Finding.scanner.notin_(_GHAS_SCANNERS),
+                    Finding.github_alert_number.is_(None),
                 )
             )
-        ).scalar_one_or_none()
+        ).scalars().first()
         return existing is not None
 
     if finding_type == "sast":
@@ -126,10 +128,10 @@ def _has_native_duplicate(db, app_id, finding: dict) -> bool:
                     Finding.application_id == app_id,
                     Finding.rule_id == rule_id,
                     Finding.file_path == file_path,
-                    Finding.scanner.notin_(_GHAS_SCANNERS),
+                    Finding.github_alert_number.is_(None),
                 )
             )
-        ).scalar_one_or_none()
+        ).scalars().first()
         return existing is not None
 
     return False

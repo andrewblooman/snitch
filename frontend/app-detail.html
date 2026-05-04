@@ -433,6 +433,7 @@ function renderAppInfo(app){
   document.getElementById('app-info-card').innerHTML = `
     <div style="position:relative;">
     ${repoUrl ? `<a href="${repoUrl}" target="_blank" rel="noopener noreferrer"
+         aria-label="View ${escHtml(app.github_org)}/${escHtml(app.github_repo)} on GitHub"
          style="position:absolute;top:0;right:0;width:34px;height:34px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#94a3b8;text-decoration:none;transition:all 0.2s;z-index:1;"
          title="${escHtml(app.github_org)}/${escHtml(app.github_repo)} — View on GitHub"
          onmouseover="this.style.borderColor='rgba(0,229,255,0.4)';this.style.color='#00e5ff';this.style.background='rgba(0,229,255,0.1)'"
@@ -917,7 +918,7 @@ function renderCommitsSubTab(commits){
         <div style="font-size:14px;font-weight:500;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escHtml(c.message)}">${escHtml(c.message||'(no message)')}</div>
         <div style="font-size:12px;color:#475569;margin-top:2px;display:flex;align-items:center;gap:8px;">
           ${c.author_login
-            ?`<a href="https://github.com/${escHtml(c.author_login)}" target="_blank" style="color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#00e5ff'" onmouseout="this.style.color='#94a3b8'">@${escHtml(c.author_login)}</a>`
+            ?`<a href="https://github.com/${escHtml(c.author_login)}" target="_blank" rel="noopener noreferrer" style="color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#00e5ff'" onmouseout="this.style.color='#94a3b8'">@${escHtml(c.author_login)}</a>`
             :`<span>${escHtml(c.author_name||'Unknown')}</span>`
           }
           <span style="color:#334155;">·</span>
@@ -926,7 +927,7 @@ function renderCommitsSubTab(commits){
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
         <span style="font-size:12px;font-family:'Fira Code',monospace;color:#475569;background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;">${escHtml(c.short_sha||'')}</span>
-        ${c.commit_url?`<a href="${escHtml(c.commit_url)}" target="_blank" style="color:#475569;display:flex;align-items:center;" title="View on GitHub" onmouseover="this.style.color='#00e5ff'" onmouseout="this.style.color='#475569'"><i data-lucide="external-link" style="width:13px;height:13px;"></i></a>`:''}
+        ${c.commit_url?`<a href="${escHtml(c.commit_url)}" target="_blank" rel="noopener noreferrer" style="color:#475569;display:flex;align-items:center;" title="View on GitHub" onmouseover="this.style.color='#00e5ff'" onmouseout="this.style.color='#475569'"><i data-lucide="external-link" style="width:13px;height:13px;"></i></a>`:''}
       </div>
     </div>
   `).join('')}</div>`;
