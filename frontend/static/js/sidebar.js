@@ -31,6 +31,7 @@
         { href: '/index.html',        icon: 'layout-dashboard', label: 'Dashboard',    matchPaths: ['/index.html', '/'] },
         { href: '/applications.html', icon: 'server',           label: 'Applications', matchPaths: ['/applications.html', '/app-detail.html'] },
         { href: '/findings.html',     icon: 'list',             label: 'Findings',     matchPaths: ['/findings.html'] },
+        { href: '/pr-reviews.html',   icon: 'git-pull-request', label: 'PR Reviews',   matchPaths: ['/pr-reviews.html'] },
         { href: '/reports.html',      icon: 'bar-chart-3',      label: 'Reports',      matchPaths: ['/reports.html'] },
         { href: '/secrets.html',      icon: 'key',              label: 'Secrets',      matchPaths: ['/secrets.html'] },
         { href: '/threat-intel.html', icon: 'radar',            label: 'Threat Intel', matchPaths: ['/threat-intel.html'] },

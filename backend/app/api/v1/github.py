@@ -1,6 +1,6 @@
 import asyncio
 import uuid
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -10,7 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.db.session import get_db
 from app.models.application import Application
-from app.services.github_service import list_accessible_repos, lookup_public_repo
+from app.models.finding import Finding
+from app.services.github_service import fetch_pull_requests, list_accessible_repos, lookup_public_repo
 
 router = APIRouter(prefix="/github", tags=["github"])
 
@@ -101,3 +102,141 @@ async def sync_github_alerts(app_id: uuid.UUID, db: AsyncSession = Depends(get_d
     from app.worker.github_tasks import poll_github_security_task
     task = poll_github_security_task.delay(str(app_id))
     return {"task_id": task.id, "status": "queued", "app_id": str(app_id)}
+
+
+class PRFinding(BaseModel):
+    id: uuid.UUID
+    title: str
+    severity: str
+    finding_type: str
+    scanner: str
+    status: str
+    file_path: Optional[str]
+    line_number: Optional[int]
+    rule_id: Optional[str]
+    cve_id: Optional[str]
+    github_alert_url: Optional[str]
+    created_at: Optional[str]
+
+    model_config = {"from_attributes": True}
+
+
+class PRReview(BaseModel):
+    pr_number: int
+    title: str
+    state: str
+    author: Optional[str]
+    author_url: Optional[str]
+    pr_url: str
+    base_branch: Optional[str]
+    head_branch: Optional[str]
+    created_at: Optional[str]
+    updated_at: Optional[str]
+    merged_at: Optional[str]
+    closed_at: Optional[str]
+    draft: bool
+    merged: bool
+    findings_introduced: List[PRFinding]
+    findings_addressed: List[PRFinding]
+
+
+class PRReviewsResponse(BaseModel):
+    application_id: uuid.UUID
+    application_name: str
+    github_org: str
+    github_repo: str
+    total_prs: int
+    prs: List[PRReview]
+
+
+@router.get("/apps/{app_id}/pr-reviews", response_model=PRReviewsResponse)
+async def get_pr_reviews(
+    app_id: uuid.UUID,
+    limit: int = Query(20, ge=1, le=100, description="Number of recent PRs to fetch"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Return recent pull requests for an application's GitHub repo, annotated with
+    security findings introduced (open findings linked to the PR) and findings
+    addressed (fixed findings linked to the PR).
+    """
+    result = await db.execute(select(Application).where(Application.id == app_id))
+    app = result.scalar_one_or_none()
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+    if not app.github_org or not app.github_repo:
+        raise HTTPException(status_code=400, detail="Application has no GitHub repository configured")
+
+    token = settings.GITHUB_TOKEN or None
+
+    # Fetch PRs from GitHub
+    pull_requests = await fetch_pull_requests(app.github_org, app.github_repo, token, limit=limit)
+
+    if not pull_requests:
+        return PRReviewsResponse(
+            application_id=app.id,
+            application_name=app.name,
+            github_org=app.github_org,
+            github_repo=app.github_repo,
+            total_prs=0,
+            prs=[],
+        )
+
+    pr_numbers = [pr["pr_number"] for pr in pull_requests if pr["pr_number"]]
+
+    # Fetch all findings linked to these PR numbers
+    findings_result = await db.execute(
+        select(Finding).where(
+            Finding.application_id == app_id,
+            Finding.pr_number.in_(pr_numbers),
+        )
+    )
+    all_findings: list[Finding] = list(findings_result.scalars().all())
+
+    # Group findings by PR number
+    findings_by_pr: Dict[int, Dict[str, list]] = {}
+    for pr_num in pr_numbers:
+        findings_by_pr[pr_num] = {"introduced": [], "addressed": []}
+
+    for f in all_findings:
+        if f.pr_number not in findings_by_pr:
+            continue
+        finding_dict: Dict[str, Any] = {
+            "id": f.id,
+            "title": f.title,
+            "severity": f.severity,
+            "finding_type": f.finding_type,
+            "scanner": f.scanner,
+            "status": f.status,
+            "file_path": f.file_path,
+            "line_number": f.line_number,
+            "rule_id": f.rule_id,
+            "cve_id": f.cve_id,
+            "github_alert_url": f.github_alert_url,
+            "created_at": f.created_at.isoformat() if f.created_at else None,
+        }
+        if f.status in ("open", "accepted", "false_positive"):
+            findings_by_pr[f.pr_number]["introduced"].append(finding_dict)
+        else:
+            findings_by_pr[f.pr_number]["addressed"].append(finding_dict)
+
+    prs: list[PRReview] = []
+    for pr in pull_requests:
+        pr_num = pr["pr_number"]
+        if pr_num is None:
+            continue
+        pr_findings = findings_by_pr.get(pr_num, {"introduced": [], "addressed": []})
+        prs.append(PRReview(
+            **pr,
+            findings_introduced=[PRFinding(**f) for f in pr_findings["introduced"]],
+            findings_addressed=[PRFinding(**f) for f in pr_findings["addressed"]],
+        ))
+
+    return PRReviewsResponse(
+        application_id=app.id,
+        application_name=app.name,
+        github_org=app.github_org,
+        github_repo=app.github_repo,
+        total_prs=len(prs),
+        prs=prs,
+    )

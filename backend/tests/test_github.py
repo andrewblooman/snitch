@@ -1,7 +1,7 @@
 """
 Tests for the GitHub service and the /api/v1/github/repos endpoint.
 """
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, AsyncMock
 
 import pytest
 from httpx import AsyncClient
@@ -28,6 +28,42 @@ def _mock_repo(full_name: str, private: bool = False, archived: bool = False, la
     from datetime import datetime, timezone
     repo.updated_at = datetime(2024, 1, 1, tzinfo=timezone.utc)
     return repo
+
+
+_MOCK_PR_LIST = [
+    {
+        "pr_number": 42,
+        "title": "Add authentication middleware",
+        "state": "open",
+        "author": "alice",
+        "author_url": "https://github.com/alice",
+        "pr_url": "https://github.com/acme/api/pull/42",
+        "base_branch": "main",
+        "head_branch": "feat/auth",
+        "created_at": "2024-03-01T10:00:00Z",
+        "updated_at": "2024-03-02T10:00:00Z",
+        "merged_at": None,
+        "closed_at": None,
+        "draft": False,
+        "merged": False,
+    },
+    {
+        "pr_number": 41,
+        "title": "Fix XSS vulnerability",
+        "state": "closed",
+        "author": "bob",
+        "author_url": "https://github.com/bob",
+        "pr_url": "https://github.com/acme/api/pull/41",
+        "base_branch": "main",
+        "head_branch": "fix/xss",
+        "created_at": "2024-02-28T08:00:00Z",
+        "updated_at": "2024-03-01T08:00:00Z",
+        "merged_at": "2024-03-01T08:00:00Z",
+        "closed_at": "2024-03-01T08:00:00Z",
+        "draft": False,
+        "merged": True,
+    },
+]
 
 
 # ---------------------------------------------------------------------------
@@ -230,3 +266,145 @@ async def test_github_repos_marks_tracked_app(client: AsyncClient):
     assert len(data) == 1
     assert data[0]["tracked"] is True
     assert data[0]["application_id"] == app_id
+
+
+# ---------------------------------------------------------------------------
+# GET /api/v1/github/apps/{app_id}/pr-reviews endpoint tests
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_pr_reviews_app_not_found(client: AsyncClient):
+    import uuid
+    fake_id = str(uuid.uuid4())
+    resp = await client.get(f"/api/v1/github/apps/{fake_id}/pr-reviews")
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_pr_reviews_no_github_repo(client: AsyncClient):
+    """An application with no GitHub repo configured should return 400."""
+    create_resp = await client.post("/api/v1/applications", json={
+        "name": "no-repo-app",
+        "github_org": "",
+        "github_repo": "",
+        "repo_url": "https://example.com",
+        "team_name": "Backend",
+    })
+    assert create_resp.status_code == 201
+    app_id = create_resp.json()["id"]
+
+    resp = await client.get(f"/api/v1/github/apps/{app_id}/pr-reviews")
+    assert resp.status_code == 400
+    assert "GitHub repository" in resp.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_pr_reviews_returns_prs_with_findings(client: AsyncClient):
+    """PRs with linked findings should be included in findings_introduced."""
+    create_resp = await client.post("/api/v1/applications", json={
+        "name": "pr-test-app",
+        "github_org": "acme",
+        "github_repo": "api",
+        "repo_url": "https://github.com/acme/api",
+        "team_name": "Security",
+    })
+    assert create_resp.status_code == 201
+    app_id = create_resp.json()["id"]
+
+    with patch(
+        "app.api.v1.github.fetch_pull_requests",
+        new_callable=AsyncMock,
+        return_value=_MOCK_PR_LIST,
+    ):
+        resp = await client.get(f"/api/v1/github/apps/{app_id}/pr-reviews")
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["application_id"] == app_id
+    assert data["github_org"] == "acme"
+    assert data["github_repo"] == "api"
+    assert data["total_prs"] == 2
+
+    pr_numbers = [pr["pr_number"] for pr in data["prs"]]
+    assert 42 in pr_numbers
+    assert 41 in pr_numbers
+
+    # No findings in DB for these PRs so both lists should be empty
+    pr42 = next(pr for pr in data["prs"] if pr["pr_number"] == 42)
+    assert pr42["findings_introduced"] == []
+    assert pr42["findings_addressed"] == []
+    assert pr42["state"] == "open"
+    assert pr42["merged"] is False
+
+
+@pytest.mark.asyncio
+async def test_pr_reviews_introduced_finding_appears(client: AsyncClient, db_session):
+    """An open finding linked to a PR should appear in findings_introduced."""
+    import uuid
+
+    create_resp = await client.post("/api/v1/applications", json={
+        "name": "pr-finding-app",
+        "github_org": "acme",
+        "github_repo": "api2",
+        "repo_url": "https://github.com/acme/api2",
+        "team_name": "Security",
+    })
+    assert create_resp.status_code == 201
+    app_id = create_resp.json()["id"]
+
+    # Seed a finding linked to PR #42 directly via the shared db_session
+    from app.models.finding import Finding
+    app_uuid = uuid.UUID(app_id)
+    finding = Finding(
+        id=uuid.uuid4(),
+        application_id=app_uuid,
+        title="SQL Injection in user endpoint",
+        severity="critical",
+        finding_type="sast",
+        scanner="semgrep",
+        status="open",
+        pr_number=42,
+        pr_url="https://github.com/acme/api2/pull/42",
+    )
+    db_session.add(finding)
+    await db_session.flush()
+
+    with patch(
+        "app.api.v1.github.fetch_pull_requests",
+        new_callable=AsyncMock,
+        return_value=_MOCK_PR_LIST,
+    ):
+        resp = await client.get(f"/api/v1/github/apps/{app_id}/pr-reviews")
+
+    assert resp.status_code == 200
+    data = resp.json()
+    pr42 = next(pr for pr in data["prs"] if pr["pr_number"] == 42)
+    assert len(pr42["findings_introduced"]) == 1
+    assert pr42["findings_introduced"][0]["title"] == "SQL Injection in user endpoint"
+    assert pr42["findings_introduced"][0]["severity"] == "critical"
+
+
+@pytest.mark.asyncio
+async def test_pr_reviews_empty_when_no_prs(client: AsyncClient):
+    """When GitHub returns no PRs the response should have total_prs=0."""
+    create_resp = await client.post("/api/v1/applications", json={
+        "name": "empty-pr-app",
+        "github_org": "acme",
+        "github_repo": "quiet-repo",
+        "repo_url": "https://github.com/acme/quiet-repo",
+        "team_name": "Infra",
+    })
+    assert create_resp.status_code == 201
+    app_id = create_resp.json()["id"]
+
+    with patch(
+        "app.api.v1.github.fetch_pull_requests",
+        new_callable=AsyncMock,
+        return_value=[],
+    ):
+        resp = await client.get(f"/api/v1/github/apps/{app_id}/pr-reviews")
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total_prs"] == 0
+    assert data["prs"] == []
