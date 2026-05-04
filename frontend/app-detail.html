@@ -105,6 +105,9 @@
         </div>
       </div>
 
+      <!-- Remediation Card -->
+      <div id="remediation-card" style="margin-bottom:20px;"></div>
+
       <!-- Finding Stats Strip -->
       <div id="finding-stats" class="card" style="display:flex;align-items:stretch;overflow:hidden;margin-bottom:24px;min-height:90px;">
         <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:18px 12px;animation:pulse 1.5s infinite;">
@@ -282,6 +285,9 @@
           </div>
         </div>
       </div>
+
+      <!-- Remediation Detail Section -->
+      <div id="remediation-section" style="display:none;margin-top:28px;"></div>
     </main>
   </div>
 
@@ -376,6 +382,10 @@ let currentPlanId = null;
 function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function getRiskColor(s){return s>=75?'#ef4444':s>=50?'#f59e0b':s>=25?'#f97316':'#10b981';}
 function getRiskLevel(s){if(s>=75)return{label:'Critical',color:'#ef4444',bg:'rgba(239,68,68,0.15)'};if(s>=50)return{label:'High',color:'#f59e0b',bg:'rgba(245,158,11,0.15)'};if(s>=25)return{label:'Medium',color:'#f97316',bg:'rgba(249,115,22,0.15)'};return{label:'Low',color:'#10b981',bg:'rgba(16,185,129,0.15)'};}
+
+function escapeHtml(str){
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 function severityBadge(sev){
   const map={critical:{color:'#ef4444',bg:'rgba(239,68,68,0.15)',label:'Critical'},high:{color:'#f59e0b',bg:'rgba(245,158,11,0.15)',label:'High'},medium:{color:'#f97316',bg:'rgba(249,115,22,0.15)',label:'Medium'},low:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)',label:'Low'},info:{color:'#94a3b8',bg:'rgba(148,163,184,0.15)',label:'Info'}};
@@ -729,7 +739,7 @@ function renderRemediationsTab(items){
       <div style="font-size:14px;color:#475569;margin-bottom:12px;">${(r.finding_ids||[]).length} finding${(r.finding_ids||[]).length!==1?'s':''} addressed</div>
       ${r.pr_url?`<a href="${r.pr_url}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;color:#00e5ff;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:12px;"><i data-lucide="git-pull-request" style="width:13px;height:13px;"></i>View Pull Request</a>`:''}
       <div style="display:flex;gap:8px;margin-top:auto;">
-        <button class="btn-secondary" style="flex:1;padding:8px;font-size:14px;" onclick="viewPlan('${r.id}',\`${encodeURIComponent(r.plan_content||'No content available.')}\`)">
+        <button class="btn-secondary" style="flex:1;padding:8px;font-size:14px;" onclick="viewPlan('${r.id}',\`${encodeURIComponent(r.ai_plan||'No content available.')}\`)">
           <i data-lucide="eye" style="width:13px;height:13px;"></i> View Plan
         </button>
         <button class="btn-secondary" style="padding:8px 12px;font-size:14px;${r.status==='completed'?'opacity:0.4;cursor:not-allowed;':''}" ${r.status==='completed'?'disabled':''} onclick="executeRemediationById('${r.id}')">
@@ -747,12 +757,13 @@ function viewPlan(id, encodedContent){
   lucide.createIcons();
 }
 
-async function executeRemediationById(planId){
+async function executeRemediationById(planId,refreshCard=false){
   try{
     const res=await fetch(`/api/v1/remediation/${planId}/execute`,{method:'POST'});
     if(!res.ok)throw new Error('Execution failed');
-    showToast('Remediation execution started!','success');
+    showToast('Remediation execution started! PR will be created shortly.','success');
     loadRemediationsTab();
+    if(refreshCard)loadRemediationCard();
   }catch(e){showToast(e.message,'error');}
 }
 
@@ -812,8 +823,9 @@ async function generatePlan(){
     setTimeout(()=>{
       document.getElementById('rem-loading').style.display='none';
       document.getElementById('rem-step2').style.display='block';
-      document.getElementById('plan-content').textContent=data.plan_content||JSON.stringify(data,null,2);
+      document.getElementById('plan-content').textContent=data.ai_plan||JSON.stringify(data,null,2);
       lucide.createIcons();
+      loadRemediationCard();
     },500);
   }catch(e){
     clearInterval(interval);
@@ -1108,6 +1120,127 @@ async function loadScansTab(){
   }
 }
 
+// ── Remediation Card & Section ─────────────────────────────────────────────────
+async function loadRemediationCard(){
+  if(!appId)return;
+  const cardEl=document.getElementById('remediation-card');
+  const sectionEl=document.getElementById('remediation-section');
+  try{
+    const res=await fetch(`/api/v1/remediation?application_id=${appId}&page_size=1`);
+    if(!res.ok)throw new Error();
+    const data=await res.json();
+    const items=data.items||data||[];
+    if(items.length===0){
+      renderRemediationCardEmpty(cardEl);
+      sectionEl.style.display='none';
+    } else {
+      const plan=items[0];
+      renderRemediationCardWithPlan(cardEl,plan);
+      renderRemediationSection(sectionEl,plan);
+    }
+  }catch(e){
+    cardEl.innerHTML='';
+    sectionEl.style.display='none';
+  }
+}
+
+function _remSummary(aiPlan){
+  if(!aiPlan)return'No summary available.';
+  const text=aiPlan.replace(/^#+\s+.+$/mg,'').replace(/\*\*/g,'').trim();
+  const words=text.split(/\s+/);
+  let out=words.slice(0,40).join(' ');
+  if(words.length>40)out+='…';
+  return out;
+}
+
+function _prButton(plan,size){
+  const style=size==='sm'?'padding:8px 14px;font-size:14px;':'';
+  if(plan.pr_url){
+    return`<a href="${plan.pr_url}" target="_blank" rel="noopener noreferrer" class="btn-primary" style="${style}display:inline-flex;align-items:center;gap:6px;text-decoration:none;"><i data-lucide="git-pull-request" style="width:14px;height:14px;"></i> View PR</a>`;
+  }
+  return`<button class="btn-primary" style="${style}" onclick="executeRemediationById('${plan.id}',true)"><i data-lucide="git-pull-request" style="width:14px;height:14px;"></i> Open PR</button>`;
+}
+
+function renderRemediationCardEmpty(el){
+  el.innerHTML=`
+  <div class="card" style="padding:22px 28px;border-color:rgba(99,102,241,0.2);background:linear-gradient(145deg,rgba(99,102,241,0.06),rgba(168,85,247,0.04));">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="width:42px;height:42px;background:linear-gradient(135deg,rgba(99,102,241,0.18),rgba(168,85,247,0.18));border:1px solid rgba(99,102,241,0.3);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i data-lucide="sparkles" style="width:20px;height:20px;color:#6366f1;"></i>
+        </div>
+        <div>
+          <div style="font-size:16px;font-weight:600;color:#f1f5f9;font-family:'Fira Code',monospace;">AI Remediation Plan</div>
+          <div style="font-size:14px;color:#475569;margin-top:2px;">No plan generated yet. Select findings and let the AI build a step-by-step fix plan.</div>
+        </div>
+      </div>
+      <button class="btn-secondary" onclick="openRemediationModal()" style="flex-shrink:0;">
+        <i data-lucide="sparkles" style="width:15px;height:15px;color:#6366f1;"></i> Plan Remediation
+      </button>
+    </div>
+  </div>`;
+  lucide.createIcons();
+}
+
+function renderRemediationCardWithPlan(el,plan){
+  const findingCount=(plan.finding_ids||[]).length;
+  const modelPill=plan.ai_model?`<span style="background:rgba(99,102,241,0.12);color:#a78bfa;border:1px solid rgba(99,102,241,0.25);padding:2px 9px;border-radius:6px;font-size:12px;font-weight:500;font-family:'Fira Code',monospace;">${plan.ai_model}</span>`:'';
+  const summary=_remSummary(plan.ai_plan);
+  el.innerHTML=`
+  <div class="card" style="padding:22px 28px;border-color:rgba(99,102,241,0.25);background:linear-gradient(145deg,rgba(99,102,241,0.07),rgba(15,27,52,0.9));">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+          <div style="width:36px;height:36px;background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(168,85,247,0.2));border:1px solid rgba(99,102,241,0.35);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i data-lucide="sparkles" style="width:18px;height:18px;color:#6366f1;"></i>
+          </div>
+          <span style="font-size:16px;font-weight:700;color:#f1f5f9;font-family:'Fira Code',monospace;">AI Remediation Plan</span>
+          ${remStatusBadge(plan.status)}
+          ${modelPill}
+        </div>
+        <div style="font-size:13px;color:#475569;margin-bottom:8px;">
+          <span style="color:#6366f1;font-weight:600;font-family:'Fira Code',monospace;">${findingCount}</span> finding${findingCount!==1?'s':''} covered &nbsp;·&nbsp; ${formatDate(plan.created_at)}
+        </div>
+        <div style="font-size:14px;color:#64748b;line-height:1.6;font-style:italic;">"${summary}"</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0;align-items:flex-end;">
+        <button class="btn-secondary" style="padding:8px 14px;font-size:14px;white-space:nowrap;" onclick="document.getElementById('remediation-section').scrollIntoView({behavior:'smooth'})">
+          <i data-lucide="eye" style="width:14px;height:14px;"></i> View full plan ↓
+        </button>
+        ${_prButton(plan,'sm')}
+      </div>
+    </div>
+  </div>`;
+  lucide.createIcons();
+}
+
+function renderRemediationSection(el,plan){
+  const findingCount=(plan.finding_ids||[]).length;
+  const modelPill=plan.ai_model?`<span style="background:rgba(99,102,241,0.12);color:#a78bfa;border:1px solid rgba(99,102,241,0.25);padding:3px 10px;border-radius:6px;font-size:13px;font-weight:500;font-family:'Fira Code',monospace;">${plan.ai_model}</span>`:'';
+  el.style.display='block';
+  el.innerHTML=`
+  <div class="card" style="padding:28px;border-color:rgba(99,102,241,0.2);" id="remediation-section-anchor">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="width:40px;height:40px;background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(168,85,247,0.2));border:1px solid rgba(99,102,241,0.35);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i data-lucide="file-text" style="width:19px;height:19px;color:#6366f1;"></i>
+        </div>
+        <div>
+          <div style="font-size:17px;font-weight:700;color:#00e5ff;font-family:'Fira Code',monospace;">AI Remediation Plan</div>
+          <div style="font-size:13px;color:#475569;margin-top:2px;">${findingCount} finding${findingCount!==1?'s':''} &nbsp;·&nbsp; ${formatDate(plan.created_at)}</div>
+        </div>
+        ${remStatusBadge(plan.status)}
+        ${modelPill}
+      </div>
+      ${_prButton(plan,'')}
+    </div>
+    <div style="background:rgba(0,0,0,0.45);border:1px solid rgba(0,229,255,0.08);border-radius:12px;padding:24px;max-height:560px;overflow-y:auto;">
+      <pre style="margin:0;font-size:14px;line-height:1.75;color:#e2e8f0;white-space:pre-wrap;font-family:'Fira Code',monospace;">${escapeHtml(plan.ai_plan||'No plan content available.')}</pre>
+    </div>
+  </div>`;
+  lucide.createIcons();
+}
+
 async function loadRemediationsTab(){
   const el=document.getElementById('remediations-grid');
   el.innerHTML='<div style="text-align:center;padding:32px;"><div style="animation:spin 1s linear infinite;display:inline-block;width:24px;height:24px;border:2px solid rgba(255,255,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></div>';
@@ -1267,6 +1400,7 @@ async function loadPage(){
 
     allFindings=await fetchAllFindings(`/api/v1/applications/${appId}/findings`);
     applyFindingFilters();
+    loadRemediationCard();
   }catch(e){
     document.getElementById('page-title').textContent='Error Loading App';
     showToast(e.message,'error');
