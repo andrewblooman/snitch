@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/python-3.13-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115.6-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Docker](https://img.shields.io/badge/docker-compose-2496ED.svg?logo=docker&logoColor=white)](docker-compose.yml)
-[![Powered by Claude](https://img.shields.io/badge/AI-Claude%203.5%20Sonnet-orange.svg?logo=anthropic)](https://www.anthropic.com/)
+[![Powered by AI](https://img.shields.io/badge/AI-Claude%20%7C%20Ollama-orange.svg?logo=anthropic)](https://www.anthropic.com/)
 [![GitHub Issues](https://img.shields.io/github/issues/andrewblooman/snitch)](https://github.com/andrewblooman/snitch/issues)
 
 > **Snitch** is a developer-focused AppSec platform that collects security findings from Semgrep (SAST), Grype (container scanning), Trivy (SCA), Checkov (IaC/Terraform), and Gitleaks (secrets), calculates per-application risk scores, and provides AI-powered remediation via Anthropic Claude.
@@ -43,7 +43,7 @@
 
 ### Prerequisites
 - Docker Desktop or Docker Engine + Compose v2
-- (Optional) Anthropic API key for AI remediation
+- (Optional) AI provider — Anthropic API key **or** a local [Ollama](https://ollama.com) instance (free)
 - (Optional) GitHub personal access token for GitHub Security sync
 
 ### 1. Clone and configure
@@ -78,6 +78,31 @@ curl -X POST http://localhost:8000/api/v1/seed
 ```
 
 Creates 8 realistic demo applications with findings from Semgrep, Grype, and Trivy across 4 teams.
+
+### 4. AI provider (optional)
+
+Snitch supports two AI backends. Configure one in `.env` — Anthropic takes priority if both are set.
+
+#### Option A — Anthropic Claude (cloud)
+
+```env
+ANTHROPIC_API_KEY=sk-ant-your-key-here
+```
+
+#### Option B — Ollama (free, local, no API key required)
+
+```bash
+# Install Ollama: https://ollama.com
+ollama pull llama3.1          # or codellama, mistral, etc.
+```
+
+```env
+# In .env (use host.docker.internal when running via Docker Compose)
+OLLAMA_URL=http://host.docker.internal:11434
+OLLAMA_MODEL=llama3.1
+```
+
+If neither is configured, Snitch falls back to template-based remediation plans — all scanning, risk scoring, compliance, and reporting features work without any AI provider.
 
 ---
 

@@ -93,14 +93,13 @@ async def get_locations():
         
         text_corpus = "\n".join([f"Title: {i['title']}\nDesc: {i['description']}" for i in items])
         
-        from app.core.config import settings
-        
-        # 2. Try Anthropic (async client — does not block the event loop)
-        if settings.ANTHROPIC_API_KEY:
+        import json
+        from app.services.llm_provider import MockProvider, get_llm_provider
+
+        # 2. Try LLM provider (Anthropic or Ollama)
+        provider = get_llm_provider()
+        if not isinstance(provider, MockProvider):
             try:
-                from anthropic import AsyncAnthropic
-                import json
-                client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
                 prompt = (
                     "Analyze the following cybersecurity news items. Extract up to 5 distinct geographic countries or regions "
                     "mentioned as targets or origins of attacks. Return ONLY a strict JSON array of objects. "
@@ -110,20 +109,17 @@ async def get_locations():
                     "Output strict JSON array only, no markdown blocks or conversational text."
                 )
 
-                response = await client.messages.create(
-                    model="claude-3-5-sonnet-20241022",
-                    max_tokens=1000,
-                    messages=[{"role": "user", "content": prompt}]
-                )
-
-                text_out = response.content[0].text.strip()
-                if text_out.startswith("```json"): text_out = text_out.replace("```json", "", 1)
-                if text_out.endswith("```"): text_out = text_out[:-3]
+                result = await provider.complete(prompt, max_tokens=1000)
+                text_out = result.text.strip()
+                if text_out.startswith("```json"):
+                    text_out = text_out.replace("```json", "", 1)
+                if text_out.endswith("```"):
+                    text_out = text_out[:-3]
 
                 locations = json.loads(text_out.strip())
                 return {"locations": locations}
             except Exception as e:
-                logger.error("Anthropic location extraction failed: %s", e)
+                logger.error("LLM location extraction failed: %s", e)
                 # Fall through to fallback
                 
         # 3. Fallback Keyword Matcher
