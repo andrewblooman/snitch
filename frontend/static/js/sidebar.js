@@ -31,7 +31,6 @@
         { href: '/index.html',        icon: 'layout-dashboard', label: 'Dashboard',    matchPaths: ['/index.html', '/'] },
         { href: '/applications.html', icon: 'server',           label: 'Applications', matchPaths: ['/applications.html', '/app-detail.html'] },
         { href: '/findings.html',     icon: 'list',             label: 'Findings',     matchPaths: ['/findings.html'] },
-        { href: '/pr-reviews.html',   icon: 'git-pull-request', label: 'PR Reviews',   matchPaths: ['/pr-reviews.html'] },
         { href: '/reports.html',      icon: 'bar-chart-3',      label: 'Reports',      matchPaths: ['/reports.html'] },
         { href: '/secrets.html',      icon: 'key',              label: 'Secrets',      matchPaths: ['/secrets.html'] },
         { href: '/threat-intel.html', icon: 'radar',            label: 'Threat Intel', matchPaths: ['/threat-intel.html'] },
@@ -124,7 +123,7 @@
   }).join('');
 
   var sidebarHTML = ''
-    + '<aside id="sidebar" style="width:260px;min-height:100vh;background:#060712;border-right:1px solid rgba(0,229,255,0.10);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;">'
+    + '<aside id="sidebar" style="width:260px;height:100vh;overflow:hidden;background:#060712;border-right:1px solid rgba(0,229,255,0.10);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;">'
     +   '<div style="padding:24px 20px;border-bottom:1px solid rgba(0,229,255,0.08);display:flex;align-items:center;gap:12px;">'
     +     '<div style="width:40px;height:40px;background:linear-gradient(135deg,rgba(0,229,255,0.2),rgba(99,102,241,0.2));border:1px solid rgba(0,229,255,0.5);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(0,229,255,0.2),inset 0 0 10px rgba(0,229,255,0.05);">'
     +       '<i data-lucide="shield-alert" style="width:20px;height:20px;color:#00e5ff;"></i>'

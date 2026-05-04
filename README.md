@@ -22,7 +22,7 @@
 | 🔑 **Secrets Detection** | Gitleaks integration with configurable custom regex patterns per organisation |
 | 🤖 **AI Remediation** | Claude-powered "Plan Remediation" generates fix instructions, then creates a GitHub PR |
 | 📈 **90-Day Trends** | Management reporting with vulnerability trends, team leaderboard, and MTTR |
-| 🔗 **GitHub Integration** | Sync code-scanning alerts from GitHub Security; auto-create branches & PRs |
+| 🔗 **GitHub Integration** | Commit history, PR reviews, and GHAS security alerts — all scoped per-application in the GitHub tab (Commits / Pull Requests / Security sub-tabs) |
 | 🚦 **Policy Engine** | Define pass/fail gates by severity, scan type, and rule — evaluated on every scan |
 | 🔑 **Service Accounts** | Machine identities for CI/CD pipelines — Bearer token auth (`snitch_<32chars>`) for the push endpoint; token shown once, SHA-256 hash stored |
 | 🌐 **REST API** | Full OpenAPI/Swagger docs at `/docs` |
