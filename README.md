@@ -10,6 +10,7 @@
 > **Snitch** is a developer-focused AppSec platform that collects security findings from Semgrep (SAST), Grype (container scanning), Trivy (SCA), Checkov (IaC/Terraform), and Gitleaks (secrets), calculates per-application risk scores, and provides AI-powered remediation via Anthropic Claude.
 
 ![Dashboard](docs/images/image.png)
+![Threat-Intel](docs/images/threat_intel.png)
 
 ---
 
