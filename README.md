@@ -91,18 +91,16 @@ ANTHROPIC_API_KEY=sk-ant-your-key-here
 
 #### Option B — Ollama (free, local, no API key required)
 
-```bash
-# Install Ollama: https://ollama.com
-ollama pull llama3.1          # or codellama, mistral, etc.
-```
+Ollama is included in `docker-compose.yml` and pulls `llama3.1` automatically on first start (model download is ~4 GB and cached in a Docker volume). No extra setup needed — just add to `.env`:
 
 ```env
-# In .env (use host.docker.internal when running via Docker Compose)
-OLLAMA_URL=http://host.docker.internal:11434
+OLLAMA_URL=http://ollama:11434
 OLLAMA_MODEL=llama3.1
 ```
 
-If neither is configured, Snitch falls back to template-based remediation plans — all scanning, risk scoring, compliance, and reporting features work without any AI provider.
+To use a different model (e.g. `codellama`, `mistral`), change `OLLAMA_MODEL` and re-run `docker compose up`.
+
+If neither provider is configured, Snitch falls back to template-based remediation plans — all scanning, risk scoring, compliance, and reporting features work without any AI provider.
 
 ---
 
