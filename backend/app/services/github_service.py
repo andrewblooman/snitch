@@ -269,6 +269,43 @@ async def fetch_pull_requests(owner: str, repo: str, token: str | None, limit: i
     return prs[:limit]
 
 
+async def fetch_recent_commits(owner: str, repo: str, token: str | None, limit: int = 20) -> list[dict]:
+    """Fetch recent commits for a repository from the GitHub API."""
+    headers = _gh_headers(token)
+    async with httpx.AsyncClient(headers=headers, timeout=30) as client:
+        try:
+            r = await client.get(
+                f"{_GH_API}/repos/{owner}/{repo}/commits",
+                params={"per_page": min(limit, 100)},
+            )
+            if r.status_code in (403, 404):
+                logger.debug("Commits not available for %s/%s: %s", owner, repo, r.status_code)
+                return []
+            r.raise_for_status()
+            commits = []
+            for c in r.json():
+                commit_data = c.get("commit") or {}
+                author_data = commit_data.get("author") or {}
+                gh_author = c.get("author") or {}
+                sha = c.get("sha") or ""
+                commits.append({
+                    "sha": sha,
+                    "short_sha": sha[:8],
+                    "message": (commit_data.get("message") or "").split("\n")[0],
+                    "author_name": author_data.get("name"),
+                    "author_login": gh_author.get("login"),
+                    "author_avatar": gh_author.get("avatar_url"),
+                    "date": author_data.get("date"),
+                    "commit_url": c.get("html_url"),
+                })
+            return commits
+        except httpx.HTTPStatusError as e:
+            logger.warning("Commits error for %s/%s: %s", owner, repo, e)
+        except Exception as e:
+            logger.warning("Unexpected error fetching commits for %s/%s: %s", owner, repo, e)
+    return []
+
+
 async def fetch_github_security_alerts(owner: str, repo: str, token: str | None) -> list[dict]:
     """
     Fetch code-scanning, dependabot, and secret-scanning alerts for a repo.

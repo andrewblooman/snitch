@@ -8,7 +8,7 @@ import logging
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import select
+from sqlalchemy import and_, select
 
 from app.core.config import settings
 from app.models.application import Application
@@ -87,6 +87,56 @@ def poll_github_security_task(self, app_id: str | None = None):
         db.close()
 
 
+def _has_native_duplicate(db, app_id, finding: dict) -> bool:
+    """Return True if a native (non-GHAS) scanner already tracks an equivalent finding.
+
+    Uses github_alert_number IS NULL as the native-finding discriminator — all GHAS
+    findings have a non-null alert number; native scanner findings never do.
+    Uses .scalars().first() to safely handle multiple matching rows.
+    """
+    scanner = finding.get("scanner", "")
+    finding_type = (finding.get("finding_type") or "").lower()
+
+    if scanner == "github_secret_scanning":
+        return False
+
+    if scanner == "dependabot":
+        cve_id = finding.get("cve_id")
+        package_name = finding.get("package_name")
+        if not cve_id or not package_name:
+            return False
+        existing = db.execute(
+            select(Finding).where(
+                and_(
+                    Finding.application_id == app_id,
+                    Finding.cve_id == cve_id,
+                    Finding.package_name == package_name,
+                    Finding.github_alert_number.is_(None),
+                )
+            )
+        ).scalars().first()
+        return existing is not None
+
+    if finding_type == "sast":
+        rule_id = finding.get("rule_id")
+        file_path = finding.get("file_path")
+        if not rule_id or not file_path:
+            return False
+        existing = db.execute(
+            select(Finding).where(
+                and_(
+                    Finding.application_id == app_id,
+                    Finding.rule_id == rule_id,
+                    Finding.file_path == file_path,
+                    Finding.github_alert_number.is_(None),
+                )
+            )
+        ).scalars().first()
+        return existing is not None
+
+    return False
+
+
 def _upsert_ghas_findings(db, app: Application, alert_findings: list[dict]) -> tuple[int, int]:
     """
     Upsert GHAS findings for an application.
@@ -125,6 +175,13 @@ def _upsert_ghas_findings(db, app: Application, alert_findings: list[dict]) -> t
             existing.last_seen_at = now
             updated += 1
         else:
+            if _has_native_duplicate(db, app.id, fd):
+                logger.debug(
+                    "Skipping GHAS finding — native duplicate exists: scanner=%s title=%s",
+                    scanner, fd.get("title"),
+                )
+                continue
+
             finding = Finding(
                 id=uuid.uuid4(),
                 application_id=app.id,

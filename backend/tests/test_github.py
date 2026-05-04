@@ -408,3 +408,110 @@ async def test_pr_reviews_empty_when_no_prs(client: AsyncClient):
     data = resp.json()
     assert data["total_prs"] == 0
     assert data["prs"] == []
+
+
+# ---------------------------------------------------------------------------
+# GET /api/v1/github/apps/{app_id}/commits endpoint tests
+# ---------------------------------------------------------------------------
+
+_MOCK_COMMIT_LIST = [
+    {
+        "sha": "abc123def456abc1",
+        "short_sha": "abc123de",
+        "message": "Fix authentication bug in token refresh",
+        "author_name": "Alice Smith",
+        "author_login": "alice",
+        "author_avatar": "https://avatars.githubusercontent.com/u/1?v=4",
+        "date": "2024-03-02T10:00:00Z",
+        "commit_url": "https://github.com/acme/api/commit/abc123def456abc1",
+    },
+    {
+        "sha": "deadbeef12345678",
+        "short_sha": "deadbeef",
+        "message": "Update dependency versions",
+        "author_name": "Bob",
+        "author_login": "bob",
+        "author_avatar": None,
+        "date": "2024-03-01T08:00:00Z",
+        "commit_url": "https://github.com/acme/api/commit/deadbeef12345678",
+    },
+]
+
+
+@pytest.mark.asyncio
+async def test_commits_app_not_found(client: AsyncClient):
+    import uuid
+    fake_id = str(uuid.uuid4())
+    resp = await client.get(f"/api/v1/github/apps/{fake_id}/commits")
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_commits_no_github_repo(client: AsyncClient):
+    create_resp = await client.post("/api/v1/applications", json={
+        "name": "no-repo-commits",
+        "github_org": "",
+        "github_repo": "",
+        "repo_url": "https://example.com",
+        "team_name": "Backend",
+    })
+    assert create_resp.status_code == 201
+    app_id = create_resp.json()["id"]
+
+    resp = await client.get(f"/api/v1/github/apps/{app_id}/commits")
+    assert resp.status_code == 400
+    assert "GitHub repository" in resp.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_commits_returns_list(client: AsyncClient):
+    create_resp = await client.post("/api/v1/applications", json={
+        "name": "commits-test-app",
+        "github_org": "acme",
+        "github_repo": "api",
+        "repo_url": "https://github.com/acme/api",
+        "team_name": "Eng",
+    })
+    assert create_resp.status_code == 201
+    app_id = create_resp.json()["id"]
+
+    with patch(
+        "app.api.v1.github.fetch_recent_commits",
+        new_callable=AsyncMock,
+        return_value=_MOCK_COMMIT_LIST,
+    ):
+        resp = await client.get(f"/api/v1/github/apps/{app_id}/commits")
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["github_org"] == "acme"
+    assert data["github_repo"] == "api"
+    assert data["total_commits"] == 2
+    assert data["commits"][0]["message"] == "Fix authentication bug in token refresh"
+    assert data["commits"][0]["author_login"] == "alice"
+    assert data["commits"][0]["short_sha"] == "abc123de"
+
+
+@pytest.mark.asyncio
+async def test_commits_empty_when_no_commits(client: AsyncClient):
+    create_resp = await client.post("/api/v1/applications", json={
+        "name": "empty-commits-app",
+        "github_org": "acme",
+        "github_repo": "quiet",
+        "repo_url": "https://github.com/acme/quiet",
+        "team_name": "Infra",
+    })
+    assert create_resp.status_code == 201
+    app_id = create_resp.json()["id"]
+
+    with patch(
+        "app.api.v1.github.fetch_recent_commits",
+        new_callable=AsyncMock,
+        return_value=[],
+    ):
+        resp = await client.get(f"/api/v1/github/apps/{app_id}/commits")
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total_commits"] == 0
+    assert data["commits"] == []

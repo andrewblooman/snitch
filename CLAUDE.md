@@ -44,7 +44,9 @@ The sidebar is a shared JS component defined in `frontend/static/js/sidebar.js`.
 
 The header user widget is a shared JS component defined in `frontend/static/js/header.js`. Each HTML page includes `<script src="/static/js/header.js"></script>` after the sidebar script and adds `id="header-user-slot"` to the right-side container inside `<header>`. The script injects a circular user avatar button with a dropdown (Profile link + disabled Logout placeholder) into that slot. Do not duplicate the widget HTML across pages; edit `header.js` for any user-menu changes.
 
-The sidebar nav is structured into four sections: **Overview** (Dashboard, Applications, Findings, Threat Intel, Compliance, Reports, Secrets), **Config** (Policies, Rules), **Admin** (Settings, Repositories, Service Accounts), **Help** (Documentation `/help.html`, About `/about.html`, API Docs `/docs`). The Profile link has been removed from the sidebar — it is only accessible via the header user widget dropdown. Nav items that open external links set `external: true` in NAV_SECTIONS and are rendered with a target="_blank" and an external-link icon.
+The sidebar nav is structured into four sections: **Overview** (Dashboard, Applications, Findings, Reports, Secrets, Threat Intel, Compliance), **Config** (Policies, Rules), **Admin** (Settings, Integrations, Repositories, Service Accounts), **Help** (Documentation `/help.html`, About `/about.html`, API Docs `/docs`). The Profile link has been removed from the sidebar — it is only accessible via the header user widget dropdown. Nav items that open external links set `external: true` in NAV_SECTIONS and are rendered with a target="_blank" and an external-link icon. The sidebar `<aside>` uses `height:100vh;overflow:hidden` so the `<nav>` (which has `overflow-y:auto`) scrolls within the fixed viewport height.
+
+The application detail page (`/app-detail.html`) has four main tabs: **Findings**, **Scan History**, **Remediations**, and **GitHub**. The GitHub tab has three sub-tabs rendered by `switchSubTab()`: **Commits** (calls `GET /api/v1/github/apps/{id}/commits`, renders commit history with avatar/sha/message), **Pull Requests** (calls `GET /api/v1/github/apps/{id}/pr-reviews`, shows PR cards with collapsible security findings), and **Security** (GHAS alerts via "Sync GitHub Alerts" button). The GitHub repo link appears as a small SVG icon button (34×34px, absolute-positioned top-right of the app info card) — no text, hover shows org/repo tooltip.
 
 The `/settings.html` page is the admin configuration page for platform integrations (GitHub token, Anthropic API key), scan defaults, and read-only system info. It stores token presence flags in `localStorage` only — raw secrets are never persisted client-side.
 
@@ -202,7 +204,11 @@ Each finding includes: `commit_sha` (SHA that introduced it), `introduced_by` (G
 
 Dedup key: `(application_id, scanner, github_alert_number)`. If a token lacks scope for an alert type, that type is silently skipped. Commit author is fetched via `GET /repos/{owner}/{repo}/commits/{sha}` — not fetched for Dependabot (no commit SHA available).
 
+**Cross-scanner deduplication:** When a new GHAS finding is about to be inserted, `_has_native_duplicate()` in `github_tasks.py` checks whether a native scanner (semgrep, grype, trivy, etc.) already tracks the same vulnerability. For Dependabot: matches on `cve_id` + `package_name`; for code-scanning SAST: matches on `rule_id` + `file_path`. Secret-scanning alerts are never deduplicated. If a null field prevents matching, the GHAS finding is allowed through (conservative). `_GHAS_SCANNERS = frozenset({"codeql", "github_secret_scanning", "dependabot"})` is the exclusion set for native-scanner queries.
+
 `POST /api/v1/github/apps/{app_id}/sync-alerts` triggers an immediate sync for one app (returns task ID). The beat schedule fires every 5 minutes for all tracked apps. Last sync time stored in `Application.last_github_sync_at`.
+
+`GET /api/v1/github/apps/{app_id}/commits?limit=20` returns recent commit history from `GET /repos/{owner}/{repo}/commits`. Response: `CommitsResponse` with `total_commits`, `commits[]` (sha, short_sha, message, author_name, author_login, author_avatar, date, commit_url). Implemented in `fetch_recent_commits()` in `github_service.py`.
 
 New Finding fields (migration 010): `commit_sha`, `introduced_by`, `pr_number`, `pr_url`, `github_alert_url`, `github_alert_number`. New Application field: `last_github_sync_at`.
 

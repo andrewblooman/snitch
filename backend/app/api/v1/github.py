@@ -11,7 +11,7 @@ from app.core.config import settings
 from app.db.session import get_db
 from app.models.application import Application
 from app.models.finding import Finding
-from app.services.github_service import fetch_pull_requests, list_accessible_repos, lookup_public_repo
+from app.services.github_service import fetch_pull_requests, fetch_recent_commits, list_accessible_repos, lookup_public_repo
 
 router = APIRouter(prefix="/github", tags=["github"])
 
@@ -239,4 +239,51 @@ async def get_pr_reviews(
         github_repo=app.github_repo,
         total_prs=len(prs),
         prs=prs,
+    )
+
+
+class CommitInfo(BaseModel):
+    sha: Optional[str]
+    short_sha: Optional[str]
+    message: Optional[str]
+    author_name: Optional[str]
+    author_login: Optional[str]
+    author_avatar: Optional[str]
+    date: Optional[str]
+    commit_url: Optional[str]
+
+
+class CommitsResponse(BaseModel):
+    application_id: uuid.UUID
+    application_name: str
+    github_org: str
+    github_repo: str
+    total_commits: int
+    commits: List[CommitInfo]
+
+
+@router.get("/apps/{app_id}/commits", response_model=CommitsResponse)
+async def get_recent_commits(
+    app_id: uuid.UUID,
+    limit: int = Query(20, ge=1, le=100, description="Number of recent commits to fetch"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return recent commit history for an application's GitHub repository."""
+    result = await db.execute(select(Application).where(Application.id == app_id))
+    app = result.scalar_one_or_none()
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+    if not app.github_org or not app.github_repo:
+        raise HTTPException(status_code=400, detail="Application has no GitHub repository configured")
+
+    token = settings.GITHUB_TOKEN or None
+    commits = await fetch_recent_commits(app.github_org, app.github_repo, token, limit=limit)
+
+    return CommitsResponse(
+        application_id=app.id,
+        application_name=app.name,
+        github_org=app.github_org,
+        github_repo=app.github_repo,
+        total_commits=len(commits),
+        commits=[CommitInfo(**c) for c in commits],
     )
