@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snitch — PR Reviews</title>
+  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
+  <style>/* Inter font fallback */ body { font-family: var(--font-body); }</style>
+  <link rel="stylesheet" href="/static/css/theme.css">
+  <script src="/static/js/lucide.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .card {
+      background: linear-gradient(145deg, #0f1b34 0%, #080f1d 100%);
+      border: 1px solid rgba(0,229,255,0.14);
+      border-radius: 16px;
+      box-shadow: 0 4px 32px rgba(0,0,0,.55), inset 0 1px 0 rgba(0,229,255,.06);
+    }
+
+    .filter-select {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid rgba(0,229,255,0.2);
+      color: #f1f5f9;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .filter-select:focus { border-color: #00e5ff; box-shadow: 0 0 0 2px rgba(0,229,255,0.2); }
+    .filter-select option { background: #0f1b34; color: #f1f5f9; }
+
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 10px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .badge-critical { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+    .badge-high     { background: rgba(249,115,22,0.15); color: #fb923c; border: 1px solid rgba(249,115,22,0.3); }
+    .badge-medium   { background: rgba(234,179,8,0.15);  color: #facc15; border: 1px solid rgba(234,179,8,0.3);  }
+    .badge-low      { background: rgba(59,130,246,0.15);  color: #60a5fa; border: 1px solid rgba(59,130,246,0.3);  }
+    .badge-info     { background: rgba(148,163,184,0.15); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3); }
+
+    .pr-card {
+      background: linear-gradient(145deg, #0f1b34 0%, #080f1d 100%);
+      border: 1px solid rgba(0,229,255,0.12);
+      border-radius: 12px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+      animation: fadeIn 0.3s ease;
+    }
+    .pr-card:hover { border-color: rgba(0,229,255,0.3); }
+
+    .pr-header {
+      padding: 18px 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .pr-header:hover { background: rgba(0,229,255,0.03); }
+
+    .pr-state-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    .pr-state-open   { background: rgba(34,197,94,0.15);  color: #4ade80; border: 1px solid rgba(34,197,94,0.3);  }
+    .pr-state-merged { background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); }
+    .pr-state-closed { background: rgba(148,163,184,0.15); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3); }
+    .pr-state-draft  { background: rgba(100,116,139,0.15); color: #64748b; border: 1px solid rgba(100,116,139,0.3); }
+
+    .findings-panel {
+      border-top: 1px solid rgba(0,229,255,0.08);
+      padding: 16px 24px 20px;
+      display: none;
+    }
+    .findings-panel.open { display: block; }
+
+    .finding-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      background: rgba(0,0,0,0.15);
+      border: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.15s;
+    }
+    .finding-row:hover { background: rgba(0,229,255,0.04); }
+    .finding-row a { color: #00e5ff; text-decoration: none; }
+    .finding-row a:hover { text-decoration: underline; }
+
+    .count-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Fira Code', monospace;
+    }
+    .count-pill-danger  { background: rgba(239,68,68,0.15);  color: #f87171; border: 1px solid rgba(239,68,68,0.3);  }
+    .count-pill-success { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+    .count-pill-neutral { background: rgba(148,163,184,0.12); color: #94a3b8; border: 1px solid rgba(148,163,184,0.2); }
+
+    .chevron-icon { transition: transform 0.2s; flex-shrink: 0; }
+    .chevron-icon.rotated { transform: rotate(180deg); }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #475569;
+      font-family: 'Fira Code', monospace;
+      margin-bottom: 8px;
+      margin-top: 14px;
+      padding-left: 4px;
+    }
+    .section-label:first-child { margin-top: 0; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 32px;
+      color: #475569;
+    }
+    .empty-state i { display: block; margin: 0 auto 16px; width: 48px; height: 48px; opacity: 0.4; }
+
+    .spinner {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(0,229,255,0.1);
+      border-top-color: #00e5ff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  </style>
+</head>
+<body style="font-family:var(--font-body,'Fira Sans',system-ui,sans-serif);background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
+
+  <!-- Sidebar -->
+  <div id="sidebar-mount"></div>
+  <script src="/static/js/sidebar.js"></script>
+  <script src="/static/js/header.js"></script>
+
+  <!-- Main -->
+  <div id="main-content" style="margin-left:260px;min-height:100vh;">
+    <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
+      <div>
+        <h1 style="font-size:20px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">PR Reviews</h1>
+        <p style="font-size:13px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// pull_requests · security_impact_analysis</p>
+      </div>
+      <div id="header-user-slot" style="display:flex;align-items:center;gap:8px;"></div>
+    </header>
+
+    <main style="padding:32px;max-width:1300px;margin:0 auto;">
+
+      <!-- Selector card -->
+      <div class="card" style="padding:20px;margin-bottom:24px;display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;">
+        <div style="flex:2;min-width:200px;">
+          <label style="display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Application</label>
+          <select id="app-select" class="filter-select" style="width:100%;" onchange="loadPRs()">
+            <option value="">— Select an application —</option>
+          </select>
+        </div>
+        <div style="min-width:130px;">
+          <label style="display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Recent PRs</label>
+          <select id="limit-select" class="filter-select" onchange="loadPRs()">
+            <option value="10">Last 10</option>
+            <option value="20" selected>Last 20</option>
+            <option value="50">Last 50</option>
+          </select>
+        </div>
+        <div>
+          <button onclick="loadPRs()" style="background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(99,102,241,0.15));border:1px solid rgba(0,229,255,0.3);color:#00e5ff;padding:9px 18px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;transition:all 0.2s;">
+            <i data-lucide="refresh-cw" style="width:15px;height:15px;"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Summary stats -->
+      <div id="stats-row" style="display:none;gap:16px;margin-bottom:24px;grid-template-columns:repeat(4,1fr);">
+        <div class="card" style="padding:20px;text-align:center;">
+          <div id="stat-total-prs" style="font-size:32px;font-weight:700;color:#00e5ff;font-family:'Fira Code',monospace;">0</div>
+          <div style="font-size:12px;color:#475569;margin-top:4px;text-transform:uppercase;letter-spacing:1px;">PRs Analysed</div>
+        </div>
+        <div class="card" style="padding:20px;text-align:center;">
+          <div id="stat-prs-with-issues" style="font-size:32px;font-weight:700;color:#f87171;font-family:'Fira Code',monospace;">0</div>
+          <div style="font-size:12px;color:#475569;margin-top:4px;text-transform:uppercase;letter-spacing:1px;">PRs with Open Findings</div>
+        </div>
+        <div class="card" style="padding:20px;text-align:center;">
+          <div id="stat-introduced" style="font-size:32px;font-weight:700;color:#fb923c;font-family:'Fira Code',monospace;">0</div>
+          <div style="font-size:12px;color:#475569;margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Findings Introduced</div>
+        </div>
+        <div class="card" style="padding:20px;text-align:center;">
+          <div id="stat-addressed" style="font-size:32px;font-weight:700;color:#34d399;font-family:'Fira Code',monospace;">0</div>
+          <div style="font-size:12px;color:#475569;margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Findings Addressed</div>
+        </div>
+      </div>
+
+      <!-- PR list -->
+      <div id="pr-list-container">
+        <div class="empty-state">
+          <i data-lucide="git-pull-request"></i>
+          <p style="font-size:16px;font-weight:600;margin:0 0 8px;color:#64748b;">Select an application to view PR security analysis</p>
+          <p style="font-size:14px;margin:0;color:#475569;">Security findings linked to each pull request will appear here.</p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+<script>
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function severityBadge(sev) {
+  const map = {
+    critical: { label: 'Critical', cls: 'badge-critical' },
+    high:     { label: 'High',     cls: 'badge-high' },
+    medium:   { label: 'Medium',   cls: 'badge-medium' },
+    low:      { label: 'Low',      cls: 'badge-low' },
+    info:     { label: 'Info',     cls: 'badge-info' },
+  };
+  const k = (sev || '').toLowerCase();
+  const s = map[k] || map.info;
+  return `<span class="badge ${s.cls}">${s.label}</span>`;
+}
+
+function prStateBadge(pr) {
+  if (pr.draft)   return '<span class="pr-state-badge pr-state-draft"><i data-lucide="file-edit" style="width:12px;height:12px;"></i>Draft</span>';
+  if (pr.merged)  return '<span class="pr-state-badge pr-state-merged"><i data-lucide="git-merge" style="width:12px;height:12px;"></i>Merged</span>';
+  if (pr.state === 'open') return '<span class="pr-state-badge pr-state-open"><i data-lucide="git-pull-request" style="width:12px;height:12px;"></i>Open</span>';
+  return '<span class="pr-state-badge pr-state-closed"><i data-lucide="git-pull-request-closed" style="width:12px;height:12px;"></i>Closed</span>';
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '—';
+  const diff = Math.floor((Date.now() - d) / 1000);
+  if (diff < 0) return 'Just now';
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 86400 * 30) return `${Math.floor(diff / 86400)}d ago`;
+  return d.toLocaleDateString();
+}
+
+function typeBadge(type) {
+  const m = {
+    sast:      { color: '#a855f7', bg: 'rgba(168,85,247,0.15)' },
+    sca:       { color: '#3b82f6', bg: 'rgba(59,130,246,0.15)' },
+    container: { color: '#0ea5e9', bg: 'rgba(14,165,233,0.15)' },
+    secrets:   { color: '#f43f5e', bg: 'rgba(244,63,94,0.15)' },
+    iac:       { color: '#f59e0b', bg: 'rgba(245,158,11,0.15)' },
+  };
+  const k = (type || '').toLowerCase();
+  const s = m[k] || { color: '#94a3b8', bg: 'rgba(148,163,184,0.15)' };
+  return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}33;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;text-transform:uppercase;">${escHtml(type || '—')}</span>`;
+}
+
+function renderFindingRow(f) {
+  const alertLink = f.github_alert_url
+    ? `<a href="${escHtml(f.github_alert_url)}" target="_blank" rel="noopener" title="View on GitHub" style="flex-shrink:0;"><i data-lucide="external-link" style="width:13px;height:13px;"></i></a>`
+    : '';
+  const findingLink = `<a href="/findings.html?identifier=${encodeURIComponent(f.rule_id || f.cve_id || '')}" title="View in Findings Hub">${escHtml(f.title)}</a>`;
+  return `
+    <div class="finding-row">
+      ${severityBadge(f.severity)}
+      ${typeBadge(f.finding_type)}
+      <span style="flex:1;font-size:14px;color:#e2e8f0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${findingLink}</span>
+      ${f.file_path ? `<span style="font-size:12px;color:#475569;font-family:'Fira Code',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;" title="${escHtml(f.file_path)}">${escHtml(f.file_path)}${f.line_number ? ':' + f.line_number : ''}</span>` : ''}
+      <span style="font-size:12px;color:#64748b;font-family:'Fira Code',monospace;flex-shrink:0;">${escHtml(f.scanner)}</span>
+      ${alertLink}
+    </div>`;
+}
+
+function renderPRCard(pr, index) {
+  const introduced = pr.findings_introduced || [];
+  const addressed  = pr.findings_addressed  || [];
+  const hasFindings = introduced.length > 0 || addressed.length > 0;
+  const panelId = `panel-${index}`;
+
+  const openBadge     = introduced.length > 0 ? `<span class="count-pill count-pill-danger"><i data-lucide="alert-triangle" style="width:11px;height:11px;"></i>${introduced.length} introduced</span>` : '';
+  const addressedBadge= addressed.length  > 0 ? `<span class="count-pill count-pill-success"><i data-lucide="check-circle" style="width:11px;height:11px;"></i>${addressed.length} addressed</span>` : '';
+  const cleanBadge    = !hasFindings ? `<span class="count-pill count-pill-neutral"><i data-lucide="shield-check" style="width:11px;height:11px;"></i>No findings</span>` : '';
+
+  const authorHtml = pr.author
+    ? `<a href="${escHtml(pr.author_url || '#')}" target="_blank" rel="noopener" style="color:#94a3b8;text-decoration:none;font-size:13px;display:flex;align-items:center;gap:4px;"><i data-lucide="user" style="width:13px;height:13px;"></i>${escHtml(pr.author)}</a>`
+    : '';
+
+  const branchHtml = pr.base_branch
+    ? `<span style="font-size:12px;color:#475569;display:flex;align-items:center;gap:4px;"><i data-lucide="git-branch" style="width:12px;height:12px;"></i><span style="font-family:'Fira Code',monospace;">${escHtml(pr.head_branch || '')} → ${escHtml(pr.base_branch)}</span></span>`
+    : '';
+
+  const chevronId = `chevron-${index}`;
+  const headerClick = hasFindings ? `onclick="togglePanel('${panelId}','${chevronId}')"` : '';
+  const headerCursor = hasFindings ? 'cursor:pointer;' : 'cursor:default;';
+
+  let findingsHtml = '';
+  if (introduced.length > 0) {
+    findingsHtml += `<div class="section-label">// Security findings introduced (${introduced.length})</div>`;
+    findingsHtml += introduced.map(renderFindingRow).join('');
+  }
+  if (addressed.length > 0) {
+    findingsHtml += `<div class="section-label" style="margin-top:${introduced.length > 0 ? 14 : 0}px;">// Security findings addressed (${addressed.length})</div>`;
+    findingsHtml += addressed.map(renderFindingRow).join('');
+  }
+
+  return `
+    <div class="pr-card">
+      <div class="pr-header" ${headerClick} style="${headerCursor}">
+        <div style="margin-top:2px;">${prStateBadge(pr)}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
+            <span style="font-size:15px;font-weight:600;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:600px;" title="${escHtml(pr.title)}">
+              <a href="${escHtml(pr.pr_url)}" target="_blank" rel="noopener" style="color:#f1f5f9;text-decoration:none;" onclick="event.stopPropagation();">#${pr.pr_number} ${escHtml(pr.title)}</a>
+            </span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            ${authorHtml}
+            ${branchHtml}
+            <span style="font-size:12px;color:#475569;display:flex;align-items:center;gap:4px;"><i data-lucide="clock" style="width:12px;height:12px;"></i>${timeAgo(pr.merged_at || pr.closed_at || pr.updated_at)}</span>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+            ${openBadge}${addressedBadge}${cleanBadge}
+          </div>
+        </div>
+        ${hasFindings ? `<i id="${chevronId}" data-lucide="chevron-down" class="chevron-icon" style="width:18px;height:18px;color:#475569;margin-top:2px;"></i>` : ''}
+      </div>
+      <div id="${panelId}" class="findings-panel">
+        ${findingsHtml}
+      </div>
+    </div>`;
+}
+
+function togglePanel(panelId, chevronId) {
+  const panel = document.getElementById(panelId);
+  const chevron = document.getElementById(chevronId);
+  if (!panel) return;
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  if (chevron) chevron.classList.toggle('rotated', !isOpen);
+  if (!isOpen) {
+    lucide.createIcons();
+  }
+}
+
+async function loadApplications() {
+  try {
+    const resp = await fetch('/api/v1/applications?page_size=200');
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const apps = data.items || data || [];
+    const select = document.getElementById('app-select');
+    apps.forEach(app => {
+      const opt = document.createElement('option');
+      opt.value = app.id;
+      opt.textContent = app.name + (app.github_org ? ` (${app.github_org}/${app.github_repo})` : '');
+      select.appendChild(opt);
+    });
+    // Auto-select if URL has ?app=<id>
+    const params = new URLSearchParams(window.location.search);
+    const appId = params.get('app');
+    if (appId) {
+      select.value = appId;
+      loadPRs();
+    }
+  } catch (e) {
+    console.error('Failed to load applications', e);
+  }
+}
+
+async function loadPRs() {
+  const appId = document.getElementById('app-select').value;
+  const limit = document.getElementById('limit-select').value;
+  const container = document.getElementById('pr-list-container');
+  const statsRow = document.getElementById('stats-row');
+
+  if (!appId) {
+    container.innerHTML = `<div class="empty-state"><i data-lucide="git-pull-request"></i><p style="font-size:16px;font-weight:600;margin:0 0 8px;color:#64748b;">Select an application to view PR security analysis</p><p style="font-size:14px;margin:0;color:#475569;">Security findings linked to each pull request will appear here.</p></div>`;
+    lucide.createIcons();
+    statsRow.style.display = 'none';
+    return;
+  }
+
+  // Update URL without reload
+  const url = new URL(window.location);
+  url.searchParams.set('app', appId);
+  window.history.replaceState({}, '', url);
+
+  container.innerHTML = `<div style="text-align:center;padding:60px;"><div class="spinner"></div><p style="color:#475569;margin-top:16px;font-family:'Fira Code',monospace;">Fetching PRs &amp; analysing security impact…</p></div>`;
+  statsRow.style.display = 'none';
+
+  try {
+    const resp = await fetch(`/api/v1/github/apps/${appId}/pr-reviews?limit=${limit}`);
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      container.innerHTML = `<div class="empty-state"><i data-lucide="alert-triangle"></i><p style="font-size:16px;font-weight:600;margin:0 0 8px;color:#f87171;">Error loading PR data</p><p style="font-size:14px;margin:0;color:#475569;">${escHtml(err.detail || resp.statusText)}</p></div>`;
+      lucide.createIcons();
+      return;
+    }
+
+    const data = await resp.json();
+    const prs = data.prs || [];
+
+    if (prs.length === 0) {
+      container.innerHTML = `<div class="empty-state"><i data-lucide="git-pull-request"></i><p style="font-size:16px;font-weight:600;margin:0 0 8px;color:#64748b;">No pull requests found</p><p style="font-size:14px;margin:0;color:#475569;">No recent PRs were found for <strong style="color:#94a3b8;">${escHtml(data.github_org)}/${escHtml(data.github_repo)}</strong>.<br>Make sure the GITHUB_TOKEN is configured and the repo is accessible.</p></div>`;
+      lucide.createIcons();
+      return;
+    }
+
+    // Compute stats
+    let totalIntroduced = 0, totalAddressed = 0, prsWithIssues = 0;
+    prs.forEach(pr => {
+      totalIntroduced += (pr.findings_introduced || []).length;
+      totalAddressed  += (pr.findings_addressed  || []).length;
+      if ((pr.findings_introduced || []).length > 0) prsWithIssues++;
+    });
+
+    document.getElementById('stat-total-prs').textContent    = data.total_prs;
+    document.getElementById('stat-prs-with-issues').textContent = prsWithIssues;
+    document.getElementById('stat-introduced').textContent   = totalIntroduced;
+    document.getElementById('stat-addressed').textContent    = totalAddressed;
+    statsRow.style.display = 'grid';
+
+    // Render PR cards
+    container.innerHTML = prs.map((pr, i) => renderPRCard(pr, i)).join('');
+    lucide.createIcons();
+
+    // Auto-expand PRs with findings
+    prs.forEach((pr, i) => {
+      if ((pr.findings_introduced || []).length > 0 || (pr.findings_addressed || []).length > 0) {
+        const panel = document.getElementById(`panel-${i}`);
+        const chevron = document.getElementById(`chevron-${i}`);
+        if (panel) panel.classList.add('open');
+        if (chevron) chevron.classList.add('rotated');
+      }
+    });
+
+  } catch (e) {
+    console.error(e);
+    container.innerHTML = `<div class="empty-state"><i data-lucide="alert-triangle"></i><p style="font-size:16px;font-weight:600;margin:0 0 8px;color:#f87171;">Unexpected error</p><p style="font-size:14px;margin:0;color:#475569;">${escHtml(String(e))}</p></div>`;
+    lucide.createIcons();
+  }
+}
+
+// Init
+window.addEventListener('DOMContentLoaded', () => {
+  loadApplications();
+  lucide.createIcons();
+});
+</script>
+</body>
+</html>

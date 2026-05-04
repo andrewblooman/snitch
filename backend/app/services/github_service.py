@@ -218,6 +218,57 @@ async def _get_commit_author(client: httpx.AsyncClient, owner: str, repo: str, s
     return None
 
 
+async def fetch_pull_requests(owner: str, repo: str, token: str | None, limit: int = 30) -> list[dict]:
+    """
+    Fetch recent pull requests for a repository from the GitHub API.
+    Returns a list of PR dicts with metadata.
+    """
+    headers = _gh_headers(token)
+    prs: list[dict] = []
+
+    async with httpx.AsyncClient(headers=headers, timeout=30) as client:
+        try:
+            # Fetch both open and closed PRs, sorted by updated date
+            for state in ("open", "closed"):
+                if len(prs) >= limit:
+                    break
+                r = await client.get(
+                    f"{_GH_API}/repos/{owner}/{repo}/pulls",
+                    params={"state": state, "per_page": min(limit, 100), "sort": "updated", "direction": "desc"},
+                )
+                if r.status_code in (403, 404):
+                    logger.debug("PRs not available for %s/%s: %s", owner, repo, r.status_code)
+                    break
+                r.raise_for_status()
+                for pr in r.json():
+                    if len(prs) >= limit:
+                        break
+                    prs.append({
+                        "pr_number": pr.get("number"),
+                        "title": pr.get("title") or "",
+                        "state": pr.get("state") or "unknown",
+                        "author": (pr.get("user") or {}).get("login"),
+                        "author_url": (pr.get("user") or {}).get("html_url"),
+                        "pr_url": pr.get("html_url") or "",
+                        "base_branch": (pr.get("base") or {}).get("ref"),
+                        "head_branch": (pr.get("head") or {}).get("ref"),
+                        "created_at": pr.get("created_at"),
+                        "updated_at": pr.get("updated_at"),
+                        "merged_at": pr.get("merged_at"),
+                        "closed_at": pr.get("closed_at"),
+                        "draft": pr.get("draft", False),
+                        "merged": pr.get("merged_at") is not None,
+                    })
+        except httpx.HTTPStatusError as e:
+            logger.warning("Pull requests error for %s/%s: %s", owner, repo, e)
+        except Exception as e:
+            logger.warning("Unexpected error fetching PRs for %s/%s: %s", owner, repo, e)
+
+    # Sort by updated_at descending
+    prs.sort(key=lambda p: p.get("updated_at") or "", reverse=True)
+    return prs[:limit]
+
+
 async def fetch_github_security_alerts(owner: str, repo: str, token: str | None) -> list[dict]:
     """
     Fetch code-scanning, dependabot, and secret-scanning alerts for a repo.
