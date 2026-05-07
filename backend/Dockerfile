@@ -1,4 +1,4 @@
-FROM golang:1.22-alpine AS govulncheck-builder
+FROM golang:1.25-alpine AS govulncheck-builder
 RUN go install golang.org/x/vuln/cmd/govulncheck@latest
 
 FROM python:3.13-slim
