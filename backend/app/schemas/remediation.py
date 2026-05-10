@@ -17,6 +17,7 @@ class RemediationCreate(RemediationBase):
 class RemediationPlanRequest(BaseModel):
     application_id: uuid.UUID
     finding_ids: Optional[List[str]] = None
+    fixable_only: bool = True
 
 
 class RemediationUpdate(BaseModel):
