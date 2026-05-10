@@ -34,8 +34,8 @@
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
     <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
       <div>
-        <h1 style="font-size:19px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Repositories</h1>
-        <p style="font-size:13px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// github.repositories · discovery</p>
+        <h1 style="font-size:19px;font-weight:700;color:var(--text-primary);margin:0;font-family:'Fira Code',monospace;">Repositories</h1>
+        <p style="font-size:13px;color:var(--text-tertiary);margin:2px 0 0;font-family:'Fira Code',monospace;">// github.repositories · discovery</p>
       </div>
       <div id="header-user-slot" style="display:flex;align-items:center;gap:12px;">
         <button class="btn-secondary" onclick="openPublicRepoModal()" style="font-size:14px;">
@@ -52,7 +52,7 @@
     <!-- Filters -->
     <div class="card" style="padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <div style="position:relative;flex:1;min-width:200px;">
-        <i data-lucide="search" style="width:16px;height:16px;color:#475569;position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;"></i>
+        <i data-lucide="search" style="width:16px;height:16px;color:var(--text-tertiary);position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;"></i>
         <input type="text" id="search-input" placeholder="Search repositories..." class="dark-input" style="width:100%;padding-left:34px;" oninput="renderRepos()">
       </div>
       <select id="filter-org" class="dark-select" onchange="renderRepos()">
@@ -63,7 +63,7 @@
         <option value="tracked">Tracked only</option>
         <option value="untracked">Untracked only</option>
       </select>
-      <label style="display:flex;align-items:center;gap:6px;font-size:15px;color:#94a3b8;cursor:pointer;white-space:nowrap;">
+      <label style="display:flex;align-items:center;gap:6px;font-size:15px;color:var(--text-secondary);cursor:pointer;white-space:nowrap;">
         <input type="checkbox" id="show-archived" onchange="renderRepos()" style="accent-color:#00e5ff;">
         Show archived
       </label>
@@ -75,8 +75,8 @@
 
     <!-- No token warning -->
     <div id="no-token" style="display:none;text-align:center;padding:60px 20px;">
-      <i data-lucide="key" style="width:48px;height:48px;color:#475569;margin:0 auto 16px;display:block;"></i>
-      <div style="font-size:19px;font-weight:600;color:#f1f5f9;margin-bottom:8px;">GitHub Token Required</div>
+      <i data-lucide="key" style="width:48px;height:48px;color:var(--text-tertiary);margin:0 auto 16px;display:block;"></i>
+      <div style="font-size:19px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">GitHub Token Required</div>
       <div style="color:#64748b;font-size:16px;max-width:400px;margin:0 auto;">
         Set <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;">GITHUB_TOKEN</code> in your <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;">.env</code> file and restart to discover repositories.
       </div>
@@ -84,8 +84,8 @@
 
     <!-- Idle (not yet loaded) -->
     <div id="idle" style="display:none;text-align:center;padding:60px 20px;">
-      <i data-lucide="refresh-cw" style="width:48px;height:48px;color:#475569;margin:0 auto 16px;display:block;"></i>
-      <div style="font-size:19px;font-weight:600;color:#f1f5f9;margin-bottom:8px;">Repositories not loaded</div>
+      <i data-lucide="refresh-cw" style="width:48px;height:48px;color:var(--text-tertiary);margin:0 auto 16px;display:block;"></i>
+      <div style="font-size:19px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">Repositories not loaded</div>
       <div style="color:#64748b;font-size:16px;max-width:400px;margin:0 auto;">Click <strong style="color:#00e5ff;">Refresh</strong> to fetch your GitHub repositories.</div>
     </div>
 
@@ -108,17 +108,17 @@
           <i data-lucide="plus-circle" style="width:18px;height:18px;color:#00e5ff;"></i>
         </div>
         <div>
-          <div style="font-size:17px;font-weight:600;color:#f1f5f9;" id="modal-repo-name">Add Repository</div>
+          <div style="font-size:17px;font-weight:600;color:var(--text-primary);" id="modal-repo-name">Add Repository</div>
           <div style="font-size:14px;color:#64748b;">Configure tracking settings</div>
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div>
-          <label style="font-size:14px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Team Name</label>
+          <label style="font-size:14px;color:var(--text-secondary);font-weight:500;display:block;margin-bottom:6px;">Team Name</label>
           <input type="text" id="modal-team" placeholder="e.g. platform, security, backend" class="dark-input" style="width:100%;">
         </div>
         <div>
-          <label style="font-size:14px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Scan Schedule</label>
+          <label style="font-size:14px;color:var(--text-secondary);font-weight:500;display:block;margin-bottom:6px;">Scan Schedule</label>
           <select id="modal-schedule" class="dark-select" style="width:100%;">
             <option value="none">Manual only</option>
             <option value="weekly">Weekly (every Sunday 2am UTC)</option>
@@ -145,7 +145,7 @@
           <i data-lucide="globe" style="width:18px;height:18px;color:#00e5ff;"></i>
         </div>
         <div>
-          <div style="font-size:17px;font-weight:600;color:#f1f5f9;">Track Public Repo</div>
+          <div style="font-size:17px;font-weight:600;color:var(--text-primary);">Track Public Repo</div>
           <div style="font-size:14px;color:#64748b;">Add any open source GitHub repository</div>
         </div>
       </div>
@@ -153,7 +153,7 @@
       <!-- Step 1: URL input -->
       <div id="public-step-1">
         <div style="margin-bottom:16px;">
-          <label style="font-size:14px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">GitHub URL or org/repo</label>
+          <label style="font-size:14px;color:var(--text-secondary);font-weight:500;display:block;margin-bottom:6px;">GitHub URL or org/repo</label>
           <input type="text" id="public-repo-url" placeholder="e.g. https://github.com/org/repo  or  org/repo" class="dark-input" style="width:100%;" oninput="clearPublicLookupError()">
           <div id="public-lookup-error" style="display:none;font-size:13px;color:#ef4444;margin-top:6px;"></div>
         </div>
@@ -170,11 +170,11 @@
         <div id="public-repo-meta" style="background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.12);border-radius:10px;padding:14px;margin-bottom:16px;"></div>
         <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;">
           <div>
-            <label style="font-size:14px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Team Name</label>
+            <label style="font-size:14px;color:var(--text-secondary);font-weight:500;display:block;margin-bottom:6px;">Team Name</label>
             <input type="text" id="public-modal-team" placeholder="e.g. platform, security, backend" class="dark-input" style="width:100%;">
           </div>
           <div>
-            <label style="font-size:14px;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px;">Scan Schedule</label>
+            <label style="font-size:14px;color:var(--text-secondary);font-weight:500;display:block;margin-bottom:6px;">Scan Schedule</label>
             <select id="public-modal-schedule" class="dark-select" style="width:100%;">
               <option value="none">Manual only</option>
               <option value="weekly">Weekly (every Sunday 2am UTC)</option>
@@ -259,10 +259,10 @@
         // Populate metadata preview
         const langColor = LANG_COLORS[pendingPublicRepo.language] || '#64748b';
         document.getElementById('public-repo-meta').innerHTML = `
-          <div style="font-size:16px;font-weight:600;color:#f1f5f9;margin-bottom:6px;">${escHtml(pendingPublicRepo.full_name)}</div>
-          ${pendingPublicRepo.description ? `<div style="font-size:14px;color:#94a3b8;margin-bottom:8px;">${escHtml(pendingPublicRepo.description)}</div>` : ''}
+          <div style="font-size:16px;font-weight:600;color:var(--text-primary);margin-bottom:6px;">${escHtml(pendingPublicRepo.full_name)}</div>
+          ${pendingPublicRepo.description ? `<div style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">${escHtml(pendingPublicRepo.description)}</div>` : ''}
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            ${pendingPublicRepo.language ? `<span style="display:flex;align-items:center;gap:5px;font-size:13px;color:#94a3b8;"><span style="width:8px;height:8px;border-radius:50%;background:${langColor};display:inline-block;"></span>${escHtml(pendingPublicRepo.language)}</span>` : ''}
+            ${pendingPublicRepo.language ? `<span style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--text-secondary);"><span style="width:8px;height:8px;border-radius:50%;background:${langColor};display:inline-block;"></span>${escHtml(pendingPublicRepo.language)}</span>` : ''}
             ${pendingPublicRepo.private ? '<span style="font-size:13px;color:#a78bfa;">Private</span>' : '<span style="font-size:13px;color:#10b981;">Public</span>'}
             ${pendingPublicRepo.archived ? '<span style="font-size:13px;color:#fbbf24;">Archived</span>' : ''}
           </div>`;
@@ -414,7 +414,7 @@
       const grid = document.getElementById('repo-grid');
       if (filtered.length === 0) {
         grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;">
-          <i data-lucide="inbox" style="width:48px;height:48px;color:#475569;margin:0 auto 16px;display:block;"></i>
+          <i data-lucide="inbox" style="width:48px;height:48px;color:var(--text-tertiary);margin:0 auto 16px;display:block;"></i>
           <div style="font-size:17px;color:#64748b;">No repositories match your filters</div>
         </div>`;
         lucide.createIcons();
@@ -453,15 +453,15 @@
                 <i data-lucide="git-branch" style="width:14px;height:14px;color:#64748b;flex-shrink:0;"></i>
                 <span style="font-size:13px;color:#64748b;">${r.github_org}</span>
               </div>
-              <div style="font-size:17px;font-weight:600;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.github_repo}</div>
+              <div style="font-size:17px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.github_repo}</div>
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;flex-shrink:0;">${trackedBadge}${archiveBadge}${privateBadge}</div>
           </div>
           ${r.description ? `<p style="font-size:15px;color:#64748b;margin:0 0 12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${r.description}</p>` : '<p style="font-size:15px;color:#334155;margin:0 0 12px;font-style:italic;">No description</p>'}
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <div style="display:flex;align-items:center;gap:10px;">
-              ${r.language ? `<span style="display:flex;align-items:center;gap:5px;font-size:14px;color:#94a3b8;"><span style="width:9px;height:9px;border-radius:50%;background:${langColor};display:inline-block;"></span>${r.language}</span>` : ''}
-              ${r.updated_at ? `<span style="font-size:13px;color:#475569;">Updated ${new Date(r.updated_at).toLocaleDateString()}</span>` : ''}
+              ${r.language ? `<span style="display:flex;align-items:center;gap:5px;font-size:14px;color:var(--text-secondary);"><span style="width:9px;height:9px;border-radius:50%;background:${langColor};display:inline-block;"></span>${r.language}</span>` : ''}
+              ${r.updated_at ? `<span style="font-size:13px;color:var(--text-tertiary);">Updated ${new Date(r.updated_at).toLocaleDateString()}</span>` : ''}
             </div>
             ${actionBtn}
           </div>

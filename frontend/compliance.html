@@ -38,8 +38,8 @@
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
     <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
       <div>
-        <h1 style="font-size:20px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Compliance Posture</h1>
-        <p style="font-size:13px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// reports.compliance · framework_mapping</p>
+        <h1 style="font-size:20px;font-weight:700;color:var(--text-primary);margin:0;font-family:'Fira Code',monospace;">Compliance Posture</h1>
+        <p style="font-size:13px;color:var(--text-tertiary);margin:2px 0 0;font-family:'Fira Code',monospace;">// reports.compliance · framework_mapping</p>
       </div>
       <div style="display:flex;align-items:center;gap:12px;">
         <button class="btn-secondary" id="btn-retag" onclick="retagFindings()">
@@ -59,7 +59,7 @@
 
       <div id="loading-state" style="text-align:center;padding:80px;">
         <div style="animation:spin 1s linear infinite;display:inline-block;width:32px;height:32px;border:3px solid rgba(0,229,255,0.1);border-top-color:#00e5ff;border-radius:50%;margin-bottom:16px;"></div>
-        <div style="font-size:15px;color:#94a3b8;font-weight:500;">Analyzing compliance mappings...</div>
+        <div style="font-size:15px;color:var(--text-secondary);font-weight:500;">Analyzing compliance mappings...</div>
       </div>
 
       <div id="retag-msg" style="display:none;margin-bottom:16px;padding:12px 20px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:10px;font-size:14px;color:#34d399;"></div>
@@ -78,7 +78,7 @@ const FW_META = {
   'DORA':              { icon:'activity',      color:'#00e5ff', bg:'rgba(0,229,255,0.10)' },
   'SOC 2 Type II':     { icon:'file-check-2',  color:'#10b981', bg:'rgba(16,185,129,0.12)' },
 };
-const DEFAULT_META = { icon:'shield', color:'#94a3b8', bg:'rgba(148,163,184,0.1)' };
+const DEFAULT_META = { icon:'shield', color:'var(--text-secondary)', bg:'rgba(148,163,184,0.1)' };
 
 function fwMeta(name) { return FW_META[name] || DEFAULT_META; }
 
@@ -96,7 +96,7 @@ function scoreRing(score, color) {
     </svg>
     <div style="position:absolute;display:flex;flex-direction:column;align-items:center;">
       <span style="font-size:17px;font-weight:800;color:${scoreColor};font-family:'Fira Code',monospace;line-height:1;">${score}%</span>
-      <span style="font-size:9px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-top:1px;">score</span>
+      <span style="font-size:9px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-top:1px;">score</span>
     </div>`;
 }
 
@@ -116,8 +116,8 @@ async function loadCompliance() {
     document.getElementById('frameworks-container').innerHTML = `
       <div class="card" style="padding:40px;text-align:center;">
         <i data-lucide="alert-triangle" style="width:48px;height:48px;color:#ef4444;margin:0 auto 16px;display:block;"></i>
-        <div style="font-size:16px;font-weight:600;color:#f1f5f9;margin-bottom:8px;">Failed to load compliance data</div>
-        <div style="font-size:14px;color:#94a3b8;">${err.message}</div>
+        <div style="font-size:16px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">Failed to load compliance data</div>
+        <div style="font-size:14px;color:var(--text-secondary);">${err.message}</div>
       </div>`;
     lucide.createIcons();
   }
@@ -136,8 +136,8 @@ function renderSummary(data) {
         <i data-lucide="bar-chart-2" style="width:24px;height:24px;color:#00e5ff;"></i>
       </div>
       <div>
-        <div style="font-size:28px;font-weight:800;color:#f1f5f9;font-family:'Fira Code',monospace;">${avgScore}%</div>
-        <div style="font-size:13px;color:#94a3b8;">Avg Compliance Score</div>
+        <div style="font-size:28px;font-weight:800;color:var(--text-primary);font-family:'Fira Code',monospace;">${avgScore}%</div>
+        <div style="font-size:13px;color:var(--text-secondary);">Avg Compliance Score</div>
       </div>
     </div>
     <div class="card" style="padding:20px;display:flex;align-items:center;gap:16px;">
@@ -145,8 +145,8 @@ function renderSummary(data) {
         <i data-lucide="alert-circle" style="width:24px;height:24px;color:#ef4444;"></i>
       </div>
       <div>
-        <div style="font-size:28px;font-weight:800;color:#f1f5f9;font-family:'Fira Code',monospace;">${totalViolations}</div>
-        <div style="font-size:13px;color:#94a3b8;">Total Violations</div>
+        <div style="font-size:28px;font-weight:800;color:var(--text-primary);font-family:'Fira Code',monospace;">${totalViolations}</div>
+        <div style="font-size:13px;color:var(--text-secondary);">Total Violations</div>
       </div>
     </div>
     <div class="card" style="padding:20px;display:flex;align-items:center;gap:16px;">
@@ -154,8 +154,8 @@ function renderSummary(data) {
         <i data-lucide="check-circle-2" style="width:24px;height:24px;color:#10b981;"></i>
       </div>
       <div>
-        <div style="font-size:28px;font-weight:800;color:#f1f5f9;font-family:'Fira Code',monospace;">${fullyCompliant}/${data.length}</div>
-        <div style="font-size:13px;color:#94a3b8;">Fully Compliant Frameworks</div>
+        <div style="font-size:28px;font-weight:800;color:var(--text-primary);font-family:'Fira Code',monospace;">${fullyCompliant}/${data.length}</div>
+        <div style="font-size:13px;color:var(--text-secondary);">Fully Compliant Frameworks</div>
       </div>
     </div>
     <div class="card" style="padding:20px;display:flex;align-items:center;gap:16px;">
@@ -163,8 +163,8 @@ function renderSummary(data) {
         <i data-lucide="layers" style="width:24px;height:24px;color:#f97316;"></i>
       </div>
       <div>
-        <div style="font-size:28px;font-weight:800;color:#f1f5f9;font-family:'Fira Code',monospace;">${data.length}</div>
-        <div style="font-size:13px;color:#94a3b8;">Frameworks Tracked</div>
+        <div style="font-size:28px;font-weight:800;color:var(--text-primary);font-family:'Fira Code',monospace;">${data.length}</div>
+        <div style="font-size:13px;color:var(--text-secondary);">Frameworks Tracked</div>
       </div>
     </div>
   `;
@@ -177,8 +177,8 @@ function renderCompliance(data) {
     container.innerHTML = `
       <div class="card" style="padding:60px;text-align:center;">
         <i data-lucide="shield-check" style="width:64px;height:64px;color:#10b981;margin:0 auto 20px;display:block;opacity:0.8;"></i>
-        <div style="font-size:20px;font-weight:700;color:#f1f5f9;margin-bottom:10px;">Fully Compliant</div>
-        <div style="font-size:15px;color:#94a3b8;max-width:400px;margin:0 auto;">No open findings are mapped to any compliance violations.</div>
+        <div style="font-size:20px;font-weight:700;color:var(--text-primary);margin-bottom:10px;">Fully Compliant</div>
+        <div style="font-size:15px;color:var(--text-secondary);max-width:400px;margin:0 auto;">No open findings are mapped to any compliance violations.</div>
       </div>`;
     lucide.createIcons();
     return;
@@ -197,7 +197,7 @@ function renderCompliance(data) {
           <tr class="table-row" style="border-bottom:1px solid rgba(255,255,255,0.04);"
               onclick="window.location.href='/findings.html?compliance_tag=${tag}&status=open'">
             <td style="padding:16px 24px;">
-              <div style="font-size:14px;font-weight:600;color:#f1f5f9;font-family:'Fira Code',monospace;">${c.control}</div>
+              <div style="font-size:14px;font-weight:600;color:var(--text-primary);font-family:'Fira Code',monospace;">${c.control}</div>
             </td>
             <td style="padding:16px 24px;text-align:center;">
               <span style="font-size:18px;font-weight:800;color:#f87171;font-family:'Fira Code',monospace;">${c.findings}</span>
@@ -230,8 +230,8 @@ function renderCompliance(data) {
               <i data-lucide="${meta.icon}" style="width:26px;height:26px;color:${meta.color};"></i>
             </div>
             <div>
-              <h3 style="font-size:20px;font-weight:800;color:#f1f5f9;margin:0 0 4px;">${fw.framework}</h3>
-              <div style="font-size:13px;color:#94a3b8;">
+              <h3 style="font-size:20px;font-weight:800;color:var(--text-primary);margin:0 0 4px;">${fw.framework}</h3>
+              <div style="font-size:13px;color:var(--text-secondary);">
                 ${fw.compliant_controls}/${fw.total_controls} controls passing
                 · ${fw.total_findings} violation${fw.total_findings !== 1 ? 's' : ''}
               </div>
@@ -242,7 +242,7 @@ function renderCompliance(data) {
               ${scoreRing(fw.compliance_score, scoreColor)}
             </div>
             <div style="text-align:right;">
-              <div style="font-size:12px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Status</div>
+              <div style="font-size:12px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Status</div>
               ${fw.compliance_score === 100
                 ? `<span class="badge badge-pass"><i data-lucide="check-circle-2" style="width:13px;height:13px;"></i> Compliant</span>`
                 : `<span class="badge badge-critical"><i data-lucide="x-circle" style="width:13px;height:13px;"></i> Non-Compliant</span>`}
@@ -254,10 +254,10 @@ function renderCompliance(data) {
         <table style="width:100%;border-collapse:collapse;">
           <thead>
             <tr style="background:rgba(0,0,0,0.12);border-bottom:1px solid rgba(255,255,255,0.06);">
-              <th style="text-align:left;padding:12px 24px;font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Control / Requirement</th>
-              <th style="text-align:center;padding:12px 24px;font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Violations</th>
-              <th style="text-align:left;padding:12px 24px;font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Severity</th>
-              <th style="text-align:right;padding:12px 24px;font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;"></th>
+              <th style="text-align:left;padding:12px 24px;font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;">Control / Requirement</th>
+              <th style="text-align:center;padding:12px 24px;font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;">Violations</th>
+              <th style="text-align:left;padding:12px 24px;font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;">Severity</th>
+              <th style="text-align:right;padding:12px 24px;font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;"></th>
             </tr>
           </thead>
           <tbody>${controlRows}</tbody>

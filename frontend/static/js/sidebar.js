@@ -86,7 +86,7 @@
     'padding-left:10px',
   ].join(';');
 
-  var INACTIVE_STYLE = 'color:#94a3b8;border:1px solid transparent';
+  var INACTIVE_STYLE = 'color:var(--text-secondary);border:1px solid transparent';
 
   // ── HTML builders ─────────────────────────────────────────────────────────
   function navLink(item) {
@@ -115,7 +115,7 @@
   }
 
   function sectionLabel(text) {
-    return '<div style="font-size:11px;color:#475569;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:12px 8px 4px;font-family:\'Fira Code\',monospace;">// ' + text + '</div>';
+    return '<div style="font-size:11px;color:var(--text-tertiary);font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:12px 8px 4px;font-family:\'Fira Code\',monospace;">// ' + text + '</div>';
   }
 
   var navHTML = NAV_SECTIONS.map(function (section) {
@@ -129,7 +129,7 @@
     +       '<i data-lucide="shield-alert" style="width:20px;height:20px;color:#00e5ff;"></i>'
     +     '</div>'
     +     '<div>'
-    +       '<div class="glitch-hover" style="font-size:20px;font-weight:700;color:#f1f5f9;letter-spacing:1px;font-family:\'Fira Code\',monospace;">Snitch</div>'
+    +       '<div class="glitch-hover" style="font-size:20px;font-weight:700;color:var(--text-primary);letter-spacing:1px;font-family:\'Fira Code\',monospace;">Snitch</div>'
     +       '<div style="font-size:12px;color:#00e5ff;font-weight:500;letter-spacing:2px;text-transform:uppercase;font-family:\'Fira Code\',monospace;">AppSec_Platform</div>'
     +     '</div>'
     +   '</div>'
