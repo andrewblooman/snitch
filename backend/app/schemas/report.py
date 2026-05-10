@@ -60,6 +60,14 @@ class TopVulnerability(BaseModel):
     title: str
     finding_type: str
     severity: str
+    scanner: str
     affected_apps: int
     total_occurrences: int
     cvss_score: Optional[float] = None
+    fix_available: bool = False
+    fixed_version: Optional[str] = None
+
+
+class AggregatedFindings(BaseModel):
+    items: List[TopVulnerability]
+    total: int

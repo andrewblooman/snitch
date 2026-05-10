@@ -10,6 +10,7 @@ from app.models.application import Application
 from app.models.finding import Finding
 from app.models.remediation import Remediation
 from app.schemas.report import (
+    AggregatedFindings,
     LeaderboardEntry,
     OverviewStats,
     PRRecord,
@@ -200,12 +201,29 @@ async def get_pull_requests(db: AsyncSession = Depends(get_db)):
     ]
 
 
-@router.get("/top-vulnerabilities", response_model=List[TopVulnerability])
+@router.get("/top-vulnerabilities", response_model=AggregatedFindings)
 async def get_top_vulnerabilities(
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(200, ge=1, le=500),
+    severity: Optional[str] = Query(None),
+    finding_type: Optional[str] = Query(None),
+    scanner: Optional[str] = Query(None),
+    status: Optional[str] = Query("open"),
     db: AsyncSession = Depends(get_db),
 ):
-    findings_result = await db.execute(select(Finding).where(Finding.status == "open"))
+    conditions = []
+    if status:
+        conditions.append(Finding.status == status)
+    if severity:
+        conditions.append(func.lower(Finding.severity) == severity.lower())
+    if finding_type:
+        conditions.append(func.lower(Finding.finding_type) == finding_type.lower())
+    if scanner:
+        conditions.append(func.lower(Finding.scanner) == scanner.lower())
+
+    q = select(Finding)
+    if conditions:
+        q = q.where(*conditions)
+    findings_result = await db.execute(q)
     findings = findings_result.scalars().all()
 
     vuln_map: dict = {}
@@ -219,30 +237,41 @@ async def get_top_vulnerabilities(
                 "title": f.title,
                 "finding_type": f.finding_type,
                 "severity": f.severity,
+                "scanner": f.scanner,
                 "affected_apps": set(),
                 "total_occurrences": 0,
                 "cvss_score": f.cvss_score,
+                "fix_available": False,
+                "fixed_version": None,
             }
         vuln_map[key]["affected_apps"].add(str(f.application_id))
         vuln_map[key]["total_occurrences"] += 1
+        ft = (f.finding_type or "").lower()
+        if f.fixed_version:
+            vuln_map[key]["fix_available"] = True
+            vuln_map[key]["fixed_version"] = f.fixed_version
+        elif ft not in ("sca", "container"):
+            vuln_map[key]["fix_available"] = True
 
     results = []
     for v in vuln_map.values():
-        results.append(
-            TopVulnerability(
-                identifier=v["identifier"],
-                title=v["title"],
-                finding_type=v["finding_type"],
-                severity=v["severity"],
-                affected_apps=len(v["affected_apps"]),
-                total_occurrences=v["total_occurrences"],
-                cvss_score=v["cvss_score"],
-            )
-        )
+        results.append(TopVulnerability(
+            identifier=v["identifier"],
+            title=v["title"],
+            finding_type=v["finding_type"],
+            severity=v["severity"],
+            scanner=v["scanner"],
+            affected_apps=len(v["affected_apps"]),
+            total_occurrences=v["total_occurrences"],
+            cvss_score=v["cvss_score"],
+            fix_available=v["fix_available"],
+            fixed_version=v["fixed_version"],
+        ))
 
     sev_order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
     results.sort(key=lambda v: (sev_order.get(v.severity, 5), -v.total_occurrences))
-    return results[:limit]
+    total = len(results)
+    return AggregatedFindings(items=results[:limit], total=total)
 
 
 @router.get("/compliance")
