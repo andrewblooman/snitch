@@ -47,19 +47,27 @@ class OllamaProvider(LLMProvider):
         self._model = model
 
     async def complete(self, prompt: str, max_tokens: int = 4096, use_thinking: bool = False) -> LLMResponse:
-        async with httpx.AsyncClient(timeout=120.0) as client:
-            response = await client.post(
-                f"{self._url}/api/chat",
-                json={
-                    "model": self._model,
-                    "messages": [{"role": "user", "content": prompt}],
-                    "stream": False,
-                    "options": {"num_predict": max_tokens},
-                },
+        # CPU inference with large models (e.g. llama3.1:8B) can take several minutes
+        timeout = httpx.Timeout(connect=10.0, read=600.0, write=30.0, pool=5.0)
+        try:
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                response = await client.post(
+                    f"{self._url}/api/chat",
+                    json={
+                        "model": self._model,
+                        "messages": [{"role": "user", "content": prompt}],
+                        "stream": False,
+                        "options": {"num_predict": max_tokens},
+                    },
+                )
+                response.raise_for_status()
+                data = response.json()
+            return LLMResponse(text=data["message"]["content"], model=self._model)
+        except httpx.ReadTimeout:
+            raise RuntimeError(
+                f"Ollama timed out after 600 s — model '{self._model}' may be too large for CPU-only inference. "
+                "Consider switching to a smaller model (e.g. llama3.2:1b) via OLLAMA_MODEL in .env."
             )
-            response.raise_for_status()
-            data = response.json()
-        return LLMResponse(text=data["message"]["content"], model=self._model)
 
 
 class MockProvider(LLMProvider):

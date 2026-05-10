@@ -140,5 +140,6 @@ async def generate_remediation_plan(
         result = await provider.complete(prompt, max_tokens=16000, use_thinking=True)
         return result.text, result.model or None
     except Exception as e:
-        logger.error("AI remediation failed: %s", e)
-        return _mock_plan(app, findings, provider_error=str(e)), None
+        error_msg = str(e) or type(e).__name__
+        logger.error("AI remediation failed: %s", error_msg)
+        return _mock_plan(app, findings, provider_error=error_msg), None
