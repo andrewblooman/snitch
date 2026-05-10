@@ -14,180 +14,154 @@
     @keyframes slideInRight  { from{transform:translateX(100px);opacity:0} to{transform:translateX(0);opacity:1} }
     @keyframes slideOutRight { from{transform:translateX(0);opacity:1} to{transform:translateX(100px);opacity:0} }
     @keyframes pulse    { 0%,100%{opacity:1} 50%{opacity:0.35} }
-    @keyframes fadeInUp { from{transform:translateY(18px);opacity:0} to{transform:translateY(0);opacity:1} }
+    @keyframes fadeInUp { from{transform:translateY(14px);opacity:0} to{transform:translateY(0);opacity:1} }
     @keyframes spin     { to{transform:rotate(360deg)} }
     @keyframes liveDot  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
 
-    body { font-family: var(--font-body, 'Fira Sans', system-ui, sans-serif); min-height:100vh; }
+    body { font-family: var(--font-body,'Fira Sans',system-ui,sans-serif); min-height:100vh; }
 
-    /* Cards pop against the near-black page */
     .card {
-      background: linear-gradient(145deg, #0f1b34 0%, #080f1d 100%);
-      border: 1px solid rgba(0,229,255,0.14);
-      border-radius: 16px;
-      box-shadow: 0 4px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(0,229,255,0.06);
-    }
-    .card-lift:hover {
-      border-color: rgba(0,229,255,0.28);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 40px rgba(0,0,0,0.55), 0 0 24px rgba(0,229,255,0.07);
-      transition: all 0.25s;
+      background: var(--bg-card, linear-gradient(145deg,#0f1b34 0%,#080f1d 100%));
+      border: 1px solid var(--border-card, rgba(0,229,255,0.12));
+      border-radius: 14px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.35);
     }
 
-    .mono { font-family: var(--font-mono, 'Fira Code', monospace); }
-
-    /* Large metric numbers */
-    .big-num {
-      font-family: var(--font-mono, 'Fira Code', monospace);
-      font-size: 52px;
-      font-weight: 700;
-      line-height: 1;
-      letter-spacing: -2px;
-    }
-    .med-num {
-      font-family: var(--font-mono, 'Fira Code', monospace);
-      font-size: 28px;
-      font-weight: 700;
-      line-height: 1;
-    }
-
-    /* Section labels */
-    .slabel {
-      font-family: var(--font-mono, 'Fira Code', monospace);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 2.5px;
-      text-transform: uppercase;
-      color: #475569;
-    }
-
-    /* Thin cyan vertical divider */
-    .vdiv {
-      width: 1px;
-      background: rgba(0,229,255,0.09);
-      align-self: stretch;
-      margin: 12px 0;
-      flex-shrink: 0;
-    }
-
-    /* ── Threat Strip ── */
-    #threat-strip {
-      display: flex;
-      align-items: stretch;
-      overflow: hidden;
-      margin-bottom: 24px;
-      animation: fadeInUp 0.4s ease;
-      min-height: 116px;
-    }
-    #threat-level-panel {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px 28px;
-      min-width: 160px;
-      border-radius: 15px 0 0 15px;
-      transition: background 0.5s;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-    .threat-metrics {
-      display: flex;
-      flex: 1;
-      align-items: center;
-    }
-    .metric-block {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px 12px;
-      text-align: center;
-      gap: 6px;
-      text-decoration: none;
-      transition: background 0.2s;
-    }
-    a.metric-block:hover { background: rgba(0,229,255,0.05); }
-
-    /* ── Risk Gauge SVG ── */
-    .gauge-wrap {
+    /* ── Search bar ── */
+    .search-wrap {
       position: relative;
-      width: 80px;
-      height: 80px;
-      flex-shrink: 0;
+      flex: 1;
+      max-width: 380px;
     }
-    .gauge-wrap .gauge-center {
+    .search-wrap input {
+      width: 100%;
+      background: var(--bg-input, rgba(255,255,255,0.05));
+      border: 1px solid var(--border-subtle, rgba(255,255,255,0.1));
+      border-radius: 24px;
+      padding: 9px 16px 9px 40px;
+      font-size: 14px;
+      color: var(--text-primary, #f1f5f9);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-wrap input::placeholder { color: var(--text-tertiary, #475569); }
+    .search-wrap input:focus {
+      border-color: rgba(0,229,255,0.4);
+      box-shadow: 0 0 0 3px rgba(0,229,255,0.08);
+    }
+    .search-wrap .search-icon {
       position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-tertiary, #475569);
+      pointer-events: none;
     }
 
-    /* ── App Risk Bars ── */
+    /* ── Metric cards ── */
+    .metric-card {
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      animation: fadeInUp 0.35s ease both;
+      transition: border-color 0.2s, transform 0.2s;
+      cursor: default;
+    }
+    .metric-card:hover {
+      border-color: rgba(0,229,255,0.25);
+      transform: translateY(-1px);
+    }
+    .metric-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-tertiary, #475569);
+    }
+    .metric-value {
+      font-family: var(--font-mono,'Fira Code',monospace);
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+    .metric-sub {
+      font-size: 13px;
+      color: var(--text-secondary, #64748b);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 2px;
+    }
+
+    /* ── Gauge ── */
+    .gauge-wrap { position:relative; width:72px; height:72px; flex-shrink:0; }
+    .gauge-wrap .gauge-center {
+      position:absolute; inset:0;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+    }
+
+    /* ── App risk bars ── */
     .app-bar-row {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 11px 0;
-      border-bottom: 1px solid rgba(0,229,255,0.05);
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-subtle, rgba(255,255,255,0.05));
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.15s;
       border-radius: 6px;
     }
     .app-bar-row:last-child { border-bottom: none; }
-    .app-bar-row:hover { background: rgba(0,229,255,0.04); }
-    .risk-bar-track {
-      flex: 1;
-      height: 5px;
-      background: rgba(255,255,255,0.06);
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    .risk-bar-fill {
-      height: 100%;
-      border-radius: 3px;
-      transition: width 1s cubic-bezier(0.4,0,0.2,1);
-    }
+    .app-bar-row:hover { background: rgba(0,229,255,0.04); padding-left: 6px; padding-right: 6px; }
+    .risk-bar-track { flex:1; height:4px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden; }
+    .risk-bar-fill  { height:100%; border-radius:3px; transition:width 1s cubic-bezier(0.4,0,0.2,1); }
 
-    /* ── Finding Cards ── */
+    /* ── Finding cards ── */
     .finding-card {
+      display:flex; align-items:flex-start; gap:12px;
+      padding:14px; border-radius:10px;
+      border:1px solid rgba(255,255,255,0.05);
+      background:rgba(255,255,255,0.02);
+      cursor:pointer; transition:all 0.15s; text-decoration:none;
+    }
+    .finding-card:hover { background:rgba(0,229,255,0.04); border-color:rgba(0,229,255,0.14); }
+
+    /* Card section header */
+    .card-head {
       display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      padding: 16px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.05);
-      background: rgba(255,255,255,0.02);
-      cursor: pointer;
-      transition: all 0.2s;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary, #f1f5f9);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-link {
+      font-family: var(--font-mono,'Fira Code',monospace);
+      font-size: 11px;
+      color: #00e5ff;
       text-decoration: none;
+      letter-spacing: 1px;
+      opacity: 0.75;
+      transition: opacity 0.15s;
     }
-    .finding-card:hover {
-      background: rgba(0,229,255,0.05);
-      border-color: rgba(0,229,255,0.15);
-    }
-    .sev-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      margin-top: 5px;
-    }
+    .card-link:hover { opacity: 1; }
 
-    /* Skeleton pulse */
-    .skel {
-      background: rgba(255,255,255,0.05);
-      border-radius: 6px;
-      animation: pulse 1.8s ease-in-out infinite;
-    }
-
-    .table-row:hover { background: rgba(0,229,255,0.04) !important; }
+    .skel { background:rgba(255,255,255,0.05); border-radius:6px; animation:pulse 1.8s ease-in-out infinite; }
+    .sev-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:4px; }
+    .table-row:hover { background:rgba(0,229,255,0.04) !important; }
+    .mono { font-family: var(--font-mono,'Fira Code',monospace); }
   </style>
 </head>
-<body style="margin:0;padding:0;min-height:100vh;">
+<body style="margin:0;padding:0;min-height:100vh;background:var(--bg-page,#03040c);">
 
   <div id="sidebar-mount"></div>
   <script src="/static/js/sidebar.js"></script>
@@ -195,203 +169,211 @@
 
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
 
-    <!-- Header -->
-    <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
-      <div>
-        <h1 class="mono" style="font-size:19px;font-weight:700;color:#f1f5f9;">Security Overview</h1>
-        <p class="mono" style="font-size:13px;color:#475569;margin-top:2px;">// platform.monitor · live</p>
+    <!-- ── Header ── -->
+    <header style="background:var(--bg-header,rgba(3,4,12,0.95));backdrop-filter:blur(20px);border-bottom:1px solid var(--border-header,rgba(0,229,255,0.1));padding:14px 28px;display:flex;align-items:center;gap:20px;position:sticky;top:0;z-index:50;">
+      <!-- Search -->
+      <div class="search-wrap">
+        <i data-lucide="search" class="search-icon" style="width:15px;height:15px;"></i>
+        <input id="global-search" type="text" placeholder="Search findings, applications…" onkeydown="handleSearch(event)">
       </div>
-      <div id="header-user-slot" style="display:flex;align-items:center;gap:8px;"></div>
+      <div id="header-user-slot" style="margin-left:auto;display:flex;align-items:center;gap:8px;"></div>
     </header>
 
-    <main style="padding:28px 32px;">
+    <main style="padding:24px 28px;">
 
-      <!-- ── Threat Intelligence Strip ── -->
-      <div id="threat-strip" class="card">
+      <!-- ── Welcome Banner ── -->
+      <div style="margin-bottom:24px;animation:fadeInUp 0.3s ease;">
+        <div id="greeting" style="font-size:14px;color:var(--text-tertiary,#475569);margin-bottom:2px;"></div>
+        <h1 style="font-size:22px;font-weight:700;color:var(--text-primary,#f1f5f9);letter-spacing:-0.3px;">Security Overview</h1>
+      </div>
 
-        <!-- Status panel (dynamic colour) -->
-        <div id="threat-level-panel">
-          <div class="slabel" style="color:rgba(255,255,255,0.55);">Threat Level</div>
-          <div id="threat-level-word" class="mono" style="font-size:19px;font-weight:700;color:#f1f5f9;letter-spacing:2px;">———</div>
+      <!-- ── Metric Cards Row ── -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;">
+
+        <!-- Risk Score -->
+        <div class="card metric-card" style="animation-delay:0.05s;flex-direction:row;align-items:center;gap:16px;padding:18px 20px;">
+          <div class="gauge-wrap">
+            <svg width="72" height="72" viewBox="0 0 72 72">
+              <circle cx="36" cy="36" r="27" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="6" stroke-linecap="round"
+                stroke-dasharray="127.2 169.6" transform="rotate(135 36 36)"/>
+              <circle cx="36" cy="36" r="27" fill="none" id="gauge-arc" stroke="#00e5ff" stroke-width="6" stroke-linecap="round"
+                stroke-dasharray="0 169.6" transform="rotate(135 36 36)"
+                style="transition:stroke-dasharray 1.1s cubic-bezier(0.4,0,0.2,1),stroke 0.5s;"/>
+            </svg>
+            <div class="gauge-center">
+              <div id="m-risk" class="mono" style="font-size:18px;font-weight:700;color:var(--text-primary);line-height:1;">—</div>
+            </div>
+          </div>
+          <div>
+            <div class="metric-label">Risk Score</div>
+            <div id="risk-level-label" class="metric-sub" style="margin-top:4px;font-weight:600;font-size:13px;">—</div>
+          </div>
         </div>
 
-        <div class="vdiv"></div>
+        <!-- Critical -->
+        <a href="/findings.html?severity=critical&status=open" class="card metric-card" style="animation-delay:0.1s;text-decoration:none;">
+          <div class="metric-label">Critical</div>
+          <div class="metric-value" id="m-critical" style="color:#ff3333;">—</div>
+          <div class="metric-sub"><span style="width:6px;height:6px;border-radius:50%;background:#ff3333;display:inline-block;animation:liveDot 2s ease-in-out infinite;flex-shrink:0;"></span>Open findings</div>
+        </a>
 
-        <div class="threat-metrics">
+        <!-- High -->
+        <a href="/findings.html?severity=high&status=open" class="card metric-card" style="animation-delay:0.15s;text-decoration:none;">
+          <div class="metric-label">High</div>
+          <div class="metric-value" id="m-high" style="color:#ff9f43;">—</div>
+          <div class="metric-sub"><span style="width:6px;height:6px;border-radius:50%;background:#ff9f43;display:inline-block;flex-shrink:0;"></span>Open findings</div>
+        </a>
 
-          <!-- Critical -->
-          <a href="/findings.html?severity=critical" class="metric-block">
-            <div class="big-num" id="m-critical" style="color:#ff3333;">0</div>
-            <div class="slabel" style="color:rgba(255,51,51,0.7);">Critical</div>
-          </a>
+        <!-- Apps -->
+        <a href="/applications.html" class="card metric-card" style="animation-delay:0.2s;text-decoration:none;">
+          <div class="metric-label">Apps Monitored</div>
+          <div class="metric-value" id="m-apps" style="color:#00e5ff;">—</div>
+          <div class="metric-sub" id="m-open-sub">— open findings total</div>
+        </a>
 
-          <div class="vdiv"></div>
+      </div>
 
-          <!-- High -->
-          <a href="/findings.html?severity=high" class="metric-block">
-            <div class="big-num" id="m-high" style="color:#ff9f43;">0</div>
-            <div class="slabel" style="color:rgba(255,159,67,0.7);">High</div>
-          </a>
+      <!-- ── Trend + Donut Row ── -->
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px;">
 
-          <div class="vdiv"></div>
-
-          <!-- Open Findings -->
-          <a href="/findings.html" class="metric-block">
-            <div class="big-num" id="m-open" style="color:#f1f5f9;">0</div>
-            <div class="slabel">Open Findings</div>
-          </a>
-
-          <div class="vdiv"></div>
-
-          <!-- Apps -->
-          <div class="metric-block">
-            <div class="big-num" id="m-apps" style="color:#00e5ff;">0</div>
-            <div class="slabel">Apps Monitored</div>
-          </div>
-
-          <div class="vdiv"></div>
-
-          <!-- Risk Index Gauge -->
-          <div class="metric-block" style="min-width:130px;">
-            <div class="gauge-wrap">
-              <svg width="80" height="80" viewBox="0 0 80 80">
-                <!-- Track: 270° arc, starts bottom-left, ends bottom-right -->
-                <circle cx="40" cy="40" r="30" fill="none"
-                  stroke="rgba(255,255,255,0.07)" stroke-width="7" stroke-linecap="round"
-                  stroke-dasharray="141.4 188.5"
-                  transform="rotate(135 40 40)"/>
-                <!-- Fill arc (animated by JS) -->
-                <circle cx="40" cy="40" r="30" fill="none"
-                  id="gauge-arc" stroke="#00e5ff" stroke-width="7" stroke-linecap="round"
-                  stroke-dasharray="0 188.5"
-                  transform="rotate(135 40 40)"
-                  style="transition:stroke-dasharray 1.1s cubic-bezier(0.4,0,0.2,1),stroke 0.5s;"/>
-              </svg>
-              <div class="gauge-center">
-                <div id="m-risk" class="mono" style="font-size:20px;font-weight:700;color:#f1f5f9;line-height:1;">0</div>
-                <div class="mono" style="font-size:10px;color:#475569;letter-spacing:1px;">/100</div>
+        <!-- 7-day Trend Chart -->
+        <div class="card" style="padding:22px;animation:fadeInUp 0.4s ease 0.15s both;">
+          <div class="card-head">
+            <div class="card-title">
+              <i data-lucide="trending-up" style="width:16px;height:16px;color:#00e5ff;"></i>
+              Vulnerability Trend — Last 7 Days
+            </div>
+            <div style="display:flex;gap:16px;align-items:center;">
+              <div style="display:flex;gap:10px;font-size:12px;color:var(--text-tertiary);">
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:#ff3333;display:inline-block;border-radius:2px;"></span>Critical</span>
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:#ff9f43;display:inline-block;border-radius:2px;"></span>High</span>
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:#ff6b35;display:inline-block;border-radius:2px;"></span>Medium</span>
               </div>
             </div>
-            <div class="slabel" style="margin-top:6px;">Risk Index</div>
           </div>
-
+          <div style="position:relative;height:200px;">
+            <canvas id="trendChart"></canvas>
+          </div>
+          <div id="trend-summary" style="display:flex;gap:20px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.05);"></div>
         </div>
-      </div><!-- /threat-strip -->
 
-      <!-- ── Main Grid ── -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
-
-        <!-- Threat Distribution Donut -->
-        <div class="card" style="padding:28px;animation:fadeInUp 0.45s ease 0.1s both;">
-          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:24px;">
-            <div style="font-size:17px;font-weight:600;color:#f1f5f9;">Threat Distribution</div>
-            <div class="slabel">By Severity</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:28px;">
-            <!-- Donut -->
-            <div style="position:relative;width:190px;height:190px;flex-shrink:0;">
-              <canvas id="severityChart"></canvas>
-              <div id="donut-center" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
-                <div class="mono" id="total-findings-center" style="font-size:34px;font-weight:700;color:#f1f5f9;line-height:1;">—</div>
-                <div class="slabel" style="margin-top:4px;">Total</div>
-              </div>
+        <!-- Severity Donut -->
+        <div class="card" style="padding:22px;animation:fadeInUp 0.4s ease 0.2s both;">
+          <div class="card-head">
+            <div class="card-title">
+              <i data-lucide="pie-chart" style="width:16px;height:16px;color:#00e5ff;"></i>
+              Distribution
             </div>
-            <!-- Legend with counts as bars -->
-            <div id="severity-legend" style="flex:1;display:flex;flex-direction:column;gap:12px;"></div>
+            <a href="/findings.html" class="card-link">View all →</a>
           </div>
+          <div style="position:relative;width:150px;height:150px;margin:0 auto 16px;">
+            <canvas id="severityChart"></canvas>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
+              <div class="mono" id="total-findings-center" style="font-size:26px;font-weight:700;color:var(--text-primary);line-height:1;">—</div>
+              <div style="font-size:11px;color:var(--text-tertiary);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">Total</div>
+            </div>
+          </div>
+          <div id="severity-legend" style="display:flex;flex-direction:column;gap:8px;"></div>
         </div>
 
-        <!-- Top Apps at Risk -->
-        <div class="card" style="padding:28px;animation:fadeInUp 0.45s ease 0.2s both;">
-          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px;">
-            <div style="font-size:17px;font-weight:600;color:#f1f5f9;">Applications at Risk</div>
-            <a href="/applications.html" class="mono" style="font-size:12px;color:#00e5ff;text-decoration:none;letter-spacing:1px;">VIEW ALL →</a>
+      </div>
+
+      <!-- ── Bottom Row ── -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+
+        <!-- Apps at Risk -->
+        <div class="card" style="padding:22px;animation:fadeInUp 0.4s ease 0.25s both;">
+          <div class="card-head">
+            <div class="card-title">
+              <i data-lucide="layers" style="width:16px;height:16px;color:#00e5ff;"></i>
+              Apps at Risk
+            </div>
+            <a href="/applications.html" class="card-link">View all →</a>
           </div>
           <div id="app-risk-list">
-            <div style="padding:24px;text-align:center;">
-              <div style="animation:spin 1s linear infinite;display:inline-block;width:22px;height:22px;border:2px solid rgba(255,255,255,0.08);border-top-color:#00e5ff;border-radius:50%;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- ── Bottom Grid ── -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
-
-        <!-- ── Top Vulnerabilities ── -->
-        <div class="card" style="padding:28px;animation:fadeInUp 0.45s ease 0.3s both;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <div style="width:8px;height:8px;border-radius:50%;background:#ff3333;box-shadow:0 0 10px #ff3333;animation:liveDot 1.8s ease-in-out infinite;flex-shrink:0;"></div>
-              <div style="font-size:17px;font-weight:600;color:#f1f5f9;">Top Vulnerabilities</div>
-            </div>
-            <a href="/reports.html" class="mono" style="font-size:12px;color:#00e5ff;text-decoration:none;letter-spacing:1px;">VIEW ALL →</a>
-          </div>
-          <div id="top-vuln-list" style="display:flex;flex-direction:column;gap:12px;">
             <div style="padding:20px;text-align:center;">
-              <div style="animation:spin 1s linear infinite;display:inline-block;width:22px;height:22px;border:2px solid rgba(255,255,255,0.08);border-top-color:#00e5ff;border-radius:50%;"></div>
+              <div style="animation:spin 1s linear infinite;display:inline-block;width:20px;height:20px;border:2px solid rgba(255,255,255,0.07);border-top-color:#00e5ff;border-radius:50%;"></div>
             </div>
           </div>
         </div>
 
-        <!-- ── Threat Intelligence Feed ── -->
-        <div class="card" style="padding:28px;animation:fadeInUp 0.45s ease 0.4s both;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
-            <div style="font-size:17px;font-weight:600;color:#f1f5f9;">Threat Intelligence Feed</div>
-            <a href="/threat-intel.html" class="mono" style="font-size:12px;color:#00e5ff;text-decoration:none;letter-spacing:1px;">VIEW ALL →</a>
+        <!-- Top Vulnerabilities -->
+        <div class="card" style="padding:22px;animation:fadeInUp 0.4s ease 0.3s both;">
+          <div class="card-head">
+            <div class="card-title">
+              <div style="width:7px;height:7px;border-radius:50%;background:#ff3333;animation:liveDot 1.8s ease-in-out infinite;flex-shrink:0;"></div>
+              Top Vulnerabilities
+            </div>
+            <a href="/reports.html" class="card-link">Reports →</a>
           </div>
-          <div id="threat-intel-list" style="display:flex;flex-direction:column;gap:12px;">
-            <!-- Intel Items -->
+          <div id="top-vuln-list" style="display:flex;flex-direction:column;gap:10px;">
+            <div style="padding:20px;text-align:center;">
+              <div style="animation:spin 1s linear infinite;display:inline-block;width:20px;height:20px;border:2px solid rgba(255,255,255,0.07);border-top-color:#00e5ff;border-radius:50%;"></div>
+            </div>
           </div>
+        </div>
+
+        <!-- Threat Intel Feed -->
+        <div class="card" style="padding:22px;animation:fadeInUp 0.4s ease 0.35s both;">
+          <div class="card-head">
+            <div class="card-title">
+              <i data-lucide="rss" style="width:16px;height:16px;color:#00e5ff;"></i>
+              Threat Intel Feed
+            </div>
+            <a href="/threat-intel.html" class="card-link">View all →</a>
+          </div>
+          <div id="threat-intel-list" style="display:flex;flex-direction:column;gap:10px;"></div>
         </div>
 
       </div>
 
     </main>
-  </div><!-- /main-content -->
+  </div>
 
 <script>
-// ── Utilities ────────────────────────────────────────────────────────────────
+// ── Utilities ─────────────────────────────────────────────────────────────────
 function animateCounter(el, target, duration) {
   if (!el) return;
-  duration = duration || 1200;
+  duration = duration || 1000;
   const start = performance.now();
+  const from = parseInt(el.textContent) || 0;
   (function tick(now) {
     const p = Math.min((now - start) / duration, 1);
     const eased = 1 - Math.pow(1 - p, 3);
-    el.textContent = Math.floor(target * eased).toLocaleString();
+    el.textContent = Math.round(from + (target - from) * eased).toLocaleString();
     if (p < 1) requestAnimationFrame(tick);
   })(start);
 }
 
-function getRiskColor(score) {
-  if (score >= 75) return '#ff3333';
-  if (score >= 50) return '#ff9f43';
-  if (score >= 25) return '#ff6b35';
+function getRiskColor(s) {
+  if (s >= 75) return '#ff3333';
+  if (s >= 50) return '#ff9f43';
+  if (s >= 25) return '#ff6b35';
   return '#00c853';
 }
 
-function getRiskLevel(score) {
-  if (score >= 75) return {label:'Critical', color:'#ff3333', bg:'rgba(255,51,51,0.15)'};
-  if (score >= 50) return {label:'High',     color:'#ff9f43', bg:'rgba(255,159,67,0.15)'};
-  if (score >= 25) return {label:'Medium',   color:'#ff6b35', bg:'rgba(255,107,53,0.13)'};
-  return               {label:'Low',      color:'#00c853', bg:'rgba(0,200,83,0.13)'};
+function getRiskLevel(s) {
+  if (s >= 75) return {label:'Critical', color:'#ff3333', bg:'rgba(255,51,51,0.15)'};
+  if (s >= 50) return {label:'High',     color:'#ff9f43', bg:'rgba(255,159,67,0.15)'};
+  if (s >= 25) return {label:'Medium',   color:'#ff6b35', bg:'rgba(255,107,53,0.13)'};
+  return               {label:'Low',     color:'#00c853', bg:'rgba(0,200,83,0.13)'};
 }
 
 function severityBadge(sev) {
   const map = {
-    critical:{color:'#ff3333',bg:'rgba(255,51,51,0.15)',border:'rgba(255,51,51,0.4)',label:'CRIT'},
-    high:    {color:'#ff9f43',bg:'rgba(255,159,67,0.15)',border:'rgba(255,159,67,0.4)',label:'HIGH'},
-    medium:  {color:'#ff6b35',bg:'rgba(255,107,53,0.13)',border:'rgba(255,107,53,0.4)',label:'MED'},
-    low:     {color:'#54a0ff',bg:'rgba(84,160,255,0.13)',border:'rgba(84,160,255,0.4)',label:'LOW'},
-    info:    {color:'#a29bfe',bg:'rgba(162,155,254,0.13)',border:'rgba(162,155,254,0.4)',label:'INFO'},
+    critical:{color:'#ff3333',bg:'rgba(255,51,51,0.15)',border:'rgba(255,51,51,0.3)',label:'CRIT'},
+    high:    {color:'#ff9f43',bg:'rgba(255,159,67,0.15)',border:'rgba(255,159,67,0.3)',label:'HIGH'},
+    medium:  {color:'#ff6b35',bg:'rgba(255,107,53,0.13)',border:'rgba(255,107,53,0.3)',label:'MED'},
+    low:     {color:'#54a0ff',bg:'rgba(84,160,255,0.13)',border:'rgba(84,160,255,0.3)',label:'LOW'},
+    info:    {color:'#a29bfe',bg:'rgba(162,155,254,0.13)',border:'rgba(162,155,254,0.3)',label:'INFO'},
   };
   const s = map[(sev||'').toLowerCase()] || map.info;
-  return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.border};padding:3px 7px;border-radius:5px;font-size:12px;font-weight:700;font-family:'Fira Code',monospace;letter-spacing:0.5px;white-space:nowrap;">${s.label}</span>`;
+  return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.border};padding:2px 7px;border-radius:5px;font-size:11px;font-weight:700;font-family:'Fira Code',monospace;letter-spacing:0.5px;">${s.label}</span>`;
 }
 
 function severityDot(sev) {
-  const cols = {critical:'#ff3333',high:'#ff9f43',medium:'#ff6b35',low:'#54a0ff',info:'#a29bfe'};
-  return cols[(sev||'').toLowerCase()] || '#a29bfe';
+  const c = {critical:'#ff3333',high:'#ff9f43',medium:'#ff6b35',low:'#54a0ff',info:'#a29bfe'};
+  return c[(sev||'').toLowerCase()] || '#a29bfe';
 }
 
 function timeAgo(dateStr) {
@@ -399,291 +381,336 @@ function timeAgo(dateStr) {
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return 'Never';
   const diff = Math.floor((Date.now() - d) / 1000);
-  if (diff < 0) return 'Just now';
   if (diff < 60) return `${diff}s ago`;
   if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
   return `${Math.floor(diff/86400)}d ago`;
 }
 
+function escapeHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function showToast(message, type) {
-  type = type || 'success';
+  type = type || 'info';
   const colors = {success:'#00c853',error:'#ff3333',warning:'#ff9f43',info:'#00e5ff'};
-  const icons  = {success:'check-circle',error:'alert-circle',warning:'alert-triangle',info:'info'};
   const t = document.createElement('div');
-  t.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(8,12,24,0.97);border:1px solid '+colors[type]+'44;border-left:3px solid '+colors[type]+';padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:#f1f5f9;font-size:16px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.6);animation:slideInRight 0.3s ease;';
-  const ico = document.createElement('i'); ico.setAttribute('data-lucide',icons[type]); ico.style.cssText='width:18px;height:18px;color:'+colors[type]+';flex-shrink:0;';
-  const msg = document.createElement('span'); msg.textContent = message;
-  t.appendChild(ico); t.appendChild(msg);
-  document.body.appendChild(t); lucide.createIcons();
-  setTimeout(function(){ t.style.animation='slideOutRight 0.3s ease forwards'; setTimeout(function(){t.remove();},300); }, 3500);
+  t.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(8,12,24,0.97);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:var(--text-primary);font-size:15px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.6);animation:slideInRight 0.3s ease;`;
+  t.textContent = message;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.animation = 'slideOutRight 0.3s ease forwards'; setTimeout(() => t.remove(), 300); }, 3000);
 }
 
-function escapeHtml(str) {
-  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;')
-                    .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
-                    .replace(/'/g,'&#39;');
+// ── Search ────────────────────────────────────────────────────────────────────
+function handleSearch(e) {
+  if (e.key !== 'Enter') return;
+  const q = e.target.value.trim();
+  if (!q) return;
+  if (q.startsWith('app:')) {
+    location.href = `/applications.html?search=${encodeURIComponent(q.slice(4).trim())}`;
+  } else {
+    location.href = `/findings.html?search=${encodeURIComponent(q)}`;
+  }
 }
 
-// ── Threat Strip ─────────────────────────────────────────────────────────────
-function renderThreatStrip(d) {
+// ── Greeting ──────────────────────────────────────────────────────────────────
+function setGreeting() {
+  const h = new Date().getHours();
+  const greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('greeting').textContent = greet + '!';
+}
+
+// ── Metric Cards ──────────────────────────────────────────────────────────────
+function renderMetrics(d) {
   const avg      = Math.round(d.avg_risk_score || 0);
   const critical = d.critical_findings || 0;
   const high     = d.high_findings     || 0;
   const open     = d.open_findings     || 0;
   const apps     = d.total_apps        || 0;
-
-  // Determine threat level
-  var level, levelColor, panelBg;
-  if (avg >= 75 || critical > 10) {
-    level = 'CRITICAL'; levelColor = '#ff3333';
-    panelBg = 'linear-gradient(150deg,rgba(255,51,51,0.22),rgba(255,51,51,0.08))';
-  } else if (avg >= 50 || critical > 0) {
-    level = 'ELEVATED'; levelColor = '#ff9f43';
-    panelBg = 'linear-gradient(150deg,rgba(255,159,67,0.22),rgba(255,159,67,0.08))';
-  } else if (avg >= 25) {
-    level = 'MODERATE'; levelColor = '#ff6b35';
-    panelBg = 'linear-gradient(150deg,rgba(255,107,53,0.18),rgba(255,107,53,0.06))';
-  } else {
-    level = 'SECURE'; levelColor = '#00c853';
-    panelBg = 'linear-gradient(150deg,rgba(0,200,83,0.18),rgba(0,200,83,0.06))';
-  }
-
-  var panel = document.getElementById('threat-level-panel');
-  panel.style.background = panelBg;
-  var word = document.getElementById('threat-level-word');
-  word.textContent = level;
-  word.style.color = levelColor;
+  const risk     = getRiskLevel(avg);
 
   animateCounter(document.getElementById('m-critical'), critical);
   animateCounter(document.getElementById('m-high'),     high);
-  animateCounter(document.getElementById('m-open'),     open);
   animateCounter(document.getElementById('m-apps'),     apps);
   animateCounter(document.getElementById('m-risk'),     avg);
+  document.getElementById('m-risk').style.color = risk.color;
+  document.getElementById('risk-level-label').textContent = risk.label;
+  document.getElementById('risk-level-label').style.color = risk.color;
 
-  // Gauge arc: 270° track = 141.4 out of 188.5 circumference
-  var arc = document.getElementById('gauge-arc');
-  var fill = 141.4 * (avg / 100);
-  arc.style.strokeDasharray = fill + ' 188.5';
-  arc.style.stroke = levelColor;
-  document.getElementById('m-risk').style.color = levelColor;
+  const openSub = document.getElementById('m-open-sub');
+  if (openSub) openSub.textContent = `${open.toLocaleString()} open findings total`;
+
+  // Gauge arc: 270° track = 127.2 out of 169.6 circumference
+  const arc = document.getElementById('gauge-arc');
+  const fill = 127.2 * (avg / 100);
+  arc.style.strokeDasharray = `${fill} 169.6`;
+  arc.style.stroke = risk.color;
+}
+
+// ── 7-day Trend Chart ─────────────────────────────────────────────────────────
+let trendChartInst;
+function renderTrendChart(points) {
+  if (trendChartInst) trendChartInst.destroy();
+
+  const labels = points.map(p => {
+    const d = new Date(p.date);
+    return d.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+  });
+
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.07)';
+  const tickColor = isDark ? '#475569' : '#94a3b8';
+
+  const mkDataset = (label, data, color) => ({
+    label,
+    data,
+    borderColor: color,
+    backgroundColor: color + '18',
+    borderWidth: 2,
+    pointRadius: 4,
+    pointBackgroundColor: color,
+    pointBorderColor: 'transparent',
+    pointHoverRadius: 6,
+    fill: true,
+    tension: 0.35,
+  });
+
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  trendChartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        mkDataset('Critical', points.map(p => p.critical), '#ff3333'),
+        mkDataset('High',     points.map(p => p.high),     '#ff9f43'),
+        mkDataset('Medium',   points.map(p => p.medium),   '#ff6b35'),
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(8,12,24,0.95)',
+          borderColor: 'rgba(0,229,255,0.2)',
+          borderWidth: 1,
+          titleColor: '#94a3b8',
+          bodyColor: '#f1f5f9',
+          padding: 10,
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: gridColor, drawBorder: false },
+          ticks: { color: tickColor, font: { size: 11 }, maxRotation: 0 },
+        },
+        y: {
+          grid: { color: gridColor, drawBorder: false },
+          ticks: { color: tickColor, font: { size: 11 }, stepSize: 1, precision: 0 },
+          beginAtZero: true,
+        }
+      }
+    }
+  });
+
+  // Summary row below chart
+  const last = points[points.length - 1] || {};
+  const first = points[0] || {};
+  const delta = (last.total || 0) - (first.total || 0);
+  const sign = delta >= 0 ? '+' : '';
+  const deltaColor = delta > 0 ? '#ff3333' : '#00c853';
+  document.getElementById('trend-summary').innerHTML = [
+    `<div style="font-size:13px;color:var(--text-tertiary);">New this week: <strong style="color:var(--text-primary);font-family:'Fira Code',monospace;">${(last.total||0).toLocaleString()}</strong></div>`,
+    `<div style="font-size:13px;color:var(--text-tertiary);">vs prior week: <strong style="color:${deltaColor};font-family:'Fira Code',monospace;">${sign}${delta}</strong></div>`,
+    `<div style="font-size:13px;color:var(--text-tertiary);">Critical today: <strong style="color:#ff3333;font-family:'Fira Code',monospace;">${last.critical||0}</strong></div>`,
+  ].join('');
 }
 
 // ── Severity Donut ────────────────────────────────────────────────────────────
-var severityChartInst;
+let severityChartInst;
 function renderSeverityChart(sev) {
   if (severityChartInst) severityChartInst.destroy();
-  var labels = ['Critical','High','Medium','Low','Info'];
-  var values = [sev.critical||0, sev.high||0, sev.medium||0, sev.low||0, sev.info||0];
-  var colors = ['#ff3333','#ff9f43','#ff6b35','#54a0ff','#a29bfe'];
-  var total  = values.reduce(function(a,b){return a+b;},0);
+  const labels = ['Critical','High','Medium','Low','Info'];
+  const values = [sev.critical||0, sev.high||0, sev.medium||0, sev.low||0, sev.info||0];
+  const colors = ['#ff3333','#ff9f43','#ff6b35','#54a0ff','#a29bfe'];
+  const total  = values.reduce((a,b)=>a+b, 0);
   document.getElementById('total-findings-center').textContent = total.toLocaleString();
 
-  var ctx = document.getElementById('severityChart').getContext('2d');
+  const ctx = document.getElementById('severityChart').getContext('2d');
   severityChartInst = new Chart(ctx, {
     type: 'doughnut',
     data: {
-      labels: labels,
+      labels,
       datasets: [{
         data: values,
-        backgroundColor: colors.map(function(c){return c+'bb';}),
+        backgroundColor: colors.map(c => c+'bb'),
         borderColor: colors,
-        borderWidth: 2,
-        hoverOffset: 6
+        borderWidth: 1.5,
+        hoverOffset: 4,
       }]
     },
     options: {
-      cutout: '74%',
+      cutout: '72%',
       responsive: true,
       maintainAspectRatio: true,
       plugins: {
         legend: {display:false},
-        tooltip: { callbacks: { label: function(ctx){ return ' '+ctx.label+': '+ctx.raw.toLocaleString(); } } }
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw.toLocaleString()}` } }
       },
-      animation: {animateRotate:true, duration:900}
+      animation: {animateRotate:true, duration:800}
     }
   });
 
-  // Legend: label + mini bar showing proportion
-  var legend = document.getElementById('severity-legend');
-  legend.innerHTML = labels.map(function(l,i){
-    var pct = total > 0 ? Math.round(values[i]/total*100) : 0;
-    return '<div style="display:flex;align-items:center;gap:8px;">'
-      + '<div style="width:10px;height:10px;border-radius:3px;background:'+colors[i]+';flex-shrink:0;"></div>'
-      + '<div style="flex:1;min-width:0;">'
-      + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px;">'
-      + '<span style="font-size:14px;color:#94a3b8;">'+l+'</span>'
-      + '<span style="font-size:15px;font-weight:700;color:#f1f5f9;font-family:\'Fira Code\',monospace;">'+values[i].toLocaleString()+'</span>'
-      + '</div>'
-      + '<div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;">'
-      + '<div style="height:100%;width:'+pct+'%;background:'+colors[i]+';border-radius:2px;transition:width 1s ease;"></div>'
-      + '</div>'
-      + '</div>'
-      + '</div>';
+  const legend = document.getElementById('severity-legend');
+  legend.innerHTML = labels.map((l,i) => {
+    const pct = total > 0 ? Math.round(values[i]/total*100) : 0;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <div style="display:flex;align-items:center;gap:6px;min-width:0;">
+        <div style="width:8px;height:8px;border-radius:2px;background:${colors[i]};flex-shrink:0;"></div>
+        <span style="font-size:13px;color:var(--text-secondary);white-space:nowrap;">${l}</span>
+      </div>
+      <span style="font-size:13px;font-weight:700;color:var(--text-primary);font-family:'Fira Code',monospace;">${values[i].toLocaleString()}</span>
+    </div>`;
   }).join('');
 }
 
-// ── App Risk Bars ─────────────────────────────────────────────────────────────
+// ── Apps at Risk ──────────────────────────────────────────────────────────────
 function renderAppRiskList(items) {
-  var el = document.getElementById('app-risk-list');
+  const el = document.getElementById('app-risk-list');
   if (!items || !items.length) {
-    el.innerHTML = '<div style="padding:32px;text-align:center;color:#475569;font-size:16px;">No applications found</div>';
+    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-tertiary);font-size:14px;">No applications found</div>';
     return;
   }
-  var sorted = items.slice().sort(function(a,b){return (b.risk_score||0)-(a.risk_score||0);}).slice(0,8);
-
-  el.innerHTML = sorted.map(function(app, idx){
-    var score = app.risk_score || 0;
-    var risk  = getRiskLevel(score);
-    var barW  = Math.round((score / 100) * 100);
-    return '<div class="app-bar-row" onclick="location.href=\'/app-detail.html?id='+app.id+'\'">'
-      + '<div style="width:20px;text-align:center;font-family:\'Fira Code\',monospace;font-size:13px;font-weight:600;color:#475569;flex-shrink:0;">#'+(idx+1)+'</div>'
-      + '<div style="flex:0 0 140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px;font-weight:600;color:#e2e8f0;">'+escapeHtml(app.name||'—')+'</div>'
-      + '<div class="risk-bar-track">'
-      + '<div class="risk-bar-fill" style="width:'+barW+'%;background:'+risk.color+';box-shadow:0 0 6px '+risk.color+'66;"></div>'
-      + '</div>'
-      + '<div style="width:60px;text-align:right;flex-shrink:0;">'
-      + '<span style="font-family:\'Fira Code\',monospace;font-size:15px;font-weight:700;color:'+risk.color+';">'+score+'</span>'
-      + '<span style="font-size:12px;color:#475569;">/100</span>'
-      + '</div>'
-      + '</div>';
+  const sorted = items.slice().sort((a,b) => (b.risk_score||0) - (a.risk_score||0)).slice(0, 6);
+  el.innerHTML = sorted.map((app, i) => {
+    const score = app.risk_score || 0;
+    const risk  = getRiskLevel(score);
+    return `<div class="app-bar-row" onclick="location.href='/app-detail.html?id=${app.id}'">
+      <div style="width:18px;text-align:right;font-family:'Fira Code',monospace;font-size:12px;color:var(--text-tertiary);flex-shrink:0;">${i+1}</div>
+      <div style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:500;color:var(--text-primary);">${escapeHtml(app.name||'—')}</div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:${score}%;background:${risk.color};"></div></div>
+      <div style="font-family:'Fira Code',monospace;font-size:14px;font-weight:700;color:${risk.color};flex-shrink:0;min-width:28px;text-align:right;">${score}</div>
+    </div>`;
   }).join('');
 }
 
-// ── Top Vulnerabilities List ──────────────────────────────────────────────────
+// ── Top Vulnerabilities ───────────────────────────────────────────────────────
 function renderTopVulns(items) {
-  var el = document.getElementById('top-vuln-list');
+  const el = document.getElementById('top-vuln-list');
   if (!items || !items.length) {
-    el.innerHTML = '<div style="padding:32px;text-align:center;color:#475569;font-size:16px;"><i data-lucide="shield-check" style="width:28px;height:28px;display:block;margin:0 auto 8px;opacity:0.3;"></i>No vulnerabilities found</div>';
+    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-tertiary);font-size:14px;"><i data-lucide="shield-check" style="width:24px;height:24px;display:block;margin:0 auto 8px;opacity:0.3;"></i>No vulnerabilities found</div>';
     lucide.createIcons();
     return;
   }
-  el.innerHTML = items.map(function(v, idx){
-    var dotColor = severityDot(v.severity);
-    var title = escapeHtml((v.title||'Unknown vulnerability').slice(0,60)) + ((v.title||'').length > 60 ? '…' : '');
-    var ident = escapeHtml(v.identifier || v.cve_id || v.rule_id || '—');
-    return '<div class="app-bar-row" style="padding:14px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);">'
-      + '<div style="width:20px;text-align:center;font-family:\'Fira Code\',monospace;font-size:13px;font-weight:600;color:#475569;flex-shrink:0;">#'+(idx+1)+'</div>'
-      + '<div class="sev-dot" style="background:'+dotColor+';box-shadow:0 0 6px '+dotColor+'88;margin:0 10px 0 4px;"></div>'
-      + '<div style="flex:1;min-width:0;">'
-      + '<div style="font-size:15px;font-weight:600;color:#e2e8f0;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+title+'</div>'
-      + '<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:#94a3b8;font-family:\'Fira Code\',monospace;">'
-      + '<span>'+ident+'</span>'
-      + '<span style="color:rgba(255,255,255,0.2);">|</span>'
-      + '<span>Occurrences: <strong style="color:#00e5ff;">'+(v.total_occurrences||0)+'</strong></span>'
-      + '<span style="color:rgba(255,255,255,0.2);">|</span>'
-      + '<span>Affected Apps: <strong style="color:#f1f5f9;">'+(v.affected_apps||0)+'</strong></span>'
-      + '</div>'
-      + '</div>'
-      + '<div style="flex-shrink:0;">'
-      + severityBadge(v.severity)
-      + '</div>'
-      + '</div>';
+  el.innerHTML = items.map(v => {
+    const title = escapeHtml((v.title||'Unknown').slice(0, 52)) + ((v.title||'').length > 52 ? '…' : '');
+    const ident = escapeHtml(v.identifier || v.cve_id || v.rule_id || '—');
+    const dot = severityDot(v.severity);
+    return `<div class="finding-card" onclick="location.href='/findings.html?identifier=${encodeURIComponent(ident)}'">
+      <div class="sev-dot" style="background:${dot};"></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${title}</div>
+        <div style="font-size:12px;color:var(--text-tertiary);font-family:'Fira Code',monospace;display:flex;align-items:center;gap:8px;">
+          <span>${ident}</span>
+          <span style="opacity:0.3;">·</span>
+          <span>${v.total_occurrences||0} occurrences</span>
+        </div>
+      </div>
+      ${severityBadge(v.severity)}
+    </div>`;
   }).join('');
 }
 
+// ── Threat Intel Feed ─────────────────────────────────────────────────────────
 async function renderThreatIntel() {
-  var el = document.getElementById('threat-intel-list');
-  el.innerHTML = '<div style="padding:20px;text-align:center;"><div style="animation:spin 1s linear infinite;display:inline-block;width:22px;height:22px;border:2px solid rgba(255,255,255,0.08);border-top-color:#00e5ff;border-radius:50%;"></div></div>';
-  
+  const el = document.getElementById('threat-intel-list');
+  el.innerHTML = '<div style="padding:16px;text-align:center;"><div style="animation:spin 1s linear infinite;display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.07);border-top-color:#00e5ff;border-radius:50%;"></div></div>';
   try {
     const res = await fetch('/api/v1/threat-intel/feed');
-    if (!res.ok) throw new Error('Network error');
+    if (!res.ok) throw new Error();
     const data = await res.json();
-    
-    // Take only the top 5
-    const topItems = (data.items || []).slice(0, 5);
-    
-    if (topItems.length === 0) {
-      el.innerHTML = '<div style="padding:20px;text-align:center;color:#475569;font-size:14px;">No intel available.</div>';
+    const items = (data.items || []).slice(0, 5);
+    if (!items.length) {
+      el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-tertiary);font-size:13px;">No intel available.</div>';
       return;
     }
-    
-    el.innerHTML = topItems.map(function(item) {
-      // Pick a random icon/color based on source hash for visual variety
-      const colors = ['#ff3333', '#ff9f43', '#00e5ff', '#ff6b35', '#a29bfe'];
-      const icons = ['alert-triangle', 'cloud-lightning', 'alert-circle', 'server', 'shield-alert'];
+    const colors = ['#ff3333','#ff9f43','#00e5ff','#ff6b35','#a29bfe'];
+    el.innerHTML = items.map(item => {
       let hash = 0;
-      for (let i = 0; i < item.source.length; i++) { hash = item.source.charCodeAt(i) + ((hash << 5) - hash); }
-      const idx = Math.abs(hash) % colors.length;
-      const color = colors[idx];
-      const icon = icons[idx];
-
-      return '<div class="app-bar-row" style="padding:14px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);align-items:flex-start;">'
-        + '<div style="margin-top:2px;color:'+color+';flex-shrink:0;">'
-        + '<i data-lucide="'+icon+'" style="width:16px;height:16px;"></i>'
-        + '</div>'
-        + '<div style="flex:1;min-width:0;">'
-        + '<div style="font-size:15px;font-weight:600;color:#e2e8f0;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+escapeHtml(item.title)+'</div>'
-        + '<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:#475569;font-family:\'Fira Code\',monospace;margin-top:6px;">'
-        + '<span>SOURCE: <strong style="color:#00e5ff;">'+escapeHtml(item.source)+'</strong></span>'
-        + '<span style="color:rgba(255,255,255,0.2);">|</span>'
-        + '<span>'+timeAgo(item.pubDate)+'</span>'
-        + '</div>'
-        + '</div>'
-        + '</div>';
+      for (let i = 0; i < item.source.length; i++) hash = item.source.charCodeAt(i) + ((hash << 5) - hash);
+      const color = colors[Math.abs(hash) % colors.length];
+      return `<div class="finding-card" style="gap:10px;">
+        <div style="width:6px;height:6px;border-radius:50%;background:${color};flex-shrink:0;margin-top:5px;"></div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(item.title)}</div>
+          <div style="font-size:11px;color:var(--text-tertiary);font-family:'Fira Code',monospace;display:flex;gap:6px;">
+            <span style="color:${color};">${escapeHtml(item.source)}</span>
+            <span style="opacity:0.3;">·</span>
+            <span>${timeAgo(item.pubDate)}</span>
+          </div>
+        </div>
+      </div>`;
     }).join('');
-    lucide.createIcons();
-  } catch(err) {
-    el.innerHTML = '<div style="padding:20px;text-align:center;color:#ef4444;font-size:14px;">Failed to load feed.</div>';
+  } catch {
+    el.innerHTML = '<div style="padding:16px;text-align:center;color:#ef4444;font-size:13px;">Failed to load feed.</div>';
   }
 }
 
-// ── Load Data ─────────────────────────────────────────────────────────────────
+// ── Load Dashboard ────────────────────────────────────────────────────────────
 async function loadDashboard() {
   try {
-    var [overviewRes, appsRes, findingsRes] = await Promise.all([
+    const [overviewRes, appsRes, findingsRes, trendRes] = await Promise.all([
       fetch('/api/v1/reports/overview'),
       fetch('/api/v1/applications?page=1&page_size=10&sort_by=risk_score&sort_order=desc'),
       fetch('/api/v1/reports/top-vulnerabilities?limit=5'),
+      fetch('/api/v1/reports/trend?days=7&cumulative=false'),
     ]);
 
     if (overviewRes.ok) {
-      var d = await overviewRes.json();
-      renderThreatStrip(d);
-      var sev = d.findings_by_severity || {
-        critical: d.critical_findings||0,
-        high:     d.high_findings||0,
-        medium:   d.medium_findings||0,
-        low:      d.low_findings||0,
-        info:     0
+      const d = await overviewRes.json();
+      renderMetrics(d);
+      const sev = d.findings_by_severity || {
+        critical: d.critical_findings||0, high: d.high_findings||0,
+        medium: d.medium_findings||0, low: d.low_findings||0, info: 0
       };
       renderSeverityChart(sev);
-    } else {
-      renderThreatStrip({});
-      renderSeverityChart({});
     }
 
     if (appsRes.ok) {
-      var ad = await appsRes.json();
+      const ad = await appsRes.json();
       renderAppRiskList(ad.items || []);
     } else {
       renderAppRiskList([]);
     }
 
     if (findingsRes.ok) {
-      var topd = await findingsRes.json();
-      renderTopVulns(topd.items || topd || []);
+      const td = await findingsRes.json();
+      renderTopVulns(td.items || td || []);
     } else {
       renderTopVulns([]);
     }
-    
-    renderThreatIntel();
 
+    if (trendRes.ok) {
+      const tr = await trendRes.json();
+      renderTrendChart(tr.data_points || []);
+    }
+
+    renderThreatIntel();
   } catch(e) {
     console.error('Dashboard load error:', e);
-    renderThreatStrip({});
-    renderSeverityChart({});
+    showToast('Failed to load dashboard data', 'error');
     renderAppRiskList([]);
     renderTopVulns([]);
     renderThreatIntel();
-    showToast('Failed to load dashboard data', 'error');
   }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
   applyTheme(localStorage.getItem('theme') || 'dark');
   lucide.createIcons();
+  setGreeting();
   loadDashboard();
 });
 </script>

@@ -123,6 +123,7 @@ async def get_leaderboard(db: AsyncSession = Depends(get_db)):
 @router.get("/trend", response_model=VulnerabilityTrend)
 async def get_trend(
     days: int = Query(90, ge=7, le=365),
+    cumulative: bool = Query(True),
     db: AsyncSession = Depends(get_db),
 ):
     cutoff = datetime.now(timezone.utc) - timedelta(days=days)
@@ -131,7 +132,6 @@ async def get_trend(
     )
     findings = findings_result.scalars().all()
 
-    # Build cumulative daily counts
     daily: dict[date, dict] = {}
     today = datetime.now(timezone.utc).date()
     for i in range(days):
@@ -149,16 +149,25 @@ async def get_trend(
     for d in sorted(daily.keys()):
         for sev in running:
             running[sev] += daily[d].get(sev, 0)
-        data_points.append(
-            TrendDataPoint(
+        if cumulative:
+            data_points.append(TrendDataPoint(
                 date=d,
                 critical=running["critical"],
                 high=running["high"],
                 medium=running["medium"],
                 low=running["low"],
                 total=sum(running.values()),
-            )
-        )
+            ))
+        else:
+            day = daily[d]
+            data_points.append(TrendDataPoint(
+                date=d,
+                critical=day["critical"],
+                high=day["high"],
+                medium=day["medium"],
+                low=day["low"],
+                total=sum(day.values()),
+            ))
 
     return VulnerabilityTrend(data_points=data_points, period_days=days)
 
