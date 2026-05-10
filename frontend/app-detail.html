@@ -22,7 +22,7 @@
     .table-row:hover { background:rgba(0,229,255,0.04) !important; }
     .card { background:linear-gradient(145deg,#0f1b34 0%,#080f1d 100%);border:1px solid rgba(0,229,255,0.14);border-radius:16px;box-shadow:0 4px 32px rgba(0,0,0,.55),inset 0 1px 0 rgba(0,229,255,.06); }
     .dark-select option { background:#0d1117; }
-    .tab-btn { padding:10px 20px;border-radius:8px;font-size:16px;font-weight:500;cursor:pointer;border:none;transition:all 0.2s;background:transparent;color:#94a3b8; }
+    .tab-btn { padding:10px 20px;border-radius:8px;font-size:16px;font-weight:500;cursor:pointer;border:none;transition:all 0.2s;background:transparent;color:var(--text-secondary); }
     .tab-btn.active { background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(99,102,241,0.15));color:#00e5ff;border:1px solid rgba(0,229,255,0.2); }
     .tab-btn:hover:not(.active) { background:rgba(255,255,255,0.05);color:#e2e8f0; }
     .modal-backdrop { position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);z-index:200;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 20px; }
@@ -33,7 +33,7 @@
     .status-menu.open { display:block; }
     .subtab-btn { padding:7px 16px;border-radius:6px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all 0.2s;background:transparent;color:#64748b; }
     .subtab-btn.active { background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid rgba(0,229,255,0.18); }
-    .subtab-btn:hover:not(.active) { background:rgba(255,255,255,0.04);color:#94a3b8; }
+    .subtab-btn:hover:not(.active) { background:rgba(255,255,255,0.04);color:var(--text-secondary); }
     .pr-card { background:linear-gradient(145deg,#0f1b34,#080f1d);border:1px solid rgba(0,229,255,0.12);border-radius:12px;margin-bottom:16px;overflow:hidden;transition:border-color 0.2s; }
     .pr-card:hover { border-color:rgba(0,229,255,0.3); }
     .pr-header { padding:18px 24px;display:flex;align-items:flex-start;gap:16px;cursor:pointer;user-select:none; }
@@ -41,7 +41,7 @@
     .pr-state-badge { display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;flex-shrink:0; }
     .pr-state-open   { background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3); }
     .pr-state-merged { background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.3); }
-    .pr-state-closed { background:rgba(148,163,184,0.15);color:#94a3b8;border:1px solid rgba(148,163,184,0.3); }
+    .pr-state-closed { background:rgba(148,163,184,0.15);color:var(--text-secondary);border:1px solid rgba(148,163,184,0.3); }
     .pr-state-draft  { background:rgba(100,116,139,0.15);color:#64748b;border:1px solid rgba(100,116,139,0.3); }
     .findings-panel { border-top:1px solid rgba(0,229,255,0.08);padding:16px 24px 20px;display:none; }
     .findings-panel.open { display:block; }
@@ -52,10 +52,10 @@
     .count-pill { display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:700;font-family:'Fira Code',monospace; }
     .count-pill-danger  { background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3); }
     .count-pill-success { background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3); }
-    .count-pill-neutral { background:rgba(148,163,184,0.12);color:#94a3b8;border:1px solid rgba(148,163,184,0.2); }
+    .count-pill-neutral { background:rgba(148,163,184,0.12);color:var(--text-secondary);border:1px solid rgba(148,163,184,0.2); }
     .chevron-icon { transition:transform 0.2s;flex-shrink:0; }
     .chevron-icon.rotated { transform:rotate(180deg); }
-    .section-label { font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#475569;font-family:'Fira Code',monospace;margin-bottom:8px;margin-top:14px;padding-left:4px; }
+    .section-label { font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-tertiary);font-family:'Fira Code',monospace;margin-bottom:8px;margin-top:14px;padding-left:4px; }
     .section-label:first-child { margin-top:0; }
   </style>
 </head>
@@ -71,13 +71,13 @@
     <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
       <div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
-          <a href="/applications.html" style="color:#475569;text-decoration:none;font-size:15px;font-weight:500;display:flex;align-items:center;gap:4px;transition:color 0.2s;" onmouseover="this.style.color='#00e5ff'" onmouseout="this.style.color='#475569'">
+          <a href="/applications.html" style="color:var(--text-tertiary);text-decoration:none;font-size:15px;font-weight:500;display:flex;align-items:center;gap:4px;transition:color 0.2s;" onmouseover="this.style.color='#00e5ff'" onmouseout="this.style.color='#475569'">
             <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Applications
           </a>
-          <span style="color:#475569;font-size:15px;">/</span>
-          <span id="breadcrumb-name" style="font-size:15px;color:#94a3b8;font-weight:500;">Loading...</span>
+          <span style="color:var(--text-tertiary);font-size:15px;">/</span>
+          <span id="breadcrumb-name" style="font-size:15px;color:var(--text-secondary);font-weight:500;">Loading...</span>
         </div>
-        <h1 id="page-title" style="font-size:19px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Application Detail</h1>
+        <h1 id="page-title" style="font-size:19px;font-weight:700;color:var(--text-primary);margin:0;font-family:'Fira Code',monospace;">Application Detail</h1>
       </div>
       <div id="header-user-slot" style="display:flex;gap:10px;align-items:center;">
         <button class="btn-secondary" onclick="downloadSbom()">
@@ -152,7 +152,7 @@
         <div id="pane-findings">
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
             <div style="position:relative;">
-              <i data-lucide="search" style="width:14px;height:14px;color:#475569;position:absolute;left:9px;top:50%;transform:translateY(-50%);pointer-events:none;"></i>
+              <i data-lucide="search" style="width:14px;height:14px;color:var(--text-tertiary);position:absolute;left:9px;top:50%;transform:translateY(-50%);pointer-events:none;"></i>
               <input type="text" id="finding-search" class="dark-input" placeholder="Search findings..." style="padding-left:30px;width:200px;" oninput="applyFindingFilters()">
             </div>
             <select id="finding-severity" class="dark-select" onchange="applyFindingFilters()">
@@ -174,14 +174,14 @@
             <table style="width:100%;border-collapse:collapse;" id="findings-table">
               <thead>
                 <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
-                  <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Severity</th>
-                  <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Title</th>
-                  <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Type</th>
-                  <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Scanner</th>
-                  <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Fix</th>
-                  <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">File / Location</th>
-                  <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Status</th>
-                  <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;">Actions</th>
+                  <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;">Severity</th>
+                  <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;">Title</th>
+                  <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;">Type</th>
+                  <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;">Scanner</th>
+                  <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;">Fix</th>
+                  <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;">File / Location</th>
+                  <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;">Status</th>
+                  <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;">Actions</th>
                 </tr>
               </thead>
               <tbody id="findings-tbody">
@@ -223,7 +223,7 @@
           <!-- Commits sub-pane -->
           <div id="subpane-commits">
             <div id="commits-list">
-              <div style="text-align:center;padding:48px;color:#475569;">
+              <div style="text-align:center;padding:48px;color:var(--text-tertiary);">
                 <i data-lucide="git-commit" style="width:40px;height:40px;display:block;margin:0 auto 12px;opacity:0.25;"></i>
                 <div style="font-size:16px;color:#64748b;">Loading recent commits...</div>
               </div>
@@ -234,8 +234,8 @@
           <div id="subpane-prs" style="display:none;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
               <div style="display:flex;align-items:center;gap:12px;">
-                <label style="font-size:13px;color:#94a3b8;font-weight:500;">Recent PRs:</label>
-                <select id="pr-limit-select" style="background:rgba(0,0,0,0.2);border:1px solid rgba(0,229,255,0.2);color:#f1f5f9;padding:6px 10px;border-radius:8px;font-size:14px;outline:none;" onchange="loadPRsTab()">
+                <label style="font-size:13px;color:var(--text-secondary);font-weight:500;">Recent PRs:</label>
+                <select id="pr-limit-select" style="background:rgba(0,0,0,0.2);border:1px solid rgba(0,229,255,0.2);color:var(--text-primary);padding:6px 10px;border-radius:8px;font-size:14px;outline:none;" onchange="loadPRsTab()">
                   <option value="10">Last 10</option>
                   <option value="20" selected>Last 20</option>
                   <option value="50">Last 50</option>
@@ -248,23 +248,23 @@
             <div id="pr-stats-row" style="display:none;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
               <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(0,229,255,0.1);border-radius:10px;padding:16px;text-align:center;">
                 <div id="pr-stat-total" style="font-size:28px;font-weight:700;color:#00e5ff;font-family:'Fira Code',monospace;">0</div>
-                <div style="font-size:11px;color:#475569;margin-top:4px;text-transform:uppercase;letter-spacing:1px;">PRs Analysed</div>
+                <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px;text-transform:uppercase;letter-spacing:1px;">PRs Analysed</div>
               </div>
               <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(0,229,255,0.1);border-radius:10px;padding:16px;text-align:center;">
                 <div id="pr-stat-issues" style="font-size:28px;font-weight:700;color:#f87171;font-family:'Fira Code',monospace;">0</div>
-                <div style="font-size:11px;color:#475569;margin-top:4px;text-transform:uppercase;letter-spacing:1px;">PRs with Findings</div>
+                <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px;text-transform:uppercase;letter-spacing:1px;">PRs with Findings</div>
               </div>
               <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(0,229,255,0.1);border-radius:10px;padding:16px;text-align:center;">
                 <div id="pr-stat-introduced" style="font-size:28px;font-weight:700;color:#fb923c;font-family:'Fira Code',monospace;">0</div>
-                <div style="font-size:11px;color:#475569;margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Findings Introduced</div>
+                <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Findings Introduced</div>
               </div>
               <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(0,229,255,0.1);border-radius:10px;padding:16px;text-align:center;">
                 <div id="pr-stat-addressed" style="font-size:28px;font-weight:700;color:#34d399;font-family:'Fira Code',monospace;">0</div>
-                <div style="font-size:11px;color:#475569;margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Findings Addressed</div>
+                <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Findings Addressed</div>
               </div>
             </div>
             <div id="pr-list-container">
-              <div style="text-align:center;padding:48px;color:#475569;">
+              <div style="text-align:center;padding:48px;color:var(--text-tertiary);">
                 <i data-lucide="git-pull-request" style="width:40px;height:40px;display:block;margin:0 auto 12px;opacity:0.25;"></i>
                 <div style="font-size:16px;color:#64748b;">Loading pull requests...</div>
               </div>
@@ -275,14 +275,14 @@
           <div id="subpane-security" style="display:none;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
               <div>
-                <div style="font-size:16px;font-weight:600;color:#f1f5f9;">GitHub Advanced Security Alerts</div>
-                <div id="github-sync-info" style="font-size:13px;color:#475569;margin-top:2px;">Sync to load alerts from GHAS, Dependabot, and Secret Scanning.</div>
+                <div style="font-size:16px;font-weight:600;color:var(--text-primary);">GitHub Advanced Security Alerts</div>
+                <div id="github-sync-info" style="font-size:13px;color:var(--text-tertiary);margin-top:2px;">Sync to load alerts from GHAS, Dependabot, and Secret Scanning.</div>
               </div>
               <button id="sync-alerts-btn" onclick="syncGithubAlerts()" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(0,229,255,0.12),rgba(99,102,241,0.12));border:1px solid rgba(0,229,255,0.25);color:#00e5ff;padding:9px 18px;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='linear-gradient(135deg,rgba(0,229,255,0.2),rgba(99,102,241,0.2))'" onmouseout="this.style.background='linear-gradient(135deg,rgba(0,229,255,0.12),rgba(99,102,241,0.12))'">
                 <i data-lucide="shield-check" style="width:15px;height:15px;"></i> Sync GitHub Alerts
               </button>
             </div>
-            <div id="github-alerts-list"><div style="text-align:center;padding:48px;color:#475569;"><i data-lucide="github" style="width:40px;height:40px;display:block;margin:0 auto 12px;opacity:0.25;"></i><div style="font-size:16px;color:#64748b;">Click "Sync GitHub Alerts" to load findings from GitHub Advanced Security</div></div></div>
+            <div id="github-alerts-list"><div style="text-align:center;padding:48px;color:var(--text-tertiary);"><i data-lucide="github" style="width:40px;height:40px;display:block;margin:0 auto 12px;opacity:0.25;"></i><div style="font-size:16px;color:#64748b;">Click "Sync GitHub Alerts" to load findings from GitHub Advanced Security</div></div></div>
           </div>
         </div>
       </div>
@@ -301,20 +301,20 @@
             <i data-lucide="sparkles" style="width:22px;height:22px;color:#6366f1;"></i>
           </div>
           <div>
-            <h2 style="font-size:20px;font-weight:700;color:#f1f5f9;margin:0;">Generate AI Remediation Plan</h2>
-            <p style="font-size:15px;color:#475569;margin:2px 0 0;">Claude analyzes your vulnerabilities and creates a fix plan</p>
+            <h2 style="font-size:20px;font-weight:700;color:var(--text-primary);margin:0;">Generate AI Remediation Plan</h2>
+            <p style="font-size:15px;color:var(--text-tertiary);margin:2px 0 0;">Claude analyzes your vulnerabilities and creates a fix plan</p>
           </div>
         </div>
-        <button onclick="closeRemediationModal()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#94a3b8;cursor:pointer;padding:8px;display:flex;align-items:center;">
+        <button onclick="closeRemediationModal()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--text-secondary);cursor:pointer;padding:8px;display:flex;align-items:center;">
           <i data-lucide="x" style="width:18px;height:18px;"></i>
         </button>
       </div>
 
       <!-- Step 1 -->
       <div id="rem-step1">
-        <p style="font-size:16px;color:#94a3b8;margin-bottom:16px;">Select findings to include in the remediation plan:</p>
+        <p style="font-size:16px;color:var(--text-secondary);margin-bottom:16px;">Select findings to include in the remediation plan:</p>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <span style="font-size:15px;color:#475569;" id="rem-selection-count">0 findings selected</span>
+          <span style="font-size:15px;color:var(--text-tertiary);" id="rem-selection-count">0 findings selected</span>
           <button onclick="toggleSelectAll()" style="background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid rgba(0,229,255,0.2);padding:4px 12px;border-radius:6px;font-size:14px;font-weight:500;cursor:pointer;" id="select-all-btn">Select All</button>
         </div>
         <div id="rem-findings-list" style="max-height:320px;overflow-y:auto;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px;"></div>
@@ -333,8 +333,8 @@
   <div id="view-plan-modal" class="modal-backdrop" style="display:none;" onclick="handleBackdropClick(event,'view-plan-modal')">
     <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:32px;width:100%;max-width:700px;position:relative;animation:fadeInUp 0.3s ease;" onclick="event.stopPropagation()">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-        <h2 style="font-size:19px;font-weight:700;color:#f1f5f9;margin:0;">Remediation Plan</h2>
-        <button onclick="document.getElementById('view-plan-modal').style.display='none'" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#94a3b8;cursor:pointer;padding:8px;display:flex;align-items:center;">
+        <h2 style="font-size:19px;font-weight:700;color:var(--text-primary);margin:0;">Remediation Plan</h2>
+        <button onclick="document.getElementById('view-plan-modal').style.display='none'" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--text-secondary);cursor:pointer;padding:8px;display:flex;align-items:center;">
           <i data-lucide="x" style="width:18px;height:18px;"></i>
         </button>
       </div>
@@ -354,7 +354,7 @@ function getRiskColor(s){return s>=75?'#ef4444':s>=50?'#f59e0b':s>=25?'#f97316':
 function getRiskLevel(s){if(s>=75)return{label:'Critical',color:'#ef4444',bg:'rgba(239,68,68,0.15)'};if(s>=50)return{label:'High',color:'#f59e0b',bg:'rgba(245,158,11,0.15)'};if(s>=25)return{label:'Medium',color:'#f97316',bg:'rgba(249,115,22,0.15)'};return{label:'Low',color:'#10b981',bg:'rgba(16,185,129,0.15)'};}
 
 function severityBadge(sev){
-  const map={critical:{color:'#ef4444',bg:'rgba(239,68,68,0.15)',label:'Critical'},high:{color:'#f59e0b',bg:'rgba(245,158,11,0.15)',label:'High'},medium:{color:'#f97316',bg:'rgba(249,115,22,0.15)',label:'Medium'},low:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)',label:'Low'},info:{color:'#94a3b8',bg:'rgba(148,163,184,0.15)',label:'Info'}};
+  const map={critical:{color:'#ef4444',bg:'rgba(239,68,68,0.15)',label:'Critical'},high:{color:'#f59e0b',bg:'rgba(245,158,11,0.15)',label:'High'},medium:{color:'#f97316',bg:'rgba(249,115,22,0.15)',label:'Medium'},low:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)',label:'Low'},info:{color:'var(--text-secondary)',bg:'rgba(148,163,184,0.15)',label:'Info'}};
   const s=map[sev?.toLowerCase()]||map.info;
   return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}44;padding:2px 8px;border-radius:6px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">${s.label}</span>`;
 }
@@ -389,7 +389,7 @@ function showToast(message, type='success'){
   const colors={success:'#10b981',error:'#ef4444',warning:'#f59e0b',info:'#00e5ff'};
   const icons={success:'check-circle',error:'alert-circle',warning:'alert-triangle',info:'info'};
   const toast=document.createElement('div');
-  toast.style.cssText=`position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(13,17,23,0.95);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:#f1f5f9;font-size:16px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:slideInRight 0.3s ease;`;
+  toast.style.cssText=`position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(13,17,23,0.95);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:var(--text-primary);font-size:16px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:slideInRight 0.3s ease;`;
   const _icon = document.createElement('i');
   _icon.setAttribute('data-lucide', icons[type]);
   _icon.style.cssText = `width:18px;height:18px;color:${colors[type]};flex-shrink:0;`;
@@ -419,33 +419,33 @@ function renderAppInfo(app){
     <div style="position:relative;">
     ${repoUrl ? `<a href="${repoUrl}" target="_blank" rel="noopener noreferrer"
          aria-label="View ${escHtml(app.github_org)}/${escHtml(app.github_repo)} on GitHub"
-         style="position:absolute;top:0;right:0;width:34px;height:34px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#94a3b8;text-decoration:none;transition:all 0.2s;z-index:1;"
+         style="position:absolute;top:0;right:0;width:34px;height:34px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);text-decoration:none;transition:all 0.2s;z-index:1;"
          title="${escHtml(app.github_org)}/${escHtml(app.github_repo)} — View on GitHub"
          onmouseover="this.style.borderColor='rgba(0,229,255,0.4)';this.style.color='#00e5ff';this.style.background='rgba(0,229,255,0.1)'"
          onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='#94a3b8';this.style.background='rgba(0,0,0,0.3)'">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
       </a>` : ''}
-    <h2 style="font-size:24px;font-weight:800;color:#f1f5f9;margin:0 0 10px;${repoUrl ? 'padding-right:44px;' : ''}">${escHtml(app.name||'—')}</h2>
+    <h2 style="font-size:24px;font-weight:800;color:var(--text-primary);margin:0 0 10px;${repoUrl ? 'padding-right:44px;' : ''}">${escHtml(app.name||'—')}</h2>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
       ${app.team_name ? `<span style="background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid rgba(0,229,255,0.2);padding:3px 10px;border-radius:6px;font-size:14px;font-weight:500;">${escHtml(app.team_name)}</span>` : ''}
       ${app.language ? `<span style="background:${lc}22;color:${lc};border:1px solid ${lc}44;padding:3px 10px;border-radius:6px;font-size:14px;font-weight:500;">${escHtml(app.language)}</span>` : ''}
     </div>
-    ${app.description ? `<p style="font-size:16px;color:#94a3b8;line-height:1.6;margin:0 0 16px;">${escHtml(app.description)}</p>` : '<p style="font-size:16px;color:#475569;margin:0 0 16px;font-style:italic;">No description provided.</p>'}
+    ${app.description ? `<p style="font-size:16px;color:var(--text-secondary);line-height:1.6;margin:0 0 16px;">${escHtml(app.description)}</p>` : '<p style="font-size:16px;color:var(--text-tertiary);margin:0 0 16px;font-style:italic;">No description provided.</p>'}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
       <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 14px;">
-        <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Scan Schedule</div>
+        <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Scan Schedule</div>
         <div style="font-size:15px;font-weight:500;color:#e2e8f0;font-family:'Fira Code',monospace;">${escHtml(scheduleLabel)}</div>
       </div>
       <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 14px;">
-        <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Open / Total Findings</div>
-        <div style="font-size:15px;font-weight:500;color:#e2e8f0;font-family:'Fira Code',monospace;">${app.open_findings||0} <span style="color:#475569;">/ ${app.total_findings||0}</span></div>
+        <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Open / Total Findings</div>
+        <div style="font-size:15px;font-weight:500;color:#e2e8f0;font-family:'Fira Code',monospace;">${app.open_findings||0} <span style="color:var(--text-tertiary);">/ ${app.total_findings||0}</span></div>
       </div>
       <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 14px;">
-        <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Total Scans</div>
-        <div style="font-size:15px;font-weight:500;color:#e2e8f0;font-family:'Fira Code',monospace;">${app.scan_count||0} <span style="color:#475569;">scans</span></div>
+        <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Total Scans</div>
+        <div style="font-size:15px;font-weight:500;color:#e2e8f0;font-family:'Fira Code',monospace;">${app.scan_count||0} <span style="color:var(--text-tertiary);">scans</span></div>
       </div>
       <div style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 14px;">
-        <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">${app.container_image ? 'Container Image' : 'Added'}</div>
+        <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">${app.container_image ? 'Container Image' : 'Added'}</div>
         <div style="font-size:15px;font-weight:500;color:#e2e8f0;font-family:'Fira Code',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escHtml(app.container_image||'')}">${escHtml(app.container_image || formatDate(app.created_at))}</div>
       </div>
     </div>
@@ -459,7 +459,7 @@ function renderAppInfo(app){
   const r=80,cx=100,cy=100,circ=2*Math.PI*r;
   const offset = circ - (score/100)*circ;
   document.getElementById('app-score-card').innerHTML = `
-    <div style="margin-bottom:8px;font-size:15px;color:#475569;font-weight:500;">Risk Score</div>
+    <div style="margin-bottom:8px;font-size:15px;color:var(--text-tertiary);font-weight:500;">Risk Score</div>
     <svg viewBox="0 0 200 200" width="200" height="200" style="display:block;margin:0 auto;">
       <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="12"/>
       <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="12" stroke-linecap="round"
@@ -471,11 +471,11 @@ function renderAppInfo(app){
     <div style="margin-top:12px;">
       <span style="background:${risk.bg};color:${risk.color};border:1px solid ${risk.color}44;padding:5px 16px;border-radius:8px;font-size:15px;font-weight:700;">${risk.label} Risk</span>
     </div>
-    <div style="margin-top:12px;font-size:14px;color:#475569;display:flex;align-items:center;justify-content:center;gap:6px;">
+    <div style="margin-top:12px;font-size:14px;color:var(--text-tertiary);display:flex;align-items:center;justify-content:center;gap:6px;">
       <i data-lucide="clock" style="width:13px;height:13px;"></i> Last scan: ${timeAgo(app.last_scan_at)}
     </div>
     ${app.last_github_sync_at ? `
-    <div style="margin-top:6px;font-size:13px;color:#475569;display:flex;align-items:center;justify-content:center;gap:6px;">
+    <div style="margin-top:6px;font-size:13px;color:var(--text-tertiary);display:flex;align-items:center;justify-content:center;gap:6px;">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
       GitHub sync: ${timeAgo(app.last_github_sync_at)}
     </div>` : ''}
@@ -516,12 +516,12 @@ function scannerBadge(type){
     checkov:{color:'#10b981',bg:'rgba(16,185,129,0.15)'},
     govulncheck:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)'},
   };
-  const s=m[(type||'').toLowerCase()]||{color:'#94a3b8',bg:'rgba(148,163,184,0.15)'};
+  const s=m[(type||'').toLowerCase()]||{color:'var(--text-secondary)',bg:'rgba(148,163,184,0.15)'};
   return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}33;padding:2px 7px;border-radius:5px;font-size:12px;font-weight:600;text-transform:uppercase;">${type||'—'}</span>`;
 }
 
 function statusBadge(status){
-  const m={open:{color:'#10b981',bg:'rgba(16,185,129,0.1)',label:'Open'},accepted:{color:'#f59e0b',bg:'rgba(245,158,11,0.1)',label:'Accepted'},false_positive:{color:'#94a3b8',bg:'rgba(148,163,184,0.1)',label:'False Positive'}};
+  const m={open:{color:'#10b981',bg:'rgba(16,185,129,0.1)',label:'Open'},accepted:{color:'#f59e0b',bg:'rgba(245,158,11,0.1)',label:'Accepted'},false_positive:{color:'var(--text-secondary)',bg:'rgba(148,163,184,0.1)',label:'False Positive'}};
   const s=m[status]||m.open;
   return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}44;padding:2px 8px;border-radius:6px;font-size:13px;font-weight:600;">${s.label}</span>`;
 }
@@ -546,7 +546,7 @@ function applyFindingFilters(){
 function renderFindingsTable(findings){
   const tbody=document.getElementById('findings-tbody');
   if(!findings||findings.length===0){
-    tbody.innerHTML=`<tr><td colspan="8" style="padding:40px;text-align:center;color:#475569;font-size:16px;"><i data-lucide="shield-check" style="width:32px;height:32px;display:block;margin:0 auto 8px;opacity:0.3;"></i>No findings match your filters</td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="8" style="padding:40px;text-align:center;color:var(--text-tertiary);font-size:16px;"><i data-lucide="shield-check" style="width:32px;height:32px;display:block;margin:0 auto 8px;opacity:0.3;"></i>No findings match your filters</td></tr>`;
     lucide.createIcons();return;
   }
   tbody.innerHTML=findings.map(f=>`
@@ -554,42 +554,42 @@ function renderFindingsTable(findings){
       <td style="padding:12px;">${severityBadge(f.severity)}</td>
       <td style="padding:12px;max-width:260px;">
         <div style="font-size:15px;font-weight:500;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escHtml(f.title||'')}">${escHtml(f.title||'—')}</div>
-        ${f.cve_id?`<div style="font-size:13px;color:#475569;margin-top:2px;">${escHtml(f.cve_id)}</div>`:''}
+        ${f.cve_id?`<div style="font-size:13px;color:var(--text-tertiary);margin-top:2px;">${escHtml(f.cve_id)}</div>`:''}
       </td>
-      <td style="padding:12px;font-size:14px;color:#94a3b8;">${escHtml(f.finding_type||'—')}</td>
+      <td style="padding:12px;font-size:14px;color:var(--text-secondary);">${escHtml(f.finding_type||'—')}</td>
       <td style="padding:12px;">${scannerBadge(f.scanner)}</td>
       <td style="padding:12px;">${appFixBadge(f)}</td>
-      <td style="padding:12px;max-width:180px;"><div style="font-size:13px;color:#475569;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.file_path?`${escHtml(f.file_path)}${f.line_number?`:${f.line_number}`:''}`:f.package_name?`${escHtml(f.package_name)}${f.package_version?'@'+escHtml(f.package_version):''}` :'—'}</div></td>
+      <td style="padding:12px;max-width:180px;"><div style="font-size:13px;color:var(--text-tertiary);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.file_path?`${escHtml(f.file_path)}${f.line_number?`:${f.line_number}`:''}`:f.package_name?`${escHtml(f.package_name)}${f.package_version?'@'+escHtml(f.package_version):''}` :'—'}</div></td>
       <td style="padding:12px;" onclick="event.stopPropagation()">${renderStatusDropdown(f)}</td>
-      <td style="padding:12px;"><i data-lucide="chevron-down" id="chevron-${f.id}" style="width:16px;height:16px;color:#475569;transition:transform 0.2s;"></i></td>
+      <td style="padding:12px;"><i data-lucide="chevron-down" id="chevron-${f.id}" style="width:16px;height:16px;color:var(--text-tertiary);transition:transform 0.2s;"></i></td>
     </tr>
     <tr class="finding-expand" id="expand-${f.id}">
       <td colspan="7" style="padding:0;">
         <div style="background:rgba(0,0,0,0.3);border-top:1px solid rgba(255,255,255,0.04);padding:20px 16px;">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
             <div>
-              <div style="font-size:13px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Description</div>
-              <div style="font-size:15px;color:#94a3b8;line-height:1.6;">${escHtml(f.description||'No description available.')}</div>
+              <div style="font-size:13px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Description</div>
+              <div style="font-size:15px;color:var(--text-secondary);line-height:1.6;">${escHtml(f.description||'No description available.')}</div>
             </div>
             <div>
-              <div style="font-size:13px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Details</div>
+              <div style="font-size:13px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Details</div>
               <div style="display:flex;flex-direction:column;gap:6px;">
-                ${f.cve_id?`<div style="font-size:14px;color:#94a3b8;"><span style="color:#475569;">CVE:</span> <span style="font-family:monospace;color:#f59e0b;">${escHtml(f.cve_id)}</span></div>`:''}
-                ${f.rule_id?`<div style="font-size:14px;color:#94a3b8;"><span style="color:#475569;">Rule:</span> <span style="font-family:monospace;">${escHtml(f.rule_id)}</span></div>`:''}
-                ${f.package_name?`<div style="font-size:14px;color:#94a3b8;"><span style="color:#475569;">Package:</span> ${escHtml(f.package_name)}${f.package_version?' @ '+escHtml(f.package_version):''}</div>`:''}
-                ${f.cvss_score?`<div style="font-size:14px;color:#94a3b8;"><span style="color:#475569;">CVSS:</span> <span style="color:${f.cvss_score>=7?'#ef4444':f.cvss_score>=4?'#f59e0b':'#10b981'};">${f.cvss_score.toFixed(1)}</span></div>`:''}
-                ${f.epss_score?`<div style="font-size:14px;color:#94a3b8;margin-top:4px;"><span style="color:#475569;">EPSS Score:</span> <span style="color:${f.epss_score>=0.1?'#ef4444':'#f59e0b'};font-weight:600;">${(f.epss_score * 100).toFixed(2)}%</span> <span style="font-size:11px;color:#475569;">(${f.epss_percentile ? (f.epss_percentile * 100).toFixed(1) + 'th percentile' : ''})</span></div>`:''}
-                ${!f.cve_id&&!f.rule_id&&!f.package_name&&!f.cvss_score&&!f.epss_score?'<div style="font-size:15px;color:#475569;">No additional metadata.</div>':''}
+                ${f.cve_id?`<div style="font-size:14px;color:var(--text-secondary);"><span style="color:var(--text-tertiary);">CVE:</span> <span style="font-family:monospace;color:#f59e0b;">${escHtml(f.cve_id)}</span></div>`:''}
+                ${f.rule_id?`<div style="font-size:14px;color:var(--text-secondary);"><span style="color:var(--text-tertiary);">Rule:</span> <span style="font-family:monospace;">${escHtml(f.rule_id)}</span></div>`:''}
+                ${f.package_name?`<div style="font-size:14px;color:var(--text-secondary);"><span style="color:var(--text-tertiary);">Package:</span> ${escHtml(f.package_name)}${f.package_version?' @ '+escHtml(f.package_version):''}</div>`:''}
+                ${f.cvss_score?`<div style="font-size:14px;color:var(--text-secondary);"><span style="color:var(--text-tertiary);">CVSS:</span> <span style="color:${f.cvss_score>=7?'#ef4444':f.cvss_score>=4?'#f59e0b':'#10b981'};">${f.cvss_score.toFixed(1)}</span></div>`:''}
+                ${f.epss_score?`<div style="font-size:14px;color:var(--text-secondary);margin-top:4px;"><span style="color:var(--text-tertiary);">EPSS Score:</span> <span style="color:${f.epss_score>=0.1?'#ef4444':'#f59e0b'};font-weight:600;">${(f.epss_score * 100).toFixed(2)}%</span> <span style="font-size:11px;color:var(--text-tertiary);">(${f.epss_percentile ? (f.epss_percentile * 100).toFixed(1) + 'th percentile' : ''})</span></div>`:''}
+                ${!f.cve_id&&!f.rule_id&&!f.package_name&&!f.cvss_score&&!f.epss_score?'<div style="font-size:15px;color:var(--text-tertiary);">No additional metadata.</div>':''}
               </div>
             </div>
           </div>
           ${f.fixed_version?`<div style="margin-top:12px;"><span style="background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2);padding:3px 10px;border-radius:6px;font-size:14px;font-weight:500;"><i data-lucide="package" style="width:12px;height:12px;display:inline;vertical-align:middle;margin-right:4px;"></i>Fix version: ${f.fixed_version}</span></div>`:''}
           ${(f.introduced_by||f.commit_sha||f.pr_url||f.github_alert_url)?`
           <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);">
-            <div style="font-size:13px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i data-lucide="github" style="width:13px;height:13px;"></i> GitHub Intelligence</div>
+            <div style="font-size:13px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i data-lucide="github" style="width:13px;height:13px;"></i> GitHub Intelligence</div>
             <div style="display:flex;align-items:center;flex-wrap:wrap;gap:16px;">
-              ${f.introduced_by?`<div style="display:flex;align-items:center;gap:8px;"><img src="https://github.com/${escHtml(f.introduced_by)}.png?size=28" width="28" height="28" style="border-radius:50%;border:1px solid rgba(0,229,255,0.2);" onerror="this.style.display='none'"><div><div style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:0.6px;">Introduced by</div><a href="https://github.com/${escHtml(f.introduced_by)}" target="_blank" style="font-size:14px;color:#00e5ff;text-decoration:none;font-family:'Fira Code',monospace;">@${escHtml(f.introduced_by)}</a></div></div>`:''}
-              ${f.commit_sha?`<div><div style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:2px;">Commit</div><span style="font-size:13px;color:#94a3b8;font-family:'Fira Code',monospace;">${escHtml(f.commit_sha.substring(0,8))}</span></div>`:''}
+              ${f.introduced_by?`<div style="display:flex;align-items:center;gap:8px;"><img src="https://github.com/${escHtml(f.introduced_by)}.png?size=28" width="28" height="28" style="border-radius:50%;border:1px solid rgba(0,229,255,0.2);" onerror="this.style.display='none'"><div><div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.6px;">Introduced by</div><a href="https://github.com/${escHtml(f.introduced_by)}" target="_blank" style="font-size:14px;color:#00e5ff;text-decoration:none;font-family:'Fira Code',monospace;">@${escHtml(f.introduced_by)}</a></div></div>`:''}
+              ${f.commit_sha?`<div><div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:2px;">Commit</div><span style="font-size:13px;color:var(--text-secondary);font-family:'Fira Code',monospace;">${escHtml(f.commit_sha.substring(0,8))}</span></div>`:''}
               ${f.pr_url?`<a href="${escHtml(f.pr_url)}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);color:#a5b4fc;padding:6px 12px;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none;" onmouseover="this.style.background='rgba(99,102,241,0.18)'" onmouseout="this.style.background='rgba(99,102,241,0.1)'"><i data-lucide="git-pull-request" style="width:13px;height:13px;"></i>PR #${f.pr_number||''}</a>`:''}
               ${f.github_alert_url?`<a href="${escHtml(f.github_alert_url)}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);color:#00e5ff;padding:6px 12px;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none;" onmouseover="this.style.background='rgba(0,229,255,0.15)'" onmouseout="this.style.background='rgba(0,229,255,0.08)'"><i data-lucide="external-link" style="width:13px;height:13px;"></i>View Alert on GitHub</a>`:''}
             </div>
@@ -644,7 +644,7 @@ async function updateStatus(findingId, status){
 
 // ── Scan History ───────────────────────────────────────────────────────────────
 function scanStatusBadge(status){
-  const m={completed:{color:'#10b981',bg:'rgba(16,185,129,0.1)',label:'Completed'},running:{color:'#00e5ff',bg:'rgba(0,229,255,0.1)',label:'Running',anim:true},failed:{color:'#ef4444',bg:'rgba(239,68,68,0.1)',label:'Failed'},pending:{color:'#94a3b8',bg:'rgba(148,163,184,0.1)',label:'Pending'}};
+  const m={completed:{color:'#10b981',bg:'rgba(16,185,129,0.1)',label:'Completed'},running:{color:'#00e5ff',bg:'rgba(0,229,255,0.1)',label:'Running',anim:true},failed:{color:'#ef4444',bg:'rgba(239,68,68,0.1)',label:'Failed'},pending:{color:'var(--text-secondary)',bg:'rgba(148,163,184,0.1)',label:'Pending'}};
   const s=m[status]||m.pending;
   const style=s.anim?'animation:scanPulse 1.5s infinite;':'';
   return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}44;padding:3px 10px;border-radius:6px;font-size:13px;font-weight:600;${style}">${s.label}</span>`;
@@ -653,7 +653,7 @@ function scanStatusBadge(status){
 function renderScansTab(scans){
   const el=document.getElementById('scans-list');
   if(!scans||scans.length===0){
-    el.innerHTML=`<div style="text-align:center;padding:60px;color:#475569;"><i data-lucide="history" style="width:40px;height:40px;display:block;margin:0 auto 12px;opacity:0.3;"></i><div style="font-size:17px;font-weight:500;color:#f1f5f9;margin-bottom:8px;">No scans yet</div><p>Trigger a scan to see results here.</p></div>`;
+    el.innerHTML=`<div style="text-align:center;padding:60px;color:var(--text-tertiary);"><i data-lucide="history" style="width:40px;height:40px;display:block;margin:0 auto 12px;opacity:0.3;"></i><div style="font-size:17px;font-weight:500;color:var(--text-primary);margin-bottom:8px;">No scans yet</div><p>Trigger a scan to see results here.</p></div>`;
     lucide.createIcons();return;
   }
   el.innerHTML=`<div style="display:flex;flex-direction:column;gap:8px;">${scans.map(s=>`
@@ -661,11 +661,11 @@ function renderScansTab(scans){
       <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:200px;">
         ${scanStatusBadge(s.status)}
         <div>
-          <div style="font-size:16px;font-weight:600;color:#f1f5f9;">${escHtml((s.scan_type||'Full Scan').toUpperCase())}</div>
-          <div style="font-size:13px;color:#475569;margin-top:2px;">Triggered by: ${escHtml(s.triggered_by||'Manual')}</div>
+          <div style="font-size:16px;font-weight:600;color:var(--text-primary);">${escHtml((s.scan_type||'Full Scan').toUpperCase())}</div>
+          <div style="font-size:13px;color:var(--text-tertiary);margin-top:2px;">Triggered by: ${escHtml(s.triggered_by||'Manual')}</div>
         </div>
       </div>
-      <div style="font-size:14px;color:#475569;min-width:140px;">
+      <div style="font-size:14px;color:var(--text-tertiary);min-width:140px;">
         <div>Started: ${timeAgo(s.started_at)}</div>
         ${s.completed_at?`<div>Duration: ${Math.round((new Date(s.completed_at)-new Date(s.started_at))/1000)}s</div>`:''}
       </div>
@@ -702,17 +702,17 @@ function remStatusBadge(status){
 function renderRemediationsTab(items){
   const el=document.getElementById('remediations-grid');
   if(!items||items.length===0){
-    el.innerHTML=`<div style="text-align:center;padding:60px;color:#475569;"><i data-lucide="wrench" style="width:40px;height:40px;display:block;margin:0 auto 12px;opacity:0.3;"></i><div style="font-size:17px;font-weight:500;color:#f1f5f9;margin-bottom:8px;">No remediation plans yet</div><p>Click 'Plan Remediation' to generate one.</p><button class="btn-primary" onclick="openRemediationModal()" style="margin-top:16px;"><i data-lucide="sparkles" style="width:15px;height:15px;"></i> Plan Remediation</button></div>`;
+    el.innerHTML=`<div style="text-align:center;padding:60px;color:var(--text-tertiary);"><i data-lucide="wrench" style="width:40px;height:40px;display:block;margin:0 auto 12px;opacity:0.3;"></i><div style="font-size:17px;font-weight:500;color:var(--text-primary);margin-bottom:8px;">No remediation plans yet</div><p>Click 'Plan Remediation' to generate one.</p><button class="btn-primary" onclick="openRemediationModal()" style="margin-top:16px;"><i data-lucide="sparkles" style="width:15px;height:15px;"></i> Plan Remediation</button></div>`;
     lucide.createIcons();return;
   }
   el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;">${items.map(r=>`
     <div class="card" style="padding:20px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         ${remStatusBadge(r.status)}
-        <span style="font-size:13px;color:#475569;">${formatDate(r.created_at)}</span>
+        <span style="font-size:13px;color:var(--text-tertiary);">${formatDate(r.created_at)}</span>
       </div>
-      <div style="font-size:16px;font-weight:600;color:#f1f5f9;margin-bottom:6px;">Remediation Plan</div>
-      <div style="font-size:14px;color:#475569;margin-bottom:12px;">${(r.finding_ids||[]).length} finding${(r.finding_ids||[]).length!==1?'s':''} addressed</div>
+      <div style="font-size:16px;font-weight:600;color:var(--text-primary);margin-bottom:6px;">Remediation Plan</div>
+      <div style="font-size:14px;color:var(--text-tertiary);margin-bottom:12px;">${(r.finding_ids||[]).length} finding${(r.finding_ids||[]).length!==1?'s':''} addressed</div>
       ${r.pr_url?`<a href="${r.pr_url}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;color:#00e5ff;text-decoration:none;font-size:14px;font-weight:500;margin-bottom:12px;"><i data-lucide="git-pull-request" style="width:13px;height:13px;"></i>View Pull Request</a>`:''}
       <div style="display:flex;gap:8px;margin-top:auto;">
         <button class="btn-secondary" style="flex:1;padding:8px;font-size:14px;" onclick="viewPlan('${r.id}',\`${encodeURIComponent(r.ai_plan||'No content available.')}\`)">
@@ -749,7 +749,7 @@ function openRemediationModal(){
   const isFixable=f=>f.fixed_version!=null||!['sca','container'].includes((f.finding_type||'').toLowerCase());
   const list=document.getElementById('rem-findings-list');
   if(openFindings.length===0){
-    list.innerHTML=`<div style="padding:24px;text-align:center;color:#475569;font-size:15px;">No open findings to include.</div>`;
+    list.innerHTML=`<div style="padding:24px;text-align:center;color:var(--text-tertiary);font-size:15px;">No open findings to include.</div>`;
   } else {
     list.innerHTML=openFindings.map(f=>`
       <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
@@ -858,10 +858,10 @@ async function loadCommitsSubTab(){
     renderCommitsSubTab(data.commits||[]);
     commitsLoaded=true;
   }catch(e){
-    el.innerHTML=`<div style="text-align:center;padding:48px;color:#475569;">
+    el.innerHTML=`<div style="text-align:center;padding:48px;color:var(--text-tertiary);">
       <i data-lucide="github" style="width:40px;height:40px;display:block;margin:0 auto 12px;opacity:0.25;"></i>
       <div style="font-size:16px;color:#64748b;margin-bottom:8px;">Could not load commits</div>
-      <div style="font-size:14px;color:#475569;">${escHtml(e.message)}</div>
+      <div style="font-size:14px;color:var(--text-tertiary);">${escHtml(e.message)}</div>
     </div>`;
     lucide.createIcons();
   }
@@ -870,9 +870,9 @@ async function loadCommitsSubTab(){
 function renderCommitsSubTab(commits){
   const el=document.getElementById('commits-list');
   if(!commits||commits.length===0){
-    el.innerHTML=`<div style="text-align:center;padding:60px;color:#475569;">
+    el.innerHTML=`<div style="text-align:center;padding:60px;color:var(--text-tertiary);">
       <i data-lucide="git-commit" style="width:44px;height:44px;display:block;margin:0 auto 14px;opacity:0.2;"></i>
-      <div style="font-size:17px;font-weight:500;color:#f1f5f9;margin-bottom:8px;">No Recent Commits</div>
+      <div style="font-size:17px;font-weight:500;color:var(--text-primary);margin-bottom:8px;">No Recent Commits</div>
       <p>No commit history found. Make sure GITHUB_TOKEN is configured.</p>
     </div>`;
     lucide.createIcons();return;
@@ -881,13 +881,13 @@ function renderCommitsSubTab(commits){
     <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:8px;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
       ${c.author_avatar
         ?`<img src="${escHtml(c.author_avatar)}&s=28" width="28" height="28" style="border-radius:50%;border:1px solid rgba(0,229,255,0.15);flex-shrink:0;" onerror="this.style.display='none'">`
-        :`<div style="width:28px;height:28px;background:rgba(0,229,255,0.1);border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;"><i data-lucide="user" style="width:14px;height:14px;color:#475569;"></i></div>`
+        :`<div style="width:28px;height:28px;background:rgba(0,229,255,0.1);border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;"><i data-lucide="user" style="width:14px;height:14px;color:var(--text-tertiary);"></i></div>`
       }
       <div style="flex:1;min-width:0;">
         <div style="font-size:14px;font-weight:500;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escHtml(c.message)}">${escHtml(c.message||'(no message)')}</div>
-        <div style="font-size:12px;color:#475569;margin-top:2px;display:flex;align-items:center;gap:8px;">
+        <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;display:flex;align-items:center;gap:8px;">
           ${c.author_login
-            ?`<a href="https://github.com/${escHtml(c.author_login)}" target="_blank" rel="noopener noreferrer" style="color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#00e5ff'" onmouseout="this.style.color='#94a3b8'">@${escHtml(c.author_login)}</a>`
+            ?`<a href="https://github.com/${escHtml(c.author_login)}" target="_blank" rel="noopener noreferrer" style="color:var(--text-secondary);text-decoration:none;" onmouseover="this.style.color='#00e5ff'" onmouseout="this.style.color='#94a3b8'">@${escHtml(c.author_login)}</a>`
             :`<span>${escHtml(c.author_name||'Unknown')}</span>`
           }
           <span style="color:#334155;">·</span>
@@ -895,8 +895,8 @@ function renderCommitsSubTab(commits){
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-        <span style="font-size:12px;font-family:'Fira Code',monospace;color:#475569;background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;">${escHtml(c.short_sha||'')}</span>
-        ${c.commit_url?`<a href="${escHtml(c.commit_url)}" target="_blank" rel="noopener noreferrer" style="color:#475569;display:flex;align-items:center;" title="View on GitHub" onmouseover="this.style.color='#00e5ff'" onmouseout="this.style.color='#475569'"><i data-lucide="external-link" style="width:13px;height:13px;"></i></a>`:''}
+        <span style="font-size:12px;font-family:'Fira Code',monospace;color:var(--text-tertiary);background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;">${escHtml(c.short_sha||'')}</span>
+        ${c.commit_url?`<a href="${escHtml(c.commit_url)}" target="_blank" rel="noopener noreferrer" style="color:var(--text-tertiary);display:flex;align-items:center;" title="View on GitHub" onmouseover="this.style.color='#00e5ff'" onmouseout="this.style.color='#475569'"><i data-lucide="external-link" style="width:13px;height:13px;"></i></a>`:''}
       </div>
     </div>
   `).join('')}</div>`;
@@ -906,7 +906,7 @@ function renderCommitsSubTab(commits){
 function prTypeBadge(type){
   const m={sast:{color:'#a855f7',bg:'rgba(168,85,247,0.15)'},sca:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)'},container:{color:'#0ea5e9',bg:'rgba(14,165,233,0.15)'},secrets:{color:'#f43f5e',bg:'rgba(244,63,94,0.15)'},iac:{color:'#f59e0b',bg:'rgba(245,158,11,0.15)'}};
   const k=(type||'').toLowerCase();
-  const s=m[k]||{color:'#94a3b8',bg:'rgba(148,163,184,0.15)'};
+  const s=m[k]||{color:'var(--text-secondary)',bg:'rgba(148,163,184,0.15)'};
   return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}33;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;text-transform:uppercase;">${escHtml(type||'—')}</span>`;
 }
 
@@ -924,7 +924,7 @@ function renderPRFindingRow(f){
     ${severityBadge(f.severity)}
     ${prTypeBadge(f.finding_type)}
     <span style="flex:1;font-size:14px;color:#e2e8f0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${findingLink}</span>
-    ${f.file_path?`<span style="font-size:12px;color:#475569;font-family:'Fira Code',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;" title="${escHtml(f.file_path)}">${escHtml(f.file_path)}${f.line_number?':'+f.line_number:''}</span>`:''}
+    ${f.file_path?`<span style="font-size:12px;color:var(--text-tertiary);font-family:'Fira Code',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;" title="${escHtml(f.file_path)}">${escHtml(f.file_path)}${f.line_number?':'+f.line_number:''}</span>`:''}
     <span style="font-size:12px;color:#64748b;font-family:'Fira Code',monospace;flex-shrink:0;">${escHtml(f.scanner)}</span>
     ${alertLink}
   </div>`;
@@ -939,8 +939,8 @@ function renderPRCard(pr,index){
   const openBadge=introduced.length>0?`<span class="count-pill count-pill-danger"><i data-lucide="alert-triangle" style="width:11px;height:11px;"></i>${introduced.length} introduced</span>`:'';
   const addressedBadge=addressed.length>0?`<span class="count-pill count-pill-success"><i data-lucide="check-circle" style="width:11px;height:11px;"></i>${addressed.length} addressed</span>`:'';
   const cleanBadge=!hasFindings?`<span class="count-pill count-pill-neutral"><i data-lucide="shield-check" style="width:11px;height:11px;"></i>No findings</span>`:'';
-  const authorHtml=pr.author?`<a href="${escHtml(pr.author_url||'#')}" target="_blank" rel="noopener" style="color:#94a3b8;text-decoration:none;font-size:13px;display:flex;align-items:center;gap:4px;"><i data-lucide="user" style="width:13px;height:13px;"></i>${escHtml(pr.author)}</a>`:'';
-  const branchHtml=pr.base_branch?`<span style="font-size:12px;color:#475569;display:flex;align-items:center;gap:4px;"><i data-lucide="git-branch" style="width:12px;height:12px;"></i><span style="font-family:'Fira Code',monospace;">${escHtml(pr.head_branch||'')} → ${escHtml(pr.base_branch)}</span></span>`:'';
+  const authorHtml=pr.author?`<a href="${escHtml(pr.author_url||'#')}" target="_blank" rel="noopener" style="color:var(--text-secondary);text-decoration:none;font-size:13px;display:flex;align-items:center;gap:4px;"><i data-lucide="user" style="width:13px;height:13px;"></i>${escHtml(pr.author)}</a>`:'';
+  const branchHtml=pr.base_branch?`<span style="font-size:12px;color:var(--text-tertiary);display:flex;align-items:center;gap:4px;"><i data-lucide="git-branch" style="width:12px;height:12px;"></i><span style="font-family:'Fira Code',monospace;">${escHtml(pr.head_branch||'')} → ${escHtml(pr.base_branch)}</span></span>`:'';
   let findingsHtml='';
   if(introduced.length>0){findingsHtml+=`<div class="section-label">// Security findings introduced (${introduced.length})</div>`;findingsHtml+=introduced.map(renderPRFindingRow).join('');}
   if(addressed.length>0){findingsHtml+=`<div class="section-label" style="margin-top:${introduced.length>0?14:0}px;">// Security findings addressed (${addressed.length})</div>`;findingsHtml+=addressed.map(renderPRFindingRow).join('');}
@@ -949,17 +949,17 @@ function renderPRCard(pr,index){
       <div style="margin-top:2px;">${prStateBadge(pr)}</div>
       <div style="flex:1;min-width:0;">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
-          <span style="font-size:15px;font-weight:600;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:500px;" title="${escHtml(pr.title)}">
-            <a href="${escHtml(pr.pr_url)}" target="_blank" rel="noopener" style="color:#f1f5f9;text-decoration:none;" onclick="event.stopPropagation();">#${pr.pr_number} ${escHtml(pr.title)}</a>
+          <span style="font-size:15px;font-weight:600;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:500px;" title="${escHtml(pr.title)}">
+            <a href="${escHtml(pr.pr_url)}" target="_blank" rel="noopener" style="color:var(--text-primary);text-decoration:none;" onclick="event.stopPropagation();">#${pr.pr_number} ${escHtml(pr.title)}</a>
           </span>
         </div>
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
           ${authorHtml}${branchHtml}
-          <span style="font-size:12px;color:#475569;display:flex;align-items:center;gap:4px;"><i data-lucide="clock" style="width:12px;height:12px;"></i>${timeAgo(pr.merged_at||pr.closed_at||pr.updated_at)}</span>
+          <span style="font-size:12px;color:var(--text-tertiary);display:flex;align-items:center;gap:4px;"><i data-lucide="clock" style="width:12px;height:12px;"></i>${timeAgo(pr.merged_at||pr.closed_at||pr.updated_at)}</span>
         </div>
         <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">${openBadge}${addressedBadge}${cleanBadge}</div>
       </div>
-      ${hasFindings?`<i id="${chevronId}" data-lucide="chevron-down" class="chevron-icon" style="width:18px;height:18px;color:#475569;margin-top:2px;"></i>`:''}
+      ${hasFindings?`<i id="${chevronId}" data-lucide="chevron-down" class="chevron-icon" style="width:18px;height:18px;color:var(--text-tertiary);margin-top:2px;"></i>`:''}
     </div>
     <div id="${panelId}" class="findings-panel">${findingsHtml}</div>
   </div>`;
@@ -985,13 +985,13 @@ async function loadPRsTab(){
     const res=await fetch(`/api/v1/github/apps/${appId}/pr-reviews?limit=${limit}`);
     if(!res.ok){
       const err=await res.json().catch(()=>({}));
-      container.innerHTML=`<div style="text-align:center;padding:48px;color:#475569;"><i data-lucide="alert-triangle" style="width:40px;height:40px;display:block;margin:0 auto 12px;opacity:0.3;"></i><div style="font-size:16px;color:#f87171;margin-bottom:6px;">Error loading PR data</div><div style="font-size:14px;">${escHtml(err.detail||res.statusText)}</div></div>`;
+      container.innerHTML=`<div style="text-align:center;padding:48px;color:var(--text-tertiary);"><i data-lucide="alert-triangle" style="width:40px;height:40px;display:block;margin:0 auto 12px;opacity:0.3;"></i><div style="font-size:16px;color:#f87171;margin-bottom:6px;">Error loading PR data</div><div style="font-size:14px;">${escHtml(err.detail||res.statusText)}</div></div>`;
       lucide.createIcons();return;
     }
     const data=await res.json();
     const prs=data.prs||[];
     if(prs.length===0){
-      container.innerHTML=`<div style="text-align:center;padding:60px;color:#475569;"><i data-lucide="git-pull-request" style="width:44px;height:44px;display:block;margin:0 auto 14px;opacity:0.2;"></i><div style="font-size:17px;font-weight:500;color:#f1f5f9;margin-bottom:8px;">No Pull Requests Found</div><p>No recent PRs found for this repository.</p></div>`;
+      container.innerHTML=`<div style="text-align:center;padding:60px;color:var(--text-tertiary);"><i data-lucide="git-pull-request" style="width:44px;height:44px;display:block;margin:0 auto 14px;opacity:0.2;"></i><div style="font-size:17px;font-weight:500;color:var(--text-primary);margin-bottom:8px;">No Pull Requests Found</div><p>No recent PRs found for this repository.</p></div>`;
       lucide.createIcons();return;
     }
     let totalIntroduced=0,totalAddressed=0,prsWithIssues=0;
@@ -1012,7 +1012,7 @@ async function loadPRsTab(){
       }
     });
   }catch(e){
-    container.innerHTML=`<div style="text-align:center;padding:48px;color:#475569;"><i data-lucide="alert-triangle" style="width:40px;height:40px;display:block;margin:0 auto 12px;opacity:0.3;"></i><div style="font-size:16px;color:#f87171;">${escHtml(String(e))}</div></div>`;
+    container.innerHTML=`<div style="text-align:center;padding:48px;color:var(--text-tertiary);"><i data-lucide="alert-triangle" style="width:40px;height:40px;display:block;margin:0 auto 12px;opacity:0.3;"></i><div style="font-size:16px;color:#f87171;">${escHtml(String(e))}</div></div>`;
     lucide.createIcons();
   }
 }
@@ -1133,8 +1133,8 @@ function renderRemediationCardEmpty(el){
           <i data-lucide="sparkles" style="width:20px;height:20px;color:#6366f1;"></i>
         </div>
         <div>
-          <div style="font-size:16px;font-weight:600;color:#f1f5f9;font-family:'Fira Code',monospace;">AI Remediation Plan</div>
-          <div style="font-size:14px;color:#475569;margin-top:2px;">No plan generated yet. Select findings and let the AI build a step-by-step fix plan.</div>
+          <div style="font-size:16px;font-weight:600;color:var(--text-primary);font-family:'Fira Code',monospace;">AI Remediation Plan</div>
+          <div style="font-size:14px;color:var(--text-tertiary);margin-top:2px;">No plan generated yet. Select findings and let the AI build a step-by-step fix plan.</div>
         </div>
       </div>
       <button class="btn-secondary" id="card-plan-btn" onclick="planRemediation()" style="flex-shrink:0;">
@@ -1157,11 +1157,11 @@ function renderRemediationCardWithPlan(el,plan){
           <div style="width:36px;height:36px;background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(168,85,247,0.2));border:1px solid rgba(99,102,241,0.35);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
             <i data-lucide="sparkles" style="width:18px;height:18px;color:#6366f1;"></i>
           </div>
-          <span style="font-size:16px;font-weight:700;color:#f1f5f9;font-family:'Fira Code',monospace;">AI Remediation Plan</span>
+          <span style="font-size:16px;font-weight:700;color:var(--text-primary);font-family:'Fira Code',monospace;">AI Remediation Plan</span>
           ${remStatusBadge(plan.status)}
           ${modelPill}
         </div>
-        <div style="font-size:13px;color:#475569;margin-bottom:8px;">
+        <div style="font-size:13px;color:var(--text-tertiary);margin-bottom:8px;">
           <span style="color:#6366f1;font-weight:600;font-family:'Fira Code',monospace;">${findingCount}</span> finding${findingCount!==1?'s':''} covered &nbsp;·&nbsp; ${formatDate(plan.created_at)}
         </div>
         <div style="font-size:14px;color:#64748b;line-height:1.6;font-style:italic;">"${summary}"</div>
@@ -1190,7 +1190,7 @@ function renderRemediationSection(el,plan){
         </div>
         <div>
           <div style="font-size:17px;font-weight:700;color:#00e5ff;font-family:'Fira Code',monospace;">AI Remediation Plan</div>
-          <div style="font-size:13px;color:#475569;margin-top:2px;">${findingCount} finding${findingCount!==1?'s':''} &nbsp;·&nbsp; ${formatDate(plan.created_at)}</div>
+          <div style="font-size:13px;color:var(--text-tertiary);margin-top:2px;">${findingCount} finding${findingCount!==1?'s':''} &nbsp;·&nbsp; ${formatDate(plan.created_at)}</div>
         </div>
         ${remStatusBadge(plan.status)}
         ${modelPill}
@@ -1247,9 +1247,9 @@ async function loadGithubSecuritySubTab(){
 function renderGithubTab(findings){
   const el=document.getElementById('github-alerts-list');
   if(!findings||findings.length===0){
-    el.innerHTML=`<div style="text-align:center;padding:60px;color:#475569;">
+    el.innerHTML=`<div style="text-align:center;padding:60px;color:var(--text-tertiary);">
       <i data-lucide="github" style="width:44px;height:44px;display:block;margin:0 auto 14px;opacity:0.2;"></i>
-      <div style="font-size:17px;font-weight:500;color:#f1f5f9;margin-bottom:8px;">No GitHub Security Alerts</div>
+      <div style="font-size:17px;font-weight:500;color:var(--text-primary);margin-bottom:8px;">No GitHub Security Alerts</div>
       <p style="max-width:400px;margin:0 auto;">Click "Sync GitHub Alerts" to import findings from GitHub Advanced Security, Dependabot, and Secret Scanning.</p>
     </div>`;
     lucide.createIcons();return;
@@ -1291,13 +1291,13 @@ function renderGithubTab(findings){
         ${severityBadge(f.severity)}
         <div style="flex:1;min-width:0;">
           <div style="font-size:14px;font-weight:500;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(f.title||'—')}</div>
-          ${f.file_path?`<div style="font-size:12px;color:#475569;font-family:'Fira Code',monospace;">${escHtml(f.file_path)}${f.line_number?':'+f.line_number:''}</div>`:''}
+          ${f.file_path?`<div style="font-size:12px;color:var(--text-tertiary);font-family:'Fira Code',monospace;">${escHtml(f.file_path)}${f.line_number?':'+f.line_number:''}</div>`:''}
           ${f.cve_id?`<div style="font-size:12px;color:#f59e0b;font-family:'Fira Code',monospace;">${escHtml(f.cve_id)}</div>`:''}
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
           ${scannerBadge(f.scanner)}
-          ${f.commit_sha?`<span style="font-size:12px;color:#475569;font-family:'Fira Code',monospace;">${escHtml(f.commit_sha.substring(0,8))}</span>`:''}
-          ${f.github_alert_url?`<a href="${escHtml(f.github_alert_url)}" target="_blank" title="View alert on GitHub" style="color:#475569;display:flex;align-items:center;" onmouseover="this.style.color='#00e5ff'" onmouseout="this.style.color='#475569'"><i data-lucide="external-link" style="width:14px;height:14px;"></i></a>`:''}
+          ${f.commit_sha?`<span style="font-size:12px;color:var(--text-tertiary);font-family:'Fira Code',monospace;">${escHtml(f.commit_sha.substring(0,8))}</span>`:''}
+          ${f.github_alert_url?`<a href="${escHtml(f.github_alert_url)}" target="_blank" title="View alert on GitHub" style="color:var(--text-tertiary);display:flex;align-items:center;" onmouseover="this.style.color='#00e5ff'" onmouseout="this.style.color='#475569'"><i data-lucide="external-link" style="width:14px;height:14px;"></i></a>`:''}
         </div>
       </div>
     `).join('');
@@ -1308,7 +1308,7 @@ function renderGithubTab(findings){
           ${groupLabel}
           ${authorHtml}
         </div>
-        <span style="font-size:12px;color:#475569;background:rgba(255,255,255,0.04);padding:3px 10px;border-radius:20px;">${group.findings.length} alert${group.findings.length!==1?'s':''}</span>
+        <span style="font-size:12px;color:var(--text-tertiary);background:rgba(255,255,255,0.04);padding:3px 10px;border-radius:20px;">${group.findings.length} alert${group.findings.length!==1?'s':''}</span>
       </div>
       <div style="padding:6px 4px;">${findingRows}</div>
     </div>`;

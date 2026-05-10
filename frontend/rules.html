@@ -22,7 +22,7 @@
     .tag-container { background:rgba(245,158,11,0.2);color:#fcd34d; }
     .tag-secrets { background:rgba(239,68,68,0.2);color:#fca5a5; }
     .tag-iac { background:rgba(168,85,247,0.2);color:#d8b4fe; }
-    .tag-unknown { background:rgba(100,116,139,0.2);color:#94a3b8; }
+    .tag-unknown { background:rgba(100,116,139,0.2);color:var(--text-secondary); }
     .sev-critical { color:#ef4444; }
     .sev-high { color:#f97316; }
     .sev-medium { color:#eab308; }
@@ -31,7 +31,7 @@
     .sev-badge { display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px; }
     .tab-btn { background:none;border:none;cursor:pointer;padding:8px 16px;border-radius:8px;font-size:15px;font-weight:600;color:#64748b;transition:all 0.2s;white-space:nowrap; }
     .tab-btn.active { background:rgba(0,229,255,0.12);color:#00e5ff; }
-    .tab-btn:hover:not(.active) { background:rgba(255,255,255,0.05);color:#94a3b8; }
+    .tab-btn:hover:not(.active) { background:rgba(255,255,255,0.05);color:var(--text-secondary); }
     .rule-card { background:linear-gradient(145deg,#0f1b34 0%,#080f1d 100%);border:1px solid rgba(0,229,255,0.12);border-radius:12px;padding:18px 20px;transition:all 0.2s;animation:fadeInUp 0.3s ease;box-shadow:0 2px 16px rgba(0,0,0,0.4); }
     .rule-card:hover { border-color:rgba(0,229,255,0.28);box-shadow:0 4px 24px rgba(0,229,255,0.07); }
     .rule-id { font-family:'SF Mono','Fira Code','Fira Mono','Consolas',monospace;font-size:14px;color:#00e5ff;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:6px;padding:3px 8px;display:inline-block;cursor:pointer;transition:all 0.15s; }
@@ -60,8 +60,8 @@
     <!-- Header -->
     <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
       <div>
-        <h1 style="font-size:19px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Rules Library</h1>
-        <p style="font-size:13px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// rules.library · detection</p>
+        <h1 style="font-size:19px;font-weight:700;color:var(--text-primary);margin:0;font-family:'Fira Code',monospace;">Rules Library</h1>
+        <p style="font-size:13px;color:var(--text-tertiary);margin:2px 0 0;font-family:'Fira Code',monospace;">// rules.library · detection</p>
       </div>
       <div id="header-user-slot" style="display:flex;gap:10px;align-items:center;">
         <div id="rule-counts" style="display:flex;gap:16px;align-items:center;">
@@ -86,7 +86,7 @@
       <!-- Filter row -->
       <div style="display:flex;gap:12px;margin-bottom:20px;align-items:center;flex-wrap:wrap;">
         <div style="position:relative;flex:1;min-width:240px;">
-          <i data-lucide="search" style="width:14px;height:14px;position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#475569;pointer-events:none;"></i>
+          <i data-lucide="search" style="width:14px;height:14px;position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);pointer-events:none;"></i>
           <input type="text" id="search-input" class="dark-input" placeholder="Search rule ID, name, description…" style="padding-left:32px;width:100%;" oninput="debouncedLoad()">
         </div>
         <select id="sev-filter" class="dark-select" onchange="loadRules()">
@@ -117,7 +117,7 @@
 
       <!-- Pagination -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:20px;">
-        <div style="font-size:15px;color:#475569;" id="page-info"></div>
+        <div style="font-size:15px;color:var(--text-tertiary);" id="page-info"></div>
         <div style="display:flex;gap:8px;">
           <button class="btn-secondary" id="prev-btn" onclick="changePage(-1)" style="padding:6px 12px;">← Prev</button>
           <button class="btn-secondary" id="next-btn" onclick="changePage(1)" style="padding:6px 12px;">Next →</button>
@@ -138,7 +138,7 @@
           <i data-lucide="shield-plus" style="width:18px;height:18px;color:#a5b4fc;"></i>
         </div>
         <div>
-          <div style="font-size:17px;font-weight:700;color:#f1f5f9;">Add to Policy</div>
+          <div style="font-size:17px;font-weight:700;color:var(--text-primary);">Add to Policy</div>
           <div id="modal-rule-id" style="font-family:monospace;font-size:14px;color:#64748b;margin-top:2px;"></div>
         </div>
       </div>
@@ -183,7 +183,7 @@
     <div style="padding:24px;border-bottom:1px solid rgba(0,229,255,0.1);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
       <div style="flex:1;">
         <span class="rule-id" id="drawer-rule-id" style="cursor:default;font-size:15px;"></span>
-        <h2 id="drawer-rule-name" style="font-size:19px;font-weight:700;color:#f1f5f9;margin:10px 0 0;line-height:1.35;"></h2>
+        <h2 id="drawer-rule-name" style="font-size:19px;font-weight:700;color:var(--text-primary);margin:10px 0 0;line-height:1.35;"></h2>
       </div>
       <button onclick="closeDrawer()" style="background:none;border:none;cursor:pointer;padding:4px;flex-shrink:0;">
         <i data-lucide="x" style="width:20px;height:20px;color:#64748b;"></i>
@@ -233,7 +233,7 @@
       if (search) params.set('search', search);
 
       const list = document.getElementById('rules-list');
-      list.innerHTML = `<div style="padding:60px;text-align:center;color:#475569;animation:pulse 1s infinite;">Loading rules…</div>`;
+      list.innerHTML = `<div style="padding:60px;text-align:center;color:var(--text-tertiary);animation:pulse 1s infinite;">Loading rules…</div>`;
 
       try {
         const resp = await fetch(`${API}/rules?${params}`);
@@ -264,7 +264,7 @@
       if (data.items.length === 0) {
         list.innerHTML = `<div style="padding:60px;text-align:center;">
           <i data-lucide="search-x" style="width:40px;height:40px;color:#334155;display:block;margin:0 auto 12px;"></i>
-          <div style="font-size:17px;color:#475569;">No rules match your filters</div>
+          <div style="font-size:17px;color:var(--text-tertiary);">No rules match your filters</div>
         </div>`;
         lucide.createIcons();
         return;
@@ -335,7 +335,7 @@
               <button class="btn-secondary" onclick="openAddModal(${JSON.stringify(String(r.id))})" style="padding:4px 12px;font-size:14px;gap:4px;display:inline-flex;align-items:center;">
                 <i data-lucide="plus" style="width:11px;height:11px;"></i> Add to Policy
               </button>
-              <button onclick="openDrawer(${JSON.stringify(String(r.id))})" style="background:none;border:none;cursor:pointer;font-size:14px;color:#475569;padding:4px 8px;border-radius:6px;transition:all 0.15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#475569'">
+              <button onclick="openDrawer(${JSON.stringify(String(r.id))})" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--text-tertiary);padding:4px 8px;border-radius:6px;transition:all 0.15s;" onmouseover="this.style.color='#94a3b8'" onmouseout="this.style.color='#475569'">
                 <i data-lucide="info" style="width:13px;height:13px;vertical-align:middle;margin-right:3px;"></i>Details
               </button>
             </div>
@@ -364,13 +364,13 @@
 
       const members = (rule.policy_memberships || []);
       const memberHtml = members.length === 0
-        ? `<span style="color:#475569;font-size:15px;">Not assigned to any policy</span>`
+        ? `<span style="color:var(--text-tertiary);font-size:15px;">Not assigned to any policy</span>`
         : members.map(m => `<span class="member-chip member-chip-${m.list_type}">${m.policy_name} (${m.list_type})</span>`).join(' ');
 
       document.getElementById('drawer-body').innerHTML = `
         <div>
           <div class="dark-label">Description</div>
-          <p style="font-size:16px;color:#94a3b8;line-height:1.65;margin:0;">${escHtml(rule.description)}</p>
+          <p style="font-size:16px;color:var(--text-secondary);line-height:1.65;margin:0;">${escHtml(rule.description)}</p>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div style="background:rgba(0,229,255,0.04);border-radius:10px;padding:14px;">
@@ -525,7 +525,7 @@
       const colors = {success:'#10b981', error:'#ef4444', warning:'#f59e0b', info:'#00e5ff'};
       const icons = {success:'check-circle', error:'alert-circle', warning:'alert-triangle', info:'info'};
       const toast = document.createElement('div');
-      toast.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(13,17,23,0.95);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:#f1f5f9;font-size:16px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.5);`;
+      toast.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(13,17,23,0.95);border:1px solid ${colors[type]}44;border-left:3px solid ${colors[type]};padding:14px 18px;border-radius:10px;display:flex;align-items:center;gap:10px;color:var(--text-primary);font-size:16px;font-weight:500;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.5);`;
       const _icon = document.createElement('i');
       _icon.setAttribute('data-lucide', icons[type]);
       _icon.style.cssText = `width:18px;height:18px;color:${colors[type]};flex-shrink:0;`;

@@ -26,7 +26,7 @@
     .filter-select {
       background: rgba(0,0,0,0.2);
       border: 1px solid rgba(0,229,255,0.2);
-      color: #f1f5f9;
+      color:var(--text-primary);
       padding: 8px 12px;
       border-radius: 8px;
       font-size: 14px;
@@ -34,7 +34,7 @@
       transition: all 0.2s;
     }
     .filter-select:focus { border-color: #00e5ff; box-shadow: 0 0 0 2px rgba(0,229,255,0.2); }
-    .filter-select option { background: #0f1b34; color: #f1f5f9; }
+    .filter-select option { background: #0f1b34; color:var(--text-primary); }
     
     .pagination-btn {
       background: rgba(0,0,0,0.2);
@@ -47,7 +47,7 @@
       transition: all 0.2s;
     }
     .pagination-btn:hover:not(:disabled) { background: rgba(0,229,255,0.1); }
-    .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; border-color: rgba(255,255,255,0.1); color: #94a3b8; }
+    .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; border-color: rgba(255,255,255,0.1); color:var(--text-secondary); }
   </style>
 </head>
 <body style="font-family:var(--font-body,'Fira Sans',system-ui,sans-serif);background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
@@ -62,20 +62,44 @@
     <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
         <div>
-          <h1 style="font-size:20px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">Global Findings</h1>
-          <p style="font-size:13px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// platform.vulnerabilities · search</p>
+          <h1 style="font-size:20px;font-weight:700;color:var(--text-primary);margin:0;font-family:'Fira Code',monospace;">Global Findings</h1>
+          <p style="font-size:13px;color:var(--text-tertiary);margin:2px 0 0;font-family:'Fira Code',monospace;">// platform.vulnerabilities · search</p>
         </div>
         <span id="identifier-chip" style="display:none;align-items:center;gap:6px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.25);color:#00e5ff;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;font-family:'Fira Code',monospace;cursor:pointer;" onclick="window.location.href='/findings.html'" title="Clear filter">✕</span>
       </div>
       <div id="header-user-slot" style="display:flex;align-items:center;gap:8px;"></div>
     </header>
 
-    <main style="padding:32px;max-width:1400px;margin:0 auto;">
+    <main style="padding:24px 28px;max-width:1400px;margin:0 auto;">
+
+      <!-- ── Metric Cards ── -->
+      <div id="metric-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
+        <div class="card" style="padding:18px 20px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:6px;">Critical Open</div>
+          <div id="mc-critical" style="font-family:'Fira Code',monospace;font-size:32px;font-weight:700;color:#ef4444;line-height:1;">—</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">findings</div>
+        </div>
+        <div class="card" style="padding:18px 20px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:6px;">High Open</div>
+          <div id="mc-high" style="font-family:'Fira Code',monospace;font-size:32px;font-weight:700;color:#f59e0b;line-height:1;">—</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">findings</div>
+        </div>
+        <div class="card" style="padding:18px 20px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:6px;">Total Open</div>
+          <div id="mc-open" style="font-family:'Fira Code',monospace;font-size:32px;font-weight:700;color:var(--text-primary);line-height:1;">—</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">findings</div>
+        </div>
+        <div class="card" style="padding:18px 20px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:6px;">Unique Vulns</div>
+          <div id="mc-unique" style="font-family:'Fira Code',monospace;font-size:32px;font-weight:700;color:#00e5ff;line-height:1;">—</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">distinct identifiers</div>
+        </div>
+      </div>
 
       <!-- Filters -->
-      <div class="card" style="padding:20px;margin-bottom:24px;display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;">
+      <div class="card" style="padding:16px 20px;margin-bottom:16px;display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;">
         <div style="flex:1;min-width:150px;">
-          <label style="display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Severity</label>
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Severity</label>
           <select id="filter-severity" class="filter-select" style="width:100%;" onchange="applyFilters()">
             <option value="">All Severities</option>
             <option value="critical">Critical</option>
@@ -86,7 +110,7 @@
           </select>
         </div>
         <div style="flex:1;min-width:150px;">
-          <label style="display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Type</label>
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Type</label>
           <select id="filter-type" class="filter-select" style="width:100%;" onchange="applyFilters()">
             <option value="">All Types</option>
             <option value="sast">SAST (Code)</option>
@@ -97,7 +121,7 @@
           </select>
         </div>
         <div style="flex:1;min-width:150px;">
-          <label style="display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Status</label>
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Status</label>
           <select id="filter-status" class="filter-select" style="width:100%;" onchange="applyFilters()">
             <option value="">All Statuses</option>
             <option value="open">Open</option>
@@ -107,7 +131,7 @@
           </select>
         </div>
         <div style="flex:1;min-width:150px;">
-          <label style="display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Scanner</label>
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Scanner</label>
           <select id="filter-scanner" class="filter-select" style="width:100%;" onchange="applyFilters()">
             <option value="">All Scanners</option>
             <option value="semgrep">Semgrep</option>
@@ -118,36 +142,73 @@
             <option value="govulncheck">Govulncheck</option>
           </select>
         </div>
+        <!-- View toggle -->
+        <div style="flex-shrink:0;display:flex;gap:4px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:3px;">
+          <button id="btn-grouped" onclick="setViewMode('grouped')" style="padding:6px 14px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;background:rgba(0,229,255,0.15);color:#00e5ff;">
+            Grouped
+          </button>
+          <button id="btn-all" onclick="setViewMode('all')" style="padding:6px 14px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;background:transparent;color:var(--text-tertiary);">
+            All Findings
+          </button>
+        </div>
       </div>
 
-      <!-- Table -->
-      <div class="card" style="padding:0;overflow:hidden;">
-        <div style="padding:16px 24px;background:rgba(0,0,0,0.2);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;">
-          <div style="font-size:16px;font-weight:600;color:#f1f5f9;display:flex;align-items:center;gap:8px;">
-            <i data-lucide="list" style="width:18px;height:18px;color:#00e5ff;"></i>
-            <span id="total-count">Loading findings...</span>
+      <!-- ── Grouped View ── -->
+      <div id="grouped-view" class="card" style="padding:0;overflow:hidden;">
+        <div style="padding:14px 20px;background:rgba(0,0,0,0.2);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:15px;font-weight:600;color:var(--text-primary);display:flex;align-items:center;gap:8px;">
+            <i data-lucide="layers" style="width:16px;height:16px;color:#00e5ff;"></i>
+            <span id="grouped-count">Loading…</span>
           </div>
-          <div style="display:flex;align-items:center;gap:12px;">
-            <button class="pagination-btn" id="btn-prev" onclick="changePage(-1)" disabled><i data-lucide="chevron-left" style="width:16px;height:16px;"></i></button>
-            <span id="page-indicator" style="font-size:14px;color:#94a3b8;font-weight:600;">Page 1</span>
-            <button class="pagination-btn" id="btn-next" onclick="changePage(1)" disabled><i data-lucide="chevron-right" style="width:16px;height:16px;"></i></button>
+          <div style="font-size:13px;color:var(--text-tertiary);">Click a row to see all occurrences</div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr style="background:rgba(0,0,0,0.15);border-bottom:1px solid rgba(255,255,255,0.06);">
+                <th style="text-align:left;padding:10px 20px;font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;">Severity</th>
+                <th style="text-align:left;padding:10px 20px;font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;">Vulnerability</th>
+                <th style="text-align:left;padding:10px 20px;font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;">Type</th>
+                <th style="text-align:left;padding:10px 20px;font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;">Fix</th>
+                <th style="text-align:right;padding:10px 20px;font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;">Apps Affected</th>
+                <th style="text-align:right;padding:10px 20px;font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;">Occurrences</th>
+              </tr>
+            </thead>
+            <tbody id="grouped-tbody">
+              <tr><td colspan="6" style="padding:40px;text-align:center;"><div style="animation:spin 1s linear infinite;display:inline-block;width:28px;height:28px;border:3px solid rgba(0,229,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Individual View ── -->
+      <div id="individual-view" class="card" style="padding:0;overflow:hidden;display:none;">
+        <div style="padding:14px 20px;background:rgba(0,0,0,0.2);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:15px;font-weight:600;color:var(--text-primary);display:flex;align-items:center;gap:8px;">
+            <i data-lucide="list" style="width:16px;height:16px;color:#00e5ff;"></i>
+            <span id="total-count">Loading…</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <button class="pagination-btn" id="btn-prev" onclick="changePage(-1)" disabled><i data-lucide="chevron-left" style="width:15px;height:15px;"></i></button>
+            <span id="page-indicator" style="font-size:13px;color:var(--text-secondary);font-weight:600;">Page 1</span>
+            <button class="pagination-btn" id="btn-next" onclick="changePage(1)" disabled><i data-lucide="chevron-right" style="width:15px;height:15px;"></i></button>
           </div>
         </div>
         <div style="overflow-x:auto;">
           <table style="width:100%;border-collapse:collapse;">
             <thead id="findings-thead">
               <tr style="background:rgba(0,0,0,0.15);border-bottom:1px solid rgba(255,255,255,0.06);">
-                <th class="sort-th active" data-col="severity" style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;" onclick="setSort('severity')">Severity<span class="sort-arrow">▲</span></th>
-                <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Title</th>
-                <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Application</th>
-                <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Type</th>
-                <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Fix</th>
-                <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Status</th>
-                <th class="sort-th" data-col="created_at" style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;" onclick="setSort('created_at')">Discovered<span class="sort-arrow">▲</span></th>
+                <th class="sort-th active" data-col="severity" style="text-align:left;padding:10px 20px;font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;" onclick="setSort('severity')">Severity<span class="sort-arrow">▲</span></th>
+                <th style="text-align:left;padding:10px 20px;font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;">Title</th>
+                <th style="text-align:left;padding:10px 20px;font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;">Application</th>
+                <th style="text-align:left;padding:10px 20px;font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;">Type</th>
+                <th style="text-align:left;padding:10px 20px;font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;">Fix</th>
+                <th style="text-align:left;padding:10px 20px;font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;">Status</th>
+                <th class="sort-th" data-col="created_at" style="text-align:left;padding:10px 20px;font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;" onclick="setSort('created_at')">Discovered<span class="sort-arrow">▲</span></th>
               </tr>
             </thead>
             <tbody id="findings-tbody">
-              <tr><td colspan="7" style="padding:40px;text-align:center;"><div style="animation:spin 1s linear infinite;display:inline-block;width:32px;height:32px;border:3px solid rgba(0,229,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></td></tr>
+              <tr><td colspan="7" style="padding:40px;text-align:center;"><div style="animation:spin 1s linear infinite;display:inline-block;width:28px;height:28px;border:3px solid rgba(0,229,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></td></tr>
             </tbody>
           </table>
         </div>
@@ -161,13 +222,110 @@ let currentPage = 1;
 let totalPages = 1;
 let sortBy = 'severity';
 let sortDir = 'asc';
+let viewMode = 'grouped'; // 'grouped' | 'all'
+
+// ── View Mode ─────────────────────────────────────────────────────────────────
+function setViewMode(mode) {
+  viewMode = mode;
+  document.getElementById('grouped-view').style.display = mode === 'grouped' ? 'block' : 'none';
+  document.getElementById('individual-view').style.display = mode === 'all' ? 'block' : 'none';
+  const BASE = 'padding:6px 14px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;';
+  document.getElementById('btn-grouped').style.cssText = BASE + (mode === 'grouped' ? 'background:rgba(0,229,255,0.15);color:#00e5ff;' : 'background:transparent;color:var(--text-tertiary);');
+  document.getElementById('btn-all').style.cssText    = BASE + (mode === 'all'     ? 'background:rgba(0,229,255,0.15);color:#00e5ff;' : 'background:transparent;color:var(--text-tertiary);');
+  if (mode === 'grouped') loadGrouped();
+  else loadFindings();
+}
+
+// ── Metric Cards ──────────────────────────────────────────────────────────────
+async function loadMetrics() {
+  try {
+    const res = await fetch('/api/v1/reports/overview');
+    if (!res.ok) return;
+    const d = await res.json();
+    document.getElementById('mc-critical').textContent = (d.critical_findings||0).toLocaleString();
+    document.getElementById('mc-high').textContent = (d.high_findings||0).toLocaleString();
+    document.getElementById('mc-open').textContent = (d.open_findings||0).toLocaleString();
+  } catch {}
+}
+
+// ── Grouped View ──────────────────────────────────────────────────────────────
+async function loadGrouped() {
+  const tbody = document.getElementById('grouped-tbody');
+  tbody.innerHTML = `<tr><td colspan="6" style="padding:40px;text-align:center;"><div style="animation:spin 1s linear infinite;display:inline-block;width:28px;height:28px;border:3px solid rgba(0,229,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></td></tr>`;
+
+  const sev    = document.getElementById('filter-severity').value;
+  const type   = document.getElementById('filter-type').value;
+  const status = document.getElementById('filter-status').value;
+  const scanner = document.getElementById('filter-scanner').value;
+
+  let url = `/api/v1/reports/top-vulnerabilities?limit=500`;
+  if (sev)     url += `&severity=${sev}`;
+  if (type)    url += `&finding_type=${type}`;
+  if (status)  url += `&status=${status}`;
+  if (scanner) url += `&scanner=${scanner}`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const items = data.items || [];
+
+    document.getElementById('grouped-count').textContent = `${items.length.toLocaleString()} unique vulnerabilities`;
+    document.getElementById('mc-unique').textContent = items.length.toLocaleString();
+
+    if (!items.length) {
+      tbody.innerHTML = `<tr><td colspan="6" style="padding:48px;text-align:center;color:var(--text-tertiary);"><i data-lucide="shield-check" style="width:36px;height:36px;display:block;margin:0 auto 10px;opacity:0.3;"></i>No vulnerabilities match your criteria.</td></tr>`;
+      lucide.createIcons();
+      return;
+    }
+
+    tbody.innerHTML = items.map(v => {
+      const eh = escapeHtml;
+      const rawIdent = v.identifier || '—';
+      const ident = eh(rawIdent);
+      const title = eh((v.title||'Unknown').slice(0,65)) + ((v.title||'').length>65?'…':'');
+      const fix = v.fix_available
+        ? (v.fixed_version
+            ? `<span style="background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.25);padding:2px 7px;border-radius:5px;font-size:12px;font-weight:600;" title="${eh(v.fixed_version)}">✓ ${eh(v.fixed_version)}</span>`
+            : `<span style="background:rgba(16,185,129,0.08);color:#10b981;border:1px solid rgba(16,185,129,0.18);padding:2px 7px;border-radius:5px;font-size:12px;font-weight:600;">✓ Available</span>`)
+        : `<span style="background:rgba(148,163,184,0.08);color:#64748b;border:1px solid rgba(148,163,184,0.15);padding:2px 7px;border-radius:5px;font-size:12px;font-weight:500;">No Fix Yet</span>`;
+      return `<tr class="table-row" style="border-bottom:1px solid rgba(255,255,255,0.04);" onclick="drillDown(${JSON.stringify(rawIdent)})">
+        <td style="padding:12px 20px;">${severityBadge(v.severity)}</td>
+        <td style="padding:12px 20px;max-width:380px;">
+          <div style="font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${title}</div>
+          <div style="font-size:12px;color:var(--text-tertiary);font-family:'Fira Code',monospace;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ident}</div>
+        </td>
+        <td style="padding:12px 20px;">${typeBadge(v.finding_type)}</td>
+        <td style="padding:12px 20px;">${fix}</td>
+        <td style="padding:12px 20px;text-align:right;font-family:'Fira Code',monospace;font-size:15px;font-weight:700;color:var(--text-primary);">${v.affected_apps}</td>
+        <td style="padding:12px 20px;text-align:right;font-family:'Fira Code',monospace;font-size:15px;color:var(--text-secondary);">${v.total_occurrences}</td>
+      </tr>`;
+    }).join('');
+    lucide.createIcons();
+  } catch {
+    tbody.innerHTML = `<tr><td colspan="6" style="padding:40px;text-align:center;color:#ef4444;">Error loading grouped findings.</td></tr>`;
+  }
+}
+
+function drillDown(identifier) {
+  currentPage = 1;
+  const url = new URL(window.location);
+  url.searchParams.set('identifier', identifier);
+  window.history.replaceState({}, '', url);
+  const chip = document.getElementById('identifier-chip');
+  if (chip) {
+    chip.textContent = `✕  Filtered by: ${escapeHtml(identifier)}`;
+    chip.style.display = 'inline-flex';
+  }
+  setViewMode('all');
+}
 
 function escapeHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 function severityBadge(sev){
-  const map={critical:{color:'#ef4444',bg:'rgba(239,68,68,0.15)',label:'Critical'},high:{color:'#f59e0b',bg:'rgba(245,158,11,0.15)',label:'High'},medium:{color:'#f97316',bg:'rgba(249,115,22,0.15)',label:'Medium'},low:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)',label:'Low'},info:{color:'#94a3b8',bg:'rgba(148,163,184,0.15)',label:'Info'}};
+  const map={critical:{color:'#ef4444',bg:'rgba(239,68,68,0.15)',label:'Critical'},high:{color:'#f59e0b',bg:'rgba(245,158,11,0.15)',label:'High'},medium:{color:'#f97316',bg:'rgba(249,115,22,0.15)',label:'Medium'},low:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)',label:'Low'},info:{color:'var(--text-secondary)',bg:'rgba(148,163,184,0.15)',label:'Info'}};
   const s=map[sev?.toLowerCase()]||map.info;
   return `<span class="badge" style="background:${s.bg};color:${s.color};border:1px solid ${s.color}44;">${s.label}</span>`;
 }
@@ -175,12 +333,12 @@ function severityBadge(sev){
 function typeBadge(type){
   const m={sast:{color:'#a855f7',bg:'rgba(168,85,247,0.15)'},sca:{color:'#3b82f6',bg:'rgba(59,130,246,0.15)'},container:{color:'#0ea5e9',bg:'rgba(14,165,233,0.15)'},secrets:{color:'#f43f5e',bg:'rgba(244,63,94,0.15)'}};
   const k=type?.toLowerCase();
-  const s=k?m[k]:{color:'#94a3b8',bg:'rgba(148,163,184,0.15)'};
+  const s=k?m[k]:{color:'var(--text-secondary)',bg:'rgba(148,163,184,0.15)'};
   return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}33;padding:2px 7px;border-radius:5px;font-size:12px;font-weight:600;text-transform:uppercase;">${type||'—'}</span>`;
 }
 
 function statusBadge(status){
-  const map={open:{color:'#ef4444',label:'Open'},fixed:{color:'#10b981',label:'Fixed'},accepted:{color:'#f59e0b',label:'Accepted'},false_positive:{color:'#94a3b8',label:'False Pos'}};
+  const map={open:{color:'#ef4444',label:'Open'},fixed:{color:'#10b981',label:'Fixed'},accepted:{color:'#f59e0b',label:'Accepted'},false_positive:{color:'var(--text-secondary)',label:'False Pos'}};
   const s=map[status?.toLowerCase()]||map.open;
   return `<span style="color:${s.color};font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px;"><span style="width:6px;height:6px;border-radius:50%;background:${s.color};display:inline-block;"></span>${s.label}</span>`;
 }
@@ -264,7 +422,7 @@ async function loadFindings() {
     document.getElementById('btn-next').disabled = data.page >= data.pages;
     
     if (!data.items || data.items.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="padding:60px;text-align:center;color:#475569;"><i data-lucide="shield-check" style="width:48px;height:48px;display:block;margin:0 auto 16px;opacity:0.3;"></i><div style="font-size:16px;">No findings match your criteria.</div></td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="padding:60px;text-align:center;color:var(--text-tertiary);"><i data-lucide="shield-check" style="width:48px;height:48px;display:block;margin:0 auto 16px;opacity:0.3;"></i><div style="font-size:16px;">No findings match your criteria.</div></td></tr>`;
       lucide.createIcons();
       return;
     }
@@ -273,15 +431,15 @@ async function loadFindings() {
       <tr class="table-row" style="border-bottom:1px solid rgba(255,255,255,0.04);" onclick="openFindingPanel('${escapeHtml(f.id)}')">
         <td style="padding:16px 24px;">${severityBadge(f.severity)}</td>
         <td style="padding:16px 24px;max-width:350px;">
-          <div style="font-size:15px;font-weight:600;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(f.title||'')}">${escapeHtml((f.title||'Unknown').slice(0,60))}${(f.title||'').length>60?'…':''}</div>
+          <div style="font-size:15px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(f.title||'')}">${escapeHtml((f.title||'Unknown').slice(0,60))}${(f.title||'').length>60?'…':''}</div>
         </td>
         <td style="padding:16px 24px;">
-          <div style="font-size:14px;color:#f1f5f9;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;" title="${escapeHtml(f.application_name||f.application_id)}">${escapeHtml(f.application_name||f.application_id.split('-')[0]+'...')}</div>
+          <div style="font-size:14px;color:var(--text-primary);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;" title="${escapeHtml(f.application_name||f.application_id)}">${escapeHtml(f.application_name||f.application_id.split('-')[0]+'...')}</div>
         </td>
         <td style="padding:16px 24px;">${typeBadge(f.finding_type||f.scanner)}</td>
         <td style="padding:16px 24px;">${fixBadge(f)}</td>
         <td style="padding:16px 24px;">${statusBadge(f.status)}</td>
-        <td style="padding:16px 24px;font-size:14px;color:#94a3b8;">${timeAgo(f.first_seen_at)}</td>
+        <td style="padding:16px 24px;font-size:14px;color:var(--text-secondary);">${timeAgo(f.first_seen_at)}</td>
       </tr>
     `).join('');
     
@@ -294,15 +452,13 @@ async function loadFindings() {
 
 function applyFilters() {
   currentPage = 1;
-  
-  // Update URL so it's shareable
   const sev = document.getElementById('filter-severity').value;
   const url = new URL(window.location);
-  if(sev) url.searchParams.set('severity', sev);
+  if (sev) url.searchParams.set('severity', sev);
   else url.searchParams.delete('severity');
   window.history.replaceState({}, '', url);
-  
-  loadFindings();
+  if (viewMode === 'grouped') loadGrouped();
+  else loadFindings();
 }
 
 function setSort(col) {
@@ -367,50 +523,50 @@ function renderPanel(f) {
         ${typeBadge(f.finding_type||f.scanner)}
       </div>
       <div>
-        <div style="font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Title</div>
-        <div style="font-size:16px;font-weight:600;color:#f1f5f9;line-height:1.4;">${eh(f.title)||'—'}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Title</div>
+        <div style="font-size:16px;font-weight:600;color:var(--text-primary);line-height:1.4;">${eh(f.title)||'—'}</div>
       </div>
       ${f.description ? `
       <div>
-        <div style="font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Description</div>
-        <div style="font-size:14px;color:#94a3b8;line-height:1.6;">${eh(f.description)}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Description</div>
+        <div style="font-size:14px;color:var(--text-secondary);line-height:1.6;">${eh(f.description)}</div>
       </div>` : ''}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div>
-          <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Scanner</div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Scanner</div>
           <div style="font-size:14px;color:#00e5ff;font-family:'Fira Code',monospace;">${eh(f.scanner)||'—'}</div>
         </div>
         <div>
-          <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Application</div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Application</div>
           <a href="/app-detail.html?id=${eh(f.application_id)}" style="font-size:14px;color:#00e5ff;text-decoration:none;font-weight:500;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${eh(f.application_name||f.application_id)}</a>
         </div>
         ${f.file_path ? `
         <div style="grid-column:1/-1;">
-          <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">File Path</div>
-          <div style="font-size:13px;color:#94a3b8;font-family:'Fira Code',monospace;word-break:break-all;">${eh(f.file_path)}${f.line_number ? ':'+f.line_number : ''}</div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">File Path</div>
+          <div style="font-size:13px;color:var(--text-secondary);font-family:'Fira Code',monospace;word-break:break-all;">${eh(f.file_path)}${f.line_number ? ':'+f.line_number : ''}</div>
         </div>` : ''}
         ${f.cve_id ? `
         <div>
-          <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">CVE</div>
-          <div style="font-size:14px;color:#f1f5f9;font-family:'Fira Code',monospace;">${eh(f.cve_id)}</div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">CVE</div>
+          <div style="font-size:14px;color:var(--text-primary);font-family:'Fira Code',monospace;">${eh(f.cve_id)}</div>
         </div>` : ''}
         ${f.package_name ? `
         <div>
-          <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Package</div>
-          <div style="font-size:14px;color:#f1f5f9;font-family:'Fira Code',monospace;">${eh(f.package_name)}${f.package_version?' @ '+eh(f.package_version):''}</div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Package</div>
+          <div style="font-size:14px;color:var(--text-primary);font-family:'Fira Code',monospace;">${eh(f.package_name)}${f.package_version?' @ '+eh(f.package_version):''}</div>
         </div>` : ''}
         ${f.cvss_score != null ? `
         <div>
-          <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">CVSS Score</div>
-          <div style="font-size:14px;color:#f1f5f9;font-family:'Fira Code',monospace;">${f.cvss_score.toFixed(1)}</div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">CVSS Score</div>
+          <div style="font-size:14px;color:var(--text-primary);font-family:'Fira Code',monospace;">${f.cvss_score.toFixed(1)}</div>
         </div>` : ''}
         <div>
-          <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Fix Available</div>
-          <div style="font-size:14px;">${fixBadge(f)}${f.fixed_version?`<span style="font-size:13px;color:#475569;margin-left:8px;font-family:'Fira Code',monospace;">→ ${eh(f.fixed_version)}</span>`:''}</div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Fix Available</div>
+          <div style="font-size:14px;">${fixBadge(f)}${f.fixed_version?`<span style="font-size:13px;color:var(--text-tertiary);margin-left:8px;font-family:'Fira Code',monospace;">→ ${eh(f.fixed_version)}</span>`:''}</div>
         </div>
         <div>
-          <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">First Seen</div>
-          <div style="font-size:14px;color:#94a3b8;">${timeAgo(f.first_seen_at)}</div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">First Seen</div>
+          <div style="font-size:14px;color:var(--text-secondary);">${timeAgo(f.first_seen_at)}</div>
         </div>
       </div>
       ${(f.github_alert_url || f.commit_sha || f.introduced_by || f.pr_url) ? `
@@ -424,18 +580,18 @@ function renderPanel(f) {
           <div style="display:flex;align-items:center;gap:10px;">
             <img src="https://github.com/${eh(f.introduced_by)}.png?size=24" width="24" height="24" style="border-radius:50%;border:1px solid rgba(0,229,255,0.2);" onerror="this.style.display='none'">
             <div>
-              <div style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:0.5px;">Introduced by</div>
+              <div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;">Introduced by</div>
               <a href="https://github.com/${eh(f.introduced_by)}" target="_blank" style="font-size:13px;color:#00e5ff;text-decoration:none;font-family:'Fira Code',monospace;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">@${eh(f.introduced_by)}</a>
             </div>
           </div>` : ''}
           ${f.commit_sha ? `
           <div>
-            <div style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Commit</div>
-            <a href="https://github.com/${eh(f.introduced_by||'')}" target="_blank" style="font-size:13px;color:#94a3b8;font-family:'Fira Code',monospace;text-decoration:none;" title="${eh(f.commit_sha)}">${eh(f.commit_sha.substring(0,8))}</a>
+            <div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Commit</div>
+            <a href="https://github.com/${eh(f.introduced_by||'')}" target="_blank" style="font-size:13px;color:var(--text-secondary);font-family:'Fira Code',monospace;text-decoration:none;" title="${eh(f.commit_sha)}">${eh(f.commit_sha.substring(0,8))}</a>
           </div>` : ''}
           ${f.pr_url ? `
           <div>
-            <div style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Pull Request</div>
+            <div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Pull Request</div>
             <a href="${eh(f.pr_url)}" target="_blank" style="font-size:13px;color:#00e5ff;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">PR #${f.pr_number || ''} ↗</a>
           </div>` : ''}
           ${f.github_alert_url ? `
@@ -445,8 +601,8 @@ function renderPanel(f) {
         </div>
       </div>` : ''}
       <div>
-        <div style="font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Status</div>
-        <select id="panel-status-select" style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,229,255,0.25);color:#f1f5f9;padding:8px 12px;border-radius:8px;font-size:14px;width:100%;cursor:pointer;" onchange="updateFindingStatus('${eh(f.id)}', this.value)">
+        <div style="font-size:13px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Status</div>
+        <select id="panel-status-select" style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,229,255,0.25);color:var(--text-primary);padding:8px 12px;border-radius:8px;font-size:14px;width:100%;cursor:pointer;" onchange="updateFindingStatus('${eh(f.id)}', this.value)">
           <option value="open" ${f.status==='open'?'selected':''}>Open</option>
           <option value="fixed" ${f.status==='fixed'?'selected':''}>Fixed</option>
           <option value="accepted" ${f.status==='accepted'?'selected':''}>Risk Accepted</option>
@@ -480,12 +636,25 @@ async function updateFindingStatus(id, status) {
   }
 }
 
-// Close panel on backdrop click
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFindingPanel(); });
 
 // Init
 parseQueryParams();
-loadFindings();
+loadMetrics();
+
+// If URL has an identifier param, jump straight to all-findings view
+const _initIdentifier = new URLSearchParams(window.location.search).get('identifier');
+if (_initIdentifier) {
+  viewMode = 'all';
+  document.getElementById('grouped-view').style.display = 'none';
+  document.getElementById('individual-view').style.display = 'block';
+  document.getElementById('btn-grouped').style.cssText += 'background:transparent;color:var(--text-tertiary);';
+  document.getElementById('btn-all').style.cssText += 'background:rgba(0,229,255,0.15);color:#00e5ff;';
+  loadFindings();
+  loadGrouped(); // still load grouped for metric count
+} else {
+  setViewMode('grouped');
+}
 </script>
 
 <!-- Finding Detail Panel -->
@@ -493,8 +662,8 @@ loadFindings();
   <div onclick="closeFindingPanel()" style="position:absolute;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(2px);"></div>
   <aside style="position:relative;width:480px;max-width:95vw;height:100%;background:linear-gradient(180deg,#0f1b34 0%,#080f1d 100%);border-left:1px solid rgba(0,229,255,0.15);box-shadow:-8px 0 48px rgba(0,0,0,0.7);display:flex;flex-direction:column;" id="panel-aside">
     <div style="padding:16px 24px;border-bottom:1px solid rgba(0,229,255,0.1);display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.2);">
-      <div style="font-size:15px;font-weight:700;color:#f1f5f9;font-family:'Fira Code',monospace;">Finding Detail</div>
-      <button onclick="closeFindingPanel()" style="background:none;border:none;color:#94a3b8;cursor:pointer;padding:4px;border-radius:6px;display:flex;align-items:center;" onmouseover="this.style.color='#f1f5f9'" onmouseout="this.style.color='#94a3b8'"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+      <div style="font-size:15px;font-weight:700;color:var(--text-primary);font-family:'Fira Code',monospace;">Finding Detail</div>
+      <button onclick="closeFindingPanel()" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:4px;border-radius:6px;display:flex;align-items:center;" onmouseover="this.style.color='#f1f5f9'" onmouseout="this.style.color='#94a3b8'"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
     </div>
     <div id="panel-body" style="flex:1;overflow-y:auto;"></div>
   </aside>

@@ -23,7 +23,7 @@
     .filter-select {
       background: rgba(0,0,0,0.2);
       border: 1px solid rgba(0,229,255,0.2);
-      color: #f1f5f9;
+      color:var(--text-primary);
       padding: 8px 12px;
       border-radius: 8px;
       font-size: 14px;
@@ -31,14 +31,14 @@
       transition: all 0.2s;
     }
     .filter-select:focus { border-color: #00e5ff; box-shadow: 0 0 0 2px rgba(0,229,255,0.2); }
-    .filter-select option { background: #0f1b34; color: #f1f5f9; }
+    .filter-select option { background: #0f1b34; color:var(--text-primary); }
 
     .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 10px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
     .badge-critical { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
     .badge-high     { background: rgba(249,115,22,0.15); color: #fb923c; border: 1px solid rgba(249,115,22,0.3); }
     .badge-medium   { background: rgba(234,179,8,0.15);  color: #facc15; border: 1px solid rgba(234,179,8,0.3);  }
     .badge-low      { background: rgba(59,130,246,0.15);  color: #60a5fa; border: 1px solid rgba(59,130,246,0.3);  }
-    .badge-info     { background: rgba(148,163,184,0.15); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3); }
+    .badge-info     { background: rgba(148,163,184,0.15); color:var(--text-secondary); border: 1px solid rgba(148,163,184,0.3); }
 
     .pr-card {
       background: linear-gradient(145deg, #0f1b34 0%, #080f1d 100%);
@@ -75,7 +75,7 @@
     }
     .pr-state-open   { background: rgba(34,197,94,0.15);  color: #4ade80; border: 1px solid rgba(34,197,94,0.3);  }
     .pr-state-merged { background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); }
-    .pr-state-closed { background: rgba(148,163,184,0.15); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3); }
+    .pr-state-closed { background: rgba(148,163,184,0.15); color:var(--text-secondary); border: 1px solid rgba(148,163,184,0.3); }
     .pr-state-draft  { background: rgba(100,116,139,0.15); color: #64748b; border: 1px solid rgba(100,116,139,0.3); }
 
     .findings-panel {
@@ -112,7 +112,7 @@
     }
     .count-pill-danger  { background: rgba(239,68,68,0.15);  color: #f87171; border: 1px solid rgba(239,68,68,0.3);  }
     .count-pill-success { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
-    .count-pill-neutral { background: rgba(148,163,184,0.12); color: #94a3b8; border: 1px solid rgba(148,163,184,0.2); }
+    .count-pill-neutral { background: rgba(148,163,184,0.12); color:var(--text-secondary); border: 1px solid rgba(148,163,184,0.2); }
 
     .chevron-icon { transition: transform 0.2s; flex-shrink: 0; }
     .chevron-icon.rotated { transform: rotate(180deg); }
@@ -122,7 +122,7 @@
       font-weight: 700;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: #475569;
+      color:var(--text-tertiary);
       font-family: 'Fira Code', monospace;
       margin-bottom: 8px;
       margin-top: 14px;
@@ -133,7 +133,7 @@
     .empty-state {
       text-align: center;
       padding: 60px 32px;
-      color: #475569;
+      color:var(--text-tertiary);
     }
     .empty-state i { display: block; margin: 0 auto 16px; width: 48px; height: 48px; opacity: 0.4; }
 
@@ -159,8 +159,8 @@
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
     <header style="background:rgba(3,4,12,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.1);box-shadow:0 1px 0 rgba(0,229,255,0.08),0 4px 24px rgba(0,0,0,0.7);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
       <div>
-        <h1 style="font-size:20px;font-weight:700;color:#f1f5f9;margin:0;font-family:'Fira Code',monospace;">PR Reviews</h1>
-        <p style="font-size:13px;color:#475569;margin:2px 0 0;font-family:'Fira Code',monospace;">// pull_requests · security_impact_analysis</p>
+        <h1 style="font-size:20px;font-weight:700;color:var(--text-primary);margin:0;font-family:'Fira Code',monospace;">PR Reviews</h1>
+        <p style="font-size:13px;color:var(--text-tertiary);margin:2px 0 0;font-family:'Fira Code',monospace;">// pull_requests · security_impact_analysis</p>
       </div>
       <div id="header-user-slot" style="display:flex;align-items:center;gap:8px;"></div>
     </header>
@@ -170,13 +170,13 @@
       <!-- Selector card -->
       <div class="card" style="padding:20px;margin-bottom:24px;display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;">
         <div style="flex:2;min-width:200px;">
-          <label style="display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Application</label>
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Application</label>
           <select id="app-select" class="filter-select" style="width:100%;" onchange="loadPRs()">
             <option value="">— Select an application —</option>
           </select>
         </div>
         <div style="min-width:130px;">
-          <label style="display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Recent PRs</label>
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Recent PRs</label>
           <select id="limit-select" class="filter-select" onchange="loadPRs()">
             <option value="10">Last 10</option>
             <option value="20" selected>Last 20</option>
@@ -194,19 +194,19 @@
       <div id="stats-row" style="display:none;gap:16px;margin-bottom:24px;grid-template-columns:repeat(4,1fr);">
         <div class="card" style="padding:20px;text-align:center;">
           <div id="stat-total-prs" style="font-size:32px;font-weight:700;color:#00e5ff;font-family:'Fira Code',monospace;">0</div>
-          <div style="font-size:12px;color:#475569;margin-top:4px;text-transform:uppercase;letter-spacing:1px;">PRs Analysed</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;text-transform:uppercase;letter-spacing:1px;">PRs Analysed</div>
         </div>
         <div class="card" style="padding:20px;text-align:center;">
           <div id="stat-prs-with-issues" style="font-size:32px;font-weight:700;color:#f87171;font-family:'Fira Code',monospace;">0</div>
-          <div style="font-size:12px;color:#475569;margin-top:4px;text-transform:uppercase;letter-spacing:1px;">PRs with Open Findings</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;text-transform:uppercase;letter-spacing:1px;">PRs with Open Findings</div>
         </div>
         <div class="card" style="padding:20px;text-align:center;">
           <div id="stat-introduced" style="font-size:32px;font-weight:700;color:#fb923c;font-family:'Fira Code',monospace;">0</div>
-          <div style="font-size:12px;color:#475569;margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Findings Introduced</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Findings Introduced</div>
         </div>
         <div class="card" style="padding:20px;text-align:center;">
           <div id="stat-addressed" style="font-size:32px;font-weight:700;color:#34d399;font-family:'Fira Code',monospace;">0</div>
-          <div style="font-size:12px;color:#475569;margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Findings Addressed</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Findings Addressed</div>
         </div>
       </div>
 
@@ -215,7 +215,7 @@
         <div class="empty-state">
           <i data-lucide="git-pull-request"></i>
           <p style="font-size:16px;font-weight:600;margin:0 0 8px;color:#64748b;">Select an application to view PR security analysis</p>
-          <p style="font-size:14px;margin:0;color:#475569;">Security findings linked to each pull request will appear here.</p>
+          <p style="font-size:14px;margin:0;color:var(--text-tertiary);">Security findings linked to each pull request will appear here.</p>
         </div>
       </div>
 
@@ -269,7 +269,7 @@ function typeBadge(type) {
     iac:       { color: '#f59e0b', bg: 'rgba(245,158,11,0.15)' },
   };
   const k = (type || '').toLowerCase();
-  const s = m[k] || { color: '#94a3b8', bg: 'rgba(148,163,184,0.15)' };
+  const s = m[k] || { color:'var(--text-secondary)', bg: 'rgba(148,163,184,0.15)' };
   return `<span style="background:${s.bg};color:${s.color};border:1px solid ${s.color}33;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;text-transform:uppercase;">${escHtml(type || '—')}</span>`;
 }
 
@@ -283,7 +283,7 @@ function renderFindingRow(f) {
       ${severityBadge(f.severity)}
       ${typeBadge(f.finding_type)}
       <span style="flex:1;font-size:14px;color:#e2e8f0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${findingLink}</span>
-      ${f.file_path ? `<span style="font-size:12px;color:#475569;font-family:'Fira Code',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;" title="${escHtml(f.file_path)}">${escHtml(f.file_path)}${f.line_number ? ':' + f.line_number : ''}</span>` : ''}
+      ${f.file_path ? `<span style="font-size:12px;color:var(--text-tertiary);font-family:'Fira Code',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;" title="${escHtml(f.file_path)}">${escHtml(f.file_path)}${f.line_number ? ':' + f.line_number : ''}</span>` : ''}
       <span style="font-size:12px;color:#64748b;font-family:'Fira Code',monospace;flex-shrink:0;">${escHtml(f.scanner)}</span>
       ${alertLink}
     </div>`;
@@ -300,11 +300,11 @@ function renderPRCard(pr, index) {
   const cleanBadge    = !hasFindings ? `<span class="count-pill count-pill-neutral"><i data-lucide="shield-check" style="width:11px;height:11px;"></i>No findings</span>` : '';
 
   const authorHtml = pr.author
-    ? `<a href="${escHtml(pr.author_url || '#')}" target="_blank" rel="noopener" style="color:#94a3b8;text-decoration:none;font-size:13px;display:flex;align-items:center;gap:4px;"><i data-lucide="user" style="width:13px;height:13px;"></i>${escHtml(pr.author)}</a>`
+    ? `<a href="${escHtml(pr.author_url || '#')}" target="_blank" rel="noopener" style="color:var(--text-secondary);text-decoration:none;font-size:13px;display:flex;align-items:center;gap:4px;"><i data-lucide="user" style="width:13px;height:13px;"></i>${escHtml(pr.author)}</a>`
     : '';
 
   const branchHtml = pr.base_branch
-    ? `<span style="font-size:12px;color:#475569;display:flex;align-items:center;gap:4px;"><i data-lucide="git-branch" style="width:12px;height:12px;"></i><span style="font-family:'Fira Code',monospace;">${escHtml(pr.head_branch || '')} → ${escHtml(pr.base_branch)}</span></span>`
+    ? `<span style="font-size:12px;color:var(--text-tertiary);display:flex;align-items:center;gap:4px;"><i data-lucide="git-branch" style="width:12px;height:12px;"></i><span style="font-family:'Fira Code',monospace;">${escHtml(pr.head_branch || '')} → ${escHtml(pr.base_branch)}</span></span>`
     : '';
 
   const chevronId = `chevron-${index}`;
@@ -327,20 +327,20 @@ function renderPRCard(pr, index) {
         <div style="margin-top:2px;">${prStateBadge(pr)}</div>
         <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
-            <span style="font-size:15px;font-weight:600;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:600px;" title="${escHtml(pr.title)}">
-              <a href="${escHtml(pr.pr_url)}" target="_blank" rel="noopener" style="color:#f1f5f9;text-decoration:none;" onclick="event.stopPropagation();">#${pr.pr_number} ${escHtml(pr.title)}</a>
+            <span style="font-size:15px;font-weight:600;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:600px;" title="${escHtml(pr.title)}">
+              <a href="${escHtml(pr.pr_url)}" target="_blank" rel="noopener" style="color:var(--text-primary);text-decoration:none;" onclick="event.stopPropagation();">#${pr.pr_number} ${escHtml(pr.title)}</a>
             </span>
           </div>
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
             ${authorHtml}
             ${branchHtml}
-            <span style="font-size:12px;color:#475569;display:flex;align-items:center;gap:4px;"><i data-lucide="clock" style="width:12px;height:12px;"></i>${timeAgo(pr.merged_at || pr.closed_at || pr.updated_at)}</span>
+            <span style="font-size:12px;color:var(--text-tertiary);display:flex;align-items:center;gap:4px;"><i data-lucide="clock" style="width:12px;height:12px;"></i>${timeAgo(pr.merged_at || pr.closed_at || pr.updated_at)}</span>
           </div>
           <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
             ${openBadge}${addressedBadge}${cleanBadge}
           </div>
         </div>
-        ${hasFindings ? `<i id="${chevronId}" data-lucide="chevron-down" class="chevron-icon" style="width:18px;height:18px;color:#475569;margin-top:2px;"></i>` : ''}
+        ${hasFindings ? `<i id="${chevronId}" data-lucide="chevron-down" class="chevron-icon" style="width:18px;height:18px;color:var(--text-tertiary);margin-top:2px;"></i>` : ''}
       </div>
       <div id="${panelId}" class="findings-panel">
         ${findingsHtml}
@@ -392,7 +392,7 @@ async function loadPRs() {
   const statsRow = document.getElementById('stats-row');
 
   if (!appId) {
-    container.innerHTML = `<div class="empty-state"><i data-lucide="git-pull-request"></i><p style="font-size:16px;font-weight:600;margin:0 0 8px;color:#64748b;">Select an application to view PR security analysis</p><p style="font-size:14px;margin:0;color:#475569;">Security findings linked to each pull request will appear here.</p></div>`;
+    container.innerHTML = `<div class="empty-state"><i data-lucide="git-pull-request"></i><p style="font-size:16px;font-weight:600;margin:0 0 8px;color:#64748b;">Select an application to view PR security analysis</p><p style="font-size:14px;margin:0;color:var(--text-tertiary);">Security findings linked to each pull request will appear here.</p></div>`;
     lucide.createIcons();
     statsRow.style.display = 'none';
     return;
@@ -403,14 +403,14 @@ async function loadPRs() {
   url.searchParams.set('app', appId);
   window.history.replaceState({}, '', url);
 
-  container.innerHTML = `<div style="text-align:center;padding:60px;"><div class="spinner"></div><p style="color:#475569;margin-top:16px;font-family:'Fira Code',monospace;">Fetching PRs &amp; analysing security impact…</p></div>`;
+  container.innerHTML = `<div style="text-align:center;padding:60px;"><div class="spinner"></div><p style="color:var(--text-tertiary);margin-top:16px;font-family:'Fira Code',monospace;">Fetching PRs &amp; analysing security impact…</p></div>`;
   statsRow.style.display = 'none';
 
   try {
     const resp = await fetch(`/api/v1/github/apps/${appId}/pr-reviews?limit=${limit}`);
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
-      container.innerHTML = `<div class="empty-state"><i data-lucide="alert-triangle"></i><p style="font-size:16px;font-weight:600;margin:0 0 8px;color:#f87171;">Error loading PR data</p><p style="font-size:14px;margin:0;color:#475569;">${escHtml(err.detail || resp.statusText)}</p></div>`;
+      container.innerHTML = `<div class="empty-state"><i data-lucide="alert-triangle"></i><p style="font-size:16px;font-weight:600;margin:0 0 8px;color:#f87171;">Error loading PR data</p><p style="font-size:14px;margin:0;color:var(--text-tertiary);">${escHtml(err.detail || resp.statusText)}</p></div>`;
       lucide.createIcons();
       return;
     }
@@ -419,7 +419,7 @@ async function loadPRs() {
     const prs = data.prs || [];
 
     if (prs.length === 0) {
-      container.innerHTML = `<div class="empty-state"><i data-lucide="git-pull-request"></i><p style="font-size:16px;font-weight:600;margin:0 0 8px;color:#64748b;">No pull requests found</p><p style="font-size:14px;margin:0;color:#475569;">No recent PRs were found for <strong style="color:#94a3b8;">${escHtml(data.github_org)}/${escHtml(data.github_repo)}</strong>.<br>Make sure the GITHUB_TOKEN is configured and the repo is accessible.</p></div>`;
+      container.innerHTML = `<div class="empty-state"><i data-lucide="git-pull-request"></i><p style="font-size:16px;font-weight:600;margin:0 0 8px;color:#64748b;">No pull requests found</p><p style="font-size:14px;margin:0;color:var(--text-tertiary);">No recent PRs were found for <strong style="color:var(--text-secondary);">${escHtml(data.github_org)}/${escHtml(data.github_repo)}</strong>.<br>Make sure the GITHUB_TOKEN is configured and the repo is accessible.</p></div>`;
       lucide.createIcons();
       return;
     }
@@ -454,7 +454,7 @@ async function loadPRs() {
 
   } catch (e) {
     console.error(e);
-    container.innerHTML = `<div class="empty-state"><i data-lucide="alert-triangle"></i><p style="font-size:16px;font-weight:600;margin:0 0 8px;color:#f87171;">Unexpected error</p><p style="font-size:14px;margin:0;color:#475569;">${escHtml(String(e))}</p></div>`;
+    container.innerHTML = `<div class="empty-state"><i data-lucide="alert-triangle"></i><p style="font-size:16px;font-weight:600;margin:0 0 8px;color:#f87171;">Unexpected error</p><p style="font-size:14px;margin:0;color:var(--text-tertiary);">${escHtml(String(e))}</p></div>`;
     lucide.createIcons();
   }
 }

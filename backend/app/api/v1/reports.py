@@ -10,6 +10,7 @@ from app.models.application import Application
 from app.models.finding import Finding
 from app.models.remediation import Remediation
 from app.schemas.report import (
+    AggregatedFindings,
     LeaderboardEntry,
     OverviewStats,
     PRRecord,
@@ -123,6 +124,7 @@ async def get_leaderboard(db: AsyncSession = Depends(get_db)):
 @router.get("/trend", response_model=VulnerabilityTrend)
 async def get_trend(
     days: int = Query(90, ge=7, le=365),
+    cumulative: bool = Query(True),
     db: AsyncSession = Depends(get_db),
 ):
     cutoff = datetime.now(timezone.utc) - timedelta(days=days)
@@ -131,7 +133,6 @@ async def get_trend(
     )
     findings = findings_result.scalars().all()
 
-    # Build cumulative daily counts
     daily: dict[date, dict] = {}
     today = datetime.now(timezone.utc).date()
     for i in range(days):
@@ -149,16 +150,25 @@ async def get_trend(
     for d in sorted(daily.keys()):
         for sev in running:
             running[sev] += daily[d].get(sev, 0)
-        data_points.append(
-            TrendDataPoint(
+        if cumulative:
+            data_points.append(TrendDataPoint(
                 date=d,
                 critical=running["critical"],
                 high=running["high"],
                 medium=running["medium"],
                 low=running["low"],
                 total=sum(running.values()),
-            )
-        )
+            ))
+        else:
+            day = daily[d]
+            data_points.append(TrendDataPoint(
+                date=d,
+                critical=day["critical"],
+                high=day["high"],
+                medium=day["medium"],
+                low=day["low"],
+                total=sum(day.values()),
+            ))
 
     return VulnerabilityTrend(data_points=data_points, period_days=days)
 
@@ -191,13 +201,32 @@ async def get_pull_requests(db: AsyncSession = Depends(get_db)):
     ]
 
 
-@router.get("/top-vulnerabilities", response_model=List[TopVulnerability])
+@router.get("/top-vulnerabilities", response_model=AggregatedFindings)
 async def get_top_vulnerabilities(
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(200, ge=1, le=500),
+    severity: Optional[str] = Query(None),
+    finding_type: Optional[str] = Query(None),
+    scanner: Optional[str] = Query(None),
+    status: Optional[str] = Query("open"),
     db: AsyncSession = Depends(get_db),
 ):
-    findings_result = await db.execute(select(Finding).where(Finding.status == "open"))
+    conditions = []
+    if status:
+        conditions.append(Finding.status == status)
+    if severity:
+        conditions.append(func.lower(Finding.severity) == severity.lower())
+    if finding_type:
+        conditions.append(func.lower(Finding.finding_type) == finding_type.lower())
+    if scanner:
+        conditions.append(func.lower(Finding.scanner) == scanner.lower())
+
+    q = select(Finding)
+    if conditions:
+        q = q.where(*conditions)
+    findings_result = await db.execute(q)
     findings = findings_result.scalars().all()
+
+    sev_rank = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
 
     vuln_map: dict = {}
     for f in findings:
@@ -210,30 +239,47 @@ async def get_top_vulnerabilities(
                 "title": f.title,
                 "finding_type": f.finding_type,
                 "severity": f.severity,
+                "scanners": set(),
                 "affected_apps": set(),
                 "total_occurrences": 0,
                 "cvss_score": f.cvss_score,
+                "fix_available": False,
+                "fixed_version": None,
             }
-        vuln_map[key]["affected_apps"].add(str(f.application_id))
-        vuln_map[key]["total_occurrences"] += 1
+        v = vuln_map[key]
+        v["affected_apps"].add(str(f.application_id))
+        v["total_occurrences"] += 1
+        if f.scanner:
+            v["scanners"].add(f.scanner)
+        # Use highest severity seen across all findings for this identifier
+        if sev_rank.get(f.severity, 9) < sev_rank.get(v["severity"], 9):
+            v["severity"] = f.severity
+        ft = (f.finding_type or "").lower()
+        if f.fixed_version:
+            v["fix_available"] = True
+            v["fixed_version"] = f.fixed_version
+        elif ft not in ("sca", "container"):
+            v["fix_available"] = True
 
     results = []
     for v in vuln_map.values():
-        results.append(
-            TopVulnerability(
-                identifier=v["identifier"],
-                title=v["title"],
-                finding_type=v["finding_type"],
-                severity=v["severity"],
-                affected_apps=len(v["affected_apps"]),
-                total_occurrences=v["total_occurrences"],
-                cvss_score=v["cvss_score"],
-            )
-        )
+        results.append(TopVulnerability(
+            identifier=v["identifier"],
+            title=v["title"],
+            finding_type=v["finding_type"],
+            severity=v["severity"],
+            scanner=", ".join(sorted(v["scanners"])) if v["scanners"] else "",
+            affected_apps=len(v["affected_apps"]),
+            total_occurrences=v["total_occurrences"],
+            cvss_score=v["cvss_score"],
+            fix_available=v["fix_available"],
+            fixed_version=v["fixed_version"],
+        ))
 
     sev_order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
     results.sort(key=lambda v: (sev_order.get(v.severity, 5), -v.total_occurrences))
-    return results[:limit]
+    total = len(results)
+    return AggregatedFindings(items=results[:limit], total=total)
 
 
 @router.get("/compliance")
