@@ -360,11 +360,12 @@ function severityBadge(sev){
 }
 
 function appFixBadge(f){
+  const ft=(f.finding_type||'').toLowerCase();
   if(f.fixed_version)
     return `<span style="background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.25);padding:2px 7px;border-radius:5px;font-size:12px;font-weight:600;white-space:nowrap;" title="Upgrade to ${escHtml(f.fixed_version)}">✓ ${escHtml(f.fixed_version)}</span>`;
-  if(['sast','secrets','iac'].includes(f.finding_type))
-    return `<span style="background:rgba(16,185,129,0.08);color:#10b981;border:1px solid rgba(16,185,129,0.18);padding:2px 7px;border-radius:5px;font-size:12px;font-weight:600;">✓ Fix</span>`;
-  return `<span style="background:rgba(148,163,184,0.08);color:#64748b;border:1px solid rgba(148,163,184,0.15);padding:2px 7px;border-radius:5px;font-size:11px;font-weight:500;">No Fix</span>`;
+  if(['sca','container'].includes(ft))
+    return `<span style="background:rgba(148,163,184,0.08);color:#64748b;border:1px solid rgba(148,163,184,0.15);padding:2px 7px;border-radius:5px;font-size:11px;font-weight:500;">No Fix Yet</span>`;
+  return `<span style="background:rgba(16,185,129,0.08);color:#10b981;border:1px solid rgba(16,185,129,0.18);padding:2px 7px;border-radius:5px;font-size:12px;font-weight:600;">✓ Fix</span>`;
 }
 
 function timeAgo(dateStr) {
@@ -745,7 +746,7 @@ async function executeRemediationById(planId,refreshCard=false){
 // ── Remediation Modal ──────────────────────────────────────────────────────────
 function openRemediationModal(){
   const openFindings=allFindings.filter(f=>f.status==='open'||!f.status);
-  const isFixable=f=>f.fixed_version!=null||['sast','secrets','iac'].includes(f.finding_type);
+  const isFixable=f=>f.fixed_version!=null||!['sca','container'].includes((f.finding_type||'').toLowerCase());
   const list=document.getElementById('rem-findings-list');
   if(openFindings.length===0){
     list.innerHTML=`<div style="padding:24px;text-align:center;color:#475569;font-size:15px;">No open findings to include.</div>`;

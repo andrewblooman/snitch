@@ -187,11 +187,12 @@ function statusBadge(status){
 
 function fixBadge(f){
   const eh=escapeHtml;
+  const ft=(f.finding_type||'').toLowerCase();
   if(f.fixed_version)
     return `<span style="background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.25);padding:2px 8px;border-radius:5px;font-size:12px;font-weight:600;white-space:nowrap;" title="Upgrade to ${eh(f.fixed_version)}">✓ ${eh(f.fixed_version)}</span>`;
-  if(['sast','secrets','iac'].includes(f.finding_type))
-    return `<span style="background:rgba(16,185,129,0.08);color:#10b981;border:1px solid rgba(16,185,129,0.18);padding:2px 8px;border-radius:5px;font-size:12px;font-weight:600;">✓ Available</span>`;
-  return `<span style="background:rgba(148,163,184,0.08);color:#64748b;border:1px solid rgba(148,163,184,0.15);padding:2px 8px;border-radius:5px;font-size:12px;font-weight:500;">No Fix Yet</span>`;
+  if(['sca','container'].includes(ft))
+    return `<span style="background:rgba(148,163,184,0.08);color:#64748b;border:1px solid rgba(148,163,184,0.15);padding:2px 8px;border-radius:5px;font-size:12px;font-weight:500;">No Fix Yet</span>`;
+  return `<span style="background:rgba(16,185,129,0.08);color:#10b981;border:1px solid rgba(16,185,129,0.18);padding:2px 8px;border-radius:5px;font-size:12px;font-weight:600;">✓ Available</span>`;
 }
 
 function timeAgo(dateStr) {

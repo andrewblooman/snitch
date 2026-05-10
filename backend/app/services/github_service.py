@@ -129,7 +129,7 @@ def sync_github_security_alerts(app: Application, token: str) -> list[dict]:
                     "title": alert.rule.description or alert.rule.id,
                     "description": getattr(alert.rule, "full_description", None),
                     "severity": severity,
-                    "finding_type": "SAST",
+                    "finding_type": "sast",
                     "scanner": "semgrep",
                     "file_path": alert.most_recent_instance.location.path
                     if alert.most_recent_instance
