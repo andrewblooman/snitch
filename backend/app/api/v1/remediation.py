@@ -72,7 +72,7 @@ async def generate_plan(
     else:
         fixable_condition = or_(
             Finding.fixed_version.isnot(None),
-            ~Finding.finding_type.in_(["sca", "container"]),
+            ~func.lower(Finding.finding_type).in_(["sca", "container"]),
         )
         base_where = [
             Finding.application_id == payload.application_id,

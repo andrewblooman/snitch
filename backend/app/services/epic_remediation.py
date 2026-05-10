@@ -58,14 +58,14 @@ def _template_plan(uncovered_findings: list["Finding"], epic_results: list[dict]
     if not uncovered_findings:
         return f"No uncovered findings for {app_name}. All scanned findings have corresponding Jira issues."
 
-    if provider_error:
-        error_note = f"\n> **Note:** AI plan generation failed — check that Ollama is running and the model is pulled. Error: `{provider_error}`\n"
-    else:
-        error_note = ""
-
     lines = [
         f"# Remediation Plan — {app_name}",
-        error_note,
+    ]
+    if provider_error:
+        safe_error = provider_error.replace("`", "'")[:200]
+        lines.append(f"> **Note:** AI plan generation failed — check your provider configuration (ANTHROPIC_API_KEY or OLLAMA_URL). Error: {safe_error}")
+        lines.append("")
+    lines += [
         f"**{len(uncovered_findings)} finding(s) have no corresponding Jira issue.**",
         "",
         "## Findings Requiring Jira Issues",

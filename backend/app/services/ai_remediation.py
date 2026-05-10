@@ -78,7 +78,8 @@ def _mock_plan(app: Application, findings: List[Finding], provider_error: str | 
             severity_counts[f.severity] += 1
 
     if provider_error:
-        note = f"> **Note:** This is a template plan — AI provider failed. Check that Ollama is running and the model is pulled. Error: `{provider_error}`"
+        safe_error = provider_error.replace("`", "'")[:200]
+        note = f"> **Note:** This is a template plan — AI provider failed. Check your provider configuration (ANTHROPIC_API_KEY or OLLAMA_URL). Error: {safe_error}"
     else:
         note = "> **Note:** This is a template plan — no AI provider available. Set `ANTHROPIC_API_KEY` or `OLLAMA_URL` to enable AI-powered remediation."
 
