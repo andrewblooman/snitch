@@ -71,15 +71,21 @@ def _upgrade_command(language: str | None, package: str, version: str) -> str:
     return f"pip install '{package}>={version}'"
 
 
-def _mock_plan(app: Application, findings: List[Finding]) -> str:
+def _mock_plan(app: Application, findings: List[Finding], provider_error: str | None = None) -> str:
     severity_counts: dict = {"critical": 0, "high": 0, "medium": 0, "low": 0}
     for f in findings:
         if f.severity in severity_counts:
             severity_counts[f.severity] += 1
 
+    if provider_error:
+        safe_error = provider_error.replace("`", "'")[:200]
+        note = f"> **Note:** This is a template plan — AI provider failed. Check your provider configuration (ANTHROPIC_API_KEY or OLLAMA_URL). Error: {safe_error}"
+    else:
+        note = "> **Note:** This is a template plan — no AI provider available. Set `ANTHROPIC_API_KEY` or `OLLAMA_URL` to enable AI-powered remediation."
+
     lines = [
         f"# Security Remediation Plan for {app.name}",
-        f"> **Note:** This is a template plan — no AI provider available. Set `ANTHROPIC_API_KEY` or `OLLAMA_URL` to enable AI-powered remediation.",
+        note,
         "",
         f"## Summary",
         f"- **Critical:** {severity_counts['critical']} findings",
@@ -135,5 +141,6 @@ async def generate_remediation_plan(
         result = await provider.complete(prompt, max_tokens=16000, use_thinking=True)
         return result.text, result.model or None
     except Exception as e:
-        logger.error("AI remediation failed: %s", e)
-        return _mock_plan(app, findings), None
+        error_msg = str(e) or type(e).__name__
+        logger.error("AI remediation failed: %s", error_msg)
+        return _mock_plan(app, findings, provider_error=error_msg), None

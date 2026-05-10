@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
@@ -70,16 +70,26 @@ async def generate_plan(
             )
         )
     else:
-        findings_result = await db.execute(
-            select(Finding).where(
-                Finding.application_id == payload.application_id,
-                Finding.status == "open",
-            )
+        fixable_condition = or_(
+            Finding.fixed_version.isnot(None),
+            ~func.lower(Finding.finding_type).in_(["sca", "container"]),
         )
+        base_where = [
+            Finding.application_id == payload.application_id,
+            Finding.status == "open",
+        ]
+        if payload.fixable_only:
+            base_where.append(fixable_condition)
+        findings_result = await db.execute(select(Finding).where(*base_where))
     findings = findings_result.scalars().all()
 
     if not findings:
-        raise HTTPException(status_code=400, detail="No open findings found for remediation")
+        detail = (
+            "No fixable open findings found — all open findings lack a known fix version"
+            if payload.fixable_only and not payload.finding_ids
+            else "No open findings found for remediation"
+        )
+        raise HTTPException(status_code=400, detail=detail)
 
     plan_text, model_used = await generate_remediation_plan(app, list(findings))
 

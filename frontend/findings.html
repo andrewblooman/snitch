@@ -141,12 +141,13 @@
                 <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Title</th>
                 <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Application</th>
                 <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Type</th>
+                <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Fix</th>
                 <th style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;">Status</th>
                 <th class="sort-th" data-col="created_at" style="text-align:left;padding:12px 24px;font-size:13px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;" onclick="setSort('created_at')">Discovered<span class="sort-arrow">▲</span></th>
               </tr>
             </thead>
             <tbody id="findings-tbody">
-              <tr><td colspan="6" style="padding:40px;text-align:center;"><div style="animation:spin 1s linear infinite;display:inline-block;width:32px;height:32px;border:3px solid rgba(0,229,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></td></tr>
+              <tr><td colspan="7" style="padding:40px;text-align:center;"><div style="animation:spin 1s linear infinite;display:inline-block;width:32px;height:32px;border:3px solid rgba(0,229,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div></td></tr>
             </tbody>
           </table>
         </div>
@@ -182,6 +183,16 @@ function statusBadge(status){
   const map={open:{color:'#ef4444',label:'Open'},fixed:{color:'#10b981',label:'Fixed'},accepted:{color:'#f59e0b',label:'Accepted'},false_positive:{color:'#94a3b8',label:'False Pos'}};
   const s=map[status?.toLowerCase()]||map.open;
   return `<span style="color:${s.color};font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px;"><span style="width:6px;height:6px;border-radius:50%;background:${s.color};display:inline-block;"></span>${s.label}</span>`;
+}
+
+function fixBadge(f){
+  const eh=escapeHtml;
+  const ft=(f.finding_type||'').toLowerCase();
+  if(f.fixed_version)
+    return `<span style="background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.25);padding:2px 8px;border-radius:5px;font-size:12px;font-weight:600;white-space:nowrap;" title="Upgrade to ${eh(f.fixed_version)}">✓ ${eh(f.fixed_version)}</span>`;
+  if(['sca','container'].includes(ft))
+    return `<span style="background:rgba(148,163,184,0.08);color:#64748b;border:1px solid rgba(148,163,184,0.15);padding:2px 8px;border-radius:5px;font-size:12px;font-weight:500;">No Fix Yet</span>`;
+  return `<span style="background:rgba(16,185,129,0.08);color:#10b981;border:1px solid rgba(16,185,129,0.18);padding:2px 8px;border-radius:5px;font-size:12px;font-weight:600;">✓ Available</span>`;
 }
 
 function timeAgo(dateStr) {
@@ -253,11 +264,11 @@ async function loadFindings() {
     document.getElementById('btn-next').disabled = data.page >= data.pages;
     
     if (!data.items || data.items.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="padding:60px;text-align:center;color:#475569;"><i data-lucide="shield-check" style="width:48px;height:48px;display:block;margin:0 auto 16px;opacity:0.3;"></i><div style="font-size:16px;">No findings match your criteria.</div></td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="padding:60px;text-align:center;color:#475569;"><i data-lucide="shield-check" style="width:48px;height:48px;display:block;margin:0 auto 16px;opacity:0.3;"></i><div style="font-size:16px;">No findings match your criteria.</div></td></tr>`;
       lucide.createIcons();
       return;
     }
-    
+
     tbody.innerHTML = data.items.map(f => `
       <tr class="table-row" style="border-bottom:1px solid rgba(255,255,255,0.04);" onclick="openFindingPanel('${escapeHtml(f.id)}')">
         <td style="padding:16px 24px;">${severityBadge(f.severity)}</td>
@@ -268,6 +279,7 @@ async function loadFindings() {
           <div style="font-size:14px;color:#f1f5f9;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;" title="${escapeHtml(f.application_name||f.application_id)}">${escapeHtml(f.application_name||f.application_id.split('-')[0]+'...')}</div>
         </td>
         <td style="padding:16px 24px;">${typeBadge(f.finding_type||f.scanner)}</td>
+        <td style="padding:16px 24px;">${fixBadge(f)}</td>
         <td style="padding:16px 24px;">${statusBadge(f.status)}</td>
         <td style="padding:16px 24px;font-size:14px;color:#94a3b8;">${timeAgo(f.first_seen_at)}</td>
       </tr>
@@ -392,6 +404,10 @@ function renderPanel(f) {
           <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">CVSS Score</div>
           <div style="font-size:14px;color:#f1f5f9;font-family:'Fira Code',monospace;">${f.cvss_score.toFixed(1)}</div>
         </div>` : ''}
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Fix Available</div>
+          <div style="font-size:14px;">${fixBadge(f)}${f.fixed_version?`<span style="font-size:13px;color:#475569;margin-left:8px;font-family:'Fira Code',monospace;">→ ${eh(f.fixed_version)}</span>`:''}</div>
+        </div>
         <div>
           <div style="font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">First Seen</div>
           <div style="font-size:14px;color:#94a3b8;">${timeAgo(f.first_seen_at)}</div>
