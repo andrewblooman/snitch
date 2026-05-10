@@ -226,6 +226,8 @@ async def get_top_vulnerabilities(
     findings_result = await db.execute(q)
     findings = findings_result.scalars().all()
 
+    sev_rank = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
+
     vuln_map: dict = {}
     for f in findings:
         key = f.cve_id or f.rule_id or f.title
@@ -237,21 +239,27 @@ async def get_top_vulnerabilities(
                 "title": f.title,
                 "finding_type": f.finding_type,
                 "severity": f.severity,
-                "scanner": f.scanner,
+                "scanners": set(),
                 "affected_apps": set(),
                 "total_occurrences": 0,
                 "cvss_score": f.cvss_score,
                 "fix_available": False,
                 "fixed_version": None,
             }
-        vuln_map[key]["affected_apps"].add(str(f.application_id))
-        vuln_map[key]["total_occurrences"] += 1
+        v = vuln_map[key]
+        v["affected_apps"].add(str(f.application_id))
+        v["total_occurrences"] += 1
+        if f.scanner:
+            v["scanners"].add(f.scanner)
+        # Use highest severity seen across all findings for this identifier
+        if sev_rank.get(f.severity, 9) < sev_rank.get(v["severity"], 9):
+            v["severity"] = f.severity
         ft = (f.finding_type or "").lower()
         if f.fixed_version:
-            vuln_map[key]["fix_available"] = True
-            vuln_map[key]["fixed_version"] = f.fixed_version
+            v["fix_available"] = True
+            v["fixed_version"] = f.fixed_version
         elif ft not in ("sca", "container"):
-            vuln_map[key]["fix_available"] = True
+            v["fix_available"] = True
 
     results = []
     for v in vuln_map.values():
@@ -260,7 +268,7 @@ async def get_top_vulnerabilities(
             title=v["title"],
             finding_type=v["finding_type"],
             severity=v["severity"],
-            scanner=v["scanner"],
+            scanner=", ".join(sorted(v["scanners"])) if v["scanners"] else "",
             affected_apps=len(v["affected_apps"]),
             total_occurrences=v["total_occurrences"],
             cvss_score=v["cvss_score"],

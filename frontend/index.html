@@ -381,6 +381,7 @@ function timeAgo(dateStr) {
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return 'Never';
   const diff = Math.floor((Date.now() - d) / 1000);
+  if (diff < 0) return 'Just now';
   if (diff < 60) return `${diff}s ago`;
   if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
@@ -388,7 +389,7 @@ function timeAgo(dateStr) {
 }
 
 function escapeHtml(s) {
-  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 function showToast(message, type) {
@@ -515,15 +516,16 @@ function renderTrendChart(points) {
     }
   });
 
-  // Summary row below chart
+  // Summary row — data is non-cumulative (daily counts), so sum all 7 days for the week total
+  const weekTotal = points.reduce((s, p) => s + (p.total || 0), 0);
   const last = points[points.length - 1] || {};
   const first = points[0] || {};
   const delta = (last.total || 0) - (first.total || 0);
   const sign = delta >= 0 ? '+' : '';
   const deltaColor = delta > 0 ? '#ff3333' : '#00c853';
   document.getElementById('trend-summary').innerHTML = [
-    `<div style="font-size:13px;color:var(--text-tertiary);">New this week: <strong style="color:var(--text-primary);font-family:'Fira Code',monospace;">${(last.total||0).toLocaleString()}</strong></div>`,
-    `<div style="font-size:13px;color:var(--text-tertiary);">vs prior week: <strong style="color:${deltaColor};font-family:'Fira Code',monospace;">${sign}${delta}</strong></div>`,
+    `<div style="font-size:13px;color:var(--text-tertiary);">New this week: <strong style="color:var(--text-primary);font-family:'Fira Code',monospace;">${weekTotal.toLocaleString()}</strong></div>`,
+    `<div style="font-size:13px;color:var(--text-tertiary);">Day 7 vs Day 1: <strong style="color:${deltaColor};font-family:'Fira Code',monospace;">${sign}${delta}</strong></div>`,
     `<div style="font-size:13px;color:var(--text-tertiary);">Critical today: <strong style="color:#ff3333;font-family:'Fira Code',monospace;">${last.critical||0}</strong></div>`,
   ].join('');
 }
@@ -606,9 +608,10 @@ function renderTopVulns(items) {
   }
   el.innerHTML = items.map(v => {
     const title = escapeHtml((v.title||'Unknown').slice(0, 52)) + ((v.title||'').length > 52 ? '…' : '');
-    const ident = escapeHtml(v.identifier || v.cve_id || v.rule_id || '—');
+    const rawIdent = v.identifier || v.cve_id || v.rule_id || '—';
+    const ident = escapeHtml(rawIdent);
     const dot = severityDot(v.severity);
-    return `<div class="finding-card" onclick="location.href='/findings.html?identifier=${encodeURIComponent(ident)}'">
+    return `<div class="finding-card" onclick="location.href='/findings.html?identifier=${encodeURIComponent(rawIdent)}'">
       <div class="sev-dot" style="background:${dot};"></div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${title}</div>

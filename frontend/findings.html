@@ -229,10 +229,9 @@ function setViewMode(mode) {
   viewMode = mode;
   document.getElementById('grouped-view').style.display = mode === 'grouped' ? 'block' : 'none';
   document.getElementById('individual-view').style.display = mode === 'all' ? 'block' : 'none';
-  const active = 'background:rgba(0,229,255,0.15);color:#00e5ff;';
-  const inactive = 'background:transparent;color:var(--text-tertiary);';
-  document.getElementById('btn-grouped').style.cssText += mode === 'grouped' ? active : inactive;
-  document.getElementById('btn-all').style.cssText += mode === 'all' ? active : inactive;
+  const BASE = 'padding:6px 14px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;';
+  document.getElementById('btn-grouped').style.cssText = BASE + (mode === 'grouped' ? 'background:rgba(0,229,255,0.15);color:#00e5ff;' : 'background:transparent;color:var(--text-tertiary);');
+  document.getElementById('btn-all').style.cssText    = BASE + (mode === 'all'     ? 'background:rgba(0,229,255,0.15);color:#00e5ff;' : 'background:transparent;color:var(--text-tertiary);');
   if (mode === 'grouped') loadGrouped();
   else loadFindings();
 }
@@ -256,7 +255,7 @@ async function loadGrouped() {
 
   const sev    = document.getElementById('filter-severity').value;
   const type   = document.getElementById('filter-type').value;
-  const status = document.getElementById('filter-status').value || 'open';
+  const status = document.getElementById('filter-status').value;
   const scanner = document.getElementById('filter-scanner').value;
 
   let url = `/api/v1/reports/top-vulnerabilities?limit=500`;
@@ -282,14 +281,15 @@ async function loadGrouped() {
 
     tbody.innerHTML = items.map(v => {
       const eh = escapeHtml;
-      const ident = eh(v.identifier || '—');
+      const rawIdent = v.identifier || '—';
+      const ident = eh(rawIdent);
       const title = eh((v.title||'Unknown').slice(0,65)) + ((v.title||'').length>65?'…':'');
       const fix = v.fix_available
         ? (v.fixed_version
             ? `<span style="background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.25);padding:2px 7px;border-radius:5px;font-size:12px;font-weight:600;" title="${eh(v.fixed_version)}">✓ ${eh(v.fixed_version)}</span>`
             : `<span style="background:rgba(16,185,129,0.08);color:#10b981;border:1px solid rgba(16,185,129,0.18);padding:2px 7px;border-radius:5px;font-size:12px;font-weight:600;">✓ Available</span>`)
         : `<span style="background:rgba(148,163,184,0.08);color:#64748b;border:1px solid rgba(148,163,184,0.15);padding:2px 7px;border-radius:5px;font-size:12px;font-weight:500;">No Fix Yet</span>`;
-      return `<tr class="table-row" style="border-bottom:1px solid rgba(255,255,255,0.04);" onclick="drillDown('${ident}')">
+      return `<tr class="table-row" style="border-bottom:1px solid rgba(255,255,255,0.04);" onclick="drillDown(${JSON.stringify(rawIdent)})">
         <td style="padding:12px 20px;">${severityBadge(v.severity)}</td>
         <td style="padding:12px 20px;max-width:380px;">
           <div style="font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${title}</div>
@@ -308,19 +308,16 @@ async function loadGrouped() {
 }
 
 function drillDown(identifier) {
-  // Switch to All view filtered by this identifier
-  // Encode the identifier into the URL so the chip shows
+  currentPage = 1;
   const url = new URL(window.location);
   url.searchParams.set('identifier', identifier);
   window.history.replaceState({}, '', url);
-  // Show chip
   const chip = document.getElementById('identifier-chip');
   if (chip) {
-    chip.textContent = `✕  Filtered by: ${identifier}`;
+    chip.textContent = `✕  Filtered by: ${escapeHtml(identifier)}`;
     chip.style.display = 'inline-flex';
   }
   setViewMode('all');
-  currentPage = 1;
 }
 
 function escapeHtml(s) {
