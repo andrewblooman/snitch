@@ -71,15 +71,20 @@ def _upgrade_command(language: str | None, package: str, version: str) -> str:
     return f"pip install '{package}>={version}'"
 
 
-def _mock_plan(app: Application, findings: List[Finding]) -> str:
+def _mock_plan(app: Application, findings: List[Finding], provider_error: str | None = None) -> str:
     severity_counts: dict = {"critical": 0, "high": 0, "medium": 0, "low": 0}
     for f in findings:
         if f.severity in severity_counts:
             severity_counts[f.severity] += 1
 
+    if provider_error:
+        note = f"> **Note:** This is a template plan — AI provider failed. Check that Ollama is running and the model is pulled. Error: `{provider_error}`"
+    else:
+        note = "> **Note:** This is a template plan — no AI provider available. Set `ANTHROPIC_API_KEY` or `OLLAMA_URL` to enable AI-powered remediation."
+
     lines = [
         f"# Security Remediation Plan for {app.name}",
-        f"> **Note:** This is a template plan — no AI provider available. Set `ANTHROPIC_API_KEY` or `OLLAMA_URL` to enable AI-powered remediation.",
+        note,
         "",
         f"## Summary",
         f"- **Critical:** {severity_counts['critical']} findings",
@@ -136,4 +141,4 @@ async def generate_remediation_plan(
         return result.text, result.model or None
     except Exception as e:
         logger.error("AI remediation failed: %s", e)
-        return _mock_plan(app, findings), None
+        return _mock_plan(app, findings, provider_error=str(e)), None

@@ -23,7 +23,7 @@ async def generate_epic_remediation_plan(
         return await _ai_plan(provider, uncovered_findings, epic_results, app_name)
     except Exception as exc:
         logger.warning("AI remediation plan unavailable (%s), using template", exc)
-        return _template_plan(uncovered_findings, epic_results, app_name)
+        return _template_plan(uncovered_findings, epic_results, app_name, provider_error=str(exc))
 
 
 async def _ai_plan(provider, uncovered_findings: list["Finding"], epic_results: list[dict], app_name: str) -> str:
@@ -54,13 +54,18 @@ Format as markdown."""
     return result.text
 
 
-def _template_plan(uncovered_findings: list["Finding"], epic_results: list[dict], app_name: str) -> str:
+def _template_plan(uncovered_findings: list["Finding"], epic_results: list[dict], app_name: str, provider_error: str | None = None) -> str:
     if not uncovered_findings:
         return f"No uncovered findings for {app_name}. All scanned findings have corresponding Jira issues."
 
+    if provider_error:
+        error_note = f"\n> **Note:** AI plan generation failed — check that Ollama is running and the model is pulled. Error: `{provider_error}`\n"
+    else:
+        error_note = ""
+
     lines = [
         f"# Remediation Plan — {app_name}",
-        "",
+        error_note,
         f"**{len(uncovered_findings)} finding(s) have no corresponding Jira issue.**",
         "",
         "## Findings Requiring Jira Issues",
