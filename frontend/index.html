@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snitch — Security Overview</title>
-  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
+  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'light');})();</script>
   <link rel="stylesheet" href="/static/css/theme.css">
   <script src="/static/js/chart.min.js"></script>
   <script src="/static/js/lucide.min.js"></script>
@@ -24,7 +24,7 @@
       background: var(--bg-card, linear-gradient(145deg,#0f1b34 0%,#080f1d 100%));
       border: 1px solid var(--border-card, rgba(0,229,255,0.12));
       border-radius: 14px;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.35);
+      box-shadow: var(--card-shadow, 0 2px 16px rgba(0,0,0,0.35));
     }
 
     /* ── Search bar ── */
@@ -159,6 +159,42 @@
     .sev-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:4px; }
     .table-row:hover { background:rgba(0,229,255,0.04) !important; }
     .mono { font-family: var(--font-mono,'Fira Code',monospace); }
+
+    /* ── Light mode overrides ── */
+    [data-theme="light"] .card {
+      background: #ffffff;
+      border-color: rgba(0,0,0,0.07);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    }
+    [data-theme="light"] .search-wrap input {
+      background: #f8fafc;
+      border-color: rgba(0,0,0,0.1);
+      color: #111827;
+    }
+    [data-theme="light"] .search-wrap input:focus {
+      border-color: rgba(14,165,233,0.4);
+      box-shadow: 0 0 0 3px rgba(14,165,233,0.08);
+    }
+    [data-theme="light"] .metric-card:hover {
+      border-color: rgba(14,165,233,0.3);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+    [data-theme="light"] .metric-value { font-family: var(--font-body); font-size: 32px; }
+    [data-theme="light"] .card-link { color: var(--accent); }
+    [data-theme="light"] .app-bar-row:hover { background: rgba(14,165,233,0.05); }
+    [data-theme="light"] .risk-bar-track { background: rgba(0,0,0,0.06); }
+    [data-theme="light"] .finding-card {
+      border-color: rgba(0,0,0,0.06);
+      background: #f8fafc;
+    }
+    [data-theme="light"] .finding-card:hover {
+      background: rgba(14,165,233,0.05);
+      border-color: rgba(14,165,233,0.2);
+    }
+    [data-theme="light"] .table-row:hover { background: rgba(0,0,0,0.025) !important; }
+    [data-theme="light"] .skel { background: rgba(0,0,0,0.06); }
+    [data-theme="light"] #trend-summary { border-top-color: rgba(0,0,0,0.06); }
+    [data-theme="light"] .card-title i[data-lucide] { color: var(--accent) !important; }
   </style>
 </head>
 <body style="margin:0;padding:0;min-height:100vh;background:var(--bg-page,#03040c);">
@@ -170,7 +206,7 @@
   <div id="main-content" style="margin-left:260px;min-height:100vh;">
 
     <!-- ── Header ── -->
-    <header style="background:var(--bg-header,rgba(3,4,12,0.95));backdrop-filter:blur(20px);border-bottom:1px solid var(--border-header,rgba(0,229,255,0.1));padding:14px 28px;display:flex;align-items:center;gap:20px;position:sticky;top:0;z-index:50;">
+    <header style="background:var(--bg-modal,rgba(3,4,12,0.95));backdrop-filter:blur(20px);border-bottom:1px solid var(--border-color,rgba(255,255,255,0.08));padding:14px 28px;display:flex;align-items:center;gap:20px;position:sticky;top:0;z-index:50;">
       <!-- Search -->
       <div class="search-wrap">
         <i data-lucide="search" class="search-icon" style="width:15px;height:15px;"></i>
@@ -711,7 +747,7 @@ async function loadDashboard() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  applyTheme(localStorage.getItem('theme') || 'dark');
+  applyTheme(localStorage.getItem('theme') || 'light');
   lucide.createIcons();
   setGreeting();
   loadDashboard();

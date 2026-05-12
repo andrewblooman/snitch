@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snitch — Settings</title>
-  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
+  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'light');})();</script>
   <link rel="stylesheet" href="/static/css/theme.css">
   <style>/* Inter font fallback */ body { font-family: var(--font-body); }</style>
   <script src="/static/js/lucide.min.js"></script>
@@ -241,7 +241,7 @@ function loadTokenStatuses() {
 // ── Init ─────────────────────────────────────────────────────────────────────
 
 (function init() {
-  applyTheme(localStorage.getItem('theme') || 'dark');
+  applyTheme(localStorage.getItem('theme') || 'light');
   loadPlatformPrefs();
   loadTokenStatuses();
   checkApiStatus();

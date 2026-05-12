@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snitch — Profile &amp; Preferences</title>
-  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
+  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'light');})();</script>
   <link rel="stylesheet" href="/static/css/theme.css">
   <style>/* Inter font fallback */ body { font-family: var(--font-body); }</style>
   <script src="/static/js/lucide.min.js"></script>
@@ -317,7 +317,7 @@ function savePref(key, value) {
 // ── Init ─────────────────────────────────────────────────────────────────────
 
 (function init() {
-  const theme = localStorage.getItem('theme') || 'dark';
+  const theme = localStorage.getItem('theme') || 'light';
   applyTheme(theme);
 
   // A token was previously generated — show a placeholder (raw value is never persisted)
