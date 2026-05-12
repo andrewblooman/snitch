@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Snitch — Global Findings</title>
-  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
+  <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'light');})();</script>
   <style>/* Inter font fallback */ body { font-family: var(--font-body); }</style>
   <link rel="stylesheet" href="/static/css/theme.css">
   <script src="/static/js/lucide.min.js"></script>
@@ -35,6 +35,9 @@
     }
     .filter-select:focus { border-color: #00e5ff; box-shadow: 0 0 0 2px rgba(0,229,255,0.2); }
     .filter-select option { background: #0f1b34; color:var(--text-primary); }
+    [data-theme="light"] .filter-select { background: var(--bg-input); border-color: var(--border-color); color: var(--text-primary); }
+    [data-theme="light"] .filter-select:focus { border-color: var(--accent-border); box-shadow: 0 0 0 2px var(--accent-dim); }
+    [data-theme="light"] .filter-select option { background: var(--bg-modal); color: var(--text-primary); }
     
     .pagination-btn {
       background: rgba(0,0,0,0.2);

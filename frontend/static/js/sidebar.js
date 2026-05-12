@@ -3,7 +3,7 @@
  *
  * Usage in each HTML page:
  *   1. A tiny inline theme script in <head> prevents FOUC:
- *      <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'dark');})();</script>
+ *      <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'light');})();</script>
  *   2. At the start of <body>:
  *      <div id="sidebar-mount"></div>
  *      <script src="/static/js/sidebar.js"></script>
@@ -17,6 +17,84 @@
  * window.applyTheme = applyTheme to override this shared version.
  */
 (function () {
+  // ── Inject sidebar-specific CSS ───────────────────────────────────────────
+  var styleEl = document.createElement('style');
+  styleEl.textContent = [
+    '#sidebar {',
+    '  background: var(--bg-sidebar);',
+    '  border-right: 1px solid var(--border-color);',
+    '  transition: background 0.2s, border-color 0.2s;',
+    '}',
+    '[data-theme="light"] #sidebar {',
+    '  box-shadow: 2px 0 8px rgba(0,0,0,0.04);',
+    '}',
+    '#sidebar .nav-link.active {',
+    '  background: var(--accent-dim);',
+    '  color: var(--accent);',
+    '  border: 1px solid var(--accent-border);',
+    '  border-left-width: 3px;',
+    '  box-shadow: none;',
+    '  padding-left: 10px;',
+    '}',
+    '.sidebar-section-label {',
+    '  font-size: 11px;',
+    '  color: var(--text-tertiary);',
+    '  font-weight: 600;',
+    '  letter-spacing: 1.5px;',
+    '  text-transform: uppercase;',
+    '  padding: 12px 8px 4px;',
+    '  font-family: var(--font-body);',
+    '}',
+    '#sidebar-logo-title {',
+    '  font-size: 20px;',
+    '  font-weight: 700;',
+    '  color: var(--text-primary);',
+    '  letter-spacing: 0.5px;',
+    '  font-family: var(--font-body);',
+    '}',
+    '#sidebar-logo-sub {',
+    '  font-size: 11px;',
+    '  color: var(--text-tertiary);',
+    '  font-weight: 500;',
+    '  letter-spacing: 1.5px;',
+    '  text-transform: uppercase;',
+    '  font-family: var(--font-body);',
+    '  margin-top: 2px;',
+    '}',
+    '#sidebar-logo-icon {',
+    '  width: 40px; height: 40px;',
+    '  background: var(--accent-dim);',
+    '  border: 1px solid var(--accent-border);',
+    '  border-radius: 12px;',
+    '  display: flex;',
+    '  align-items: center;',
+    '  justify-content: center;',
+    '  box-shadow: var(--glow-accent);',
+    '  flex-shrink: 0;',
+    '}',
+    '[data-theme="light"] #sidebar-logo-icon {',
+    '  box-shadow: 0 2px 8px rgba(14,165,233,0.12);',
+    '}',
+    '.sidebar-status-dot {',
+    '  width: 7px; height: 7px;',
+    '  background: var(--accent-safe);',
+    '  border-radius: 50%;',
+    '  box-shadow: var(--glow-safe);',
+    '  flex-shrink: 0;',
+    '}',
+    '[data-theme="light"] .sidebar-status-dot {',
+    '  box-shadow: 0 0 6px rgba(16,185,129,0.4);',
+    '}',
+    '.sidebar-status-text {',
+    '  font-size: 12px;',
+    '  color: var(--accent-safe);',
+    '  font-weight: 500;',
+    '  letter-spacing: 0.3px;',
+    '  font-family: var(--font-body);',
+    '}',
+  ].join('\n');
+  document.head.appendChild(styleEl);
+
   // ── Default applyTheme (may be overridden by individual pages) ───────────
   window.applyTheme = function (theme) {
     document.documentElement.setAttribute('data-theme', theme);
@@ -75,17 +153,6 @@
     });
   }
 
-  var ACTIVE_STYLE = [
-    'background:linear-gradient(135deg,rgba(0,229,255,0.12),rgba(99,102,241,0.12))',
-    'color:#00e5ff',
-    'border-left:3px solid #00e5ff',
-    'border-top:1px solid rgba(0,229,255,0.18)',
-    'border-right:1px solid rgba(0,229,255,0.18)',
-    'border-bottom:1px solid rgba(0,229,255,0.18)',
-    'box-shadow:inset 0 0 12px rgba(0,229,255,0.06)',
-    'padding-left:10px',
-  ].join(';');
-
   var INACTIVE_STYLE = 'color:var(--text-secondary);border:1px solid transparent';
 
   // ── HTML builders ─────────────────────────────────────────────────────────
@@ -98,11 +165,11 @@
       'padding:10px 12px',
       'border-radius:8px',
       'text-decoration:none',
-      'font-size:16px',
+      'font-size:15px',
       'font-weight:500',
       'margin-bottom:2px',
       'transition:all 0.2s',
-      active ? ACTIVE_STYLE : INACTIVE_STYLE,
+      active ? '' : INACTIVE_STYLE,
     ].join(';');
 
     return '<a href="' + item.href + '"'
@@ -115,7 +182,7 @@
   }
 
   function sectionLabel(text) {
-    return '<div style="font-size:11px;color:var(--text-tertiary);font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:12px 8px 4px;font-family:\'Fira Code\',monospace;">// ' + text + '</div>';
+    return '<div class="sidebar-section-label">' + text + '</div>';
   }
 
   var navHTML = NAV_SECTIONS.map(function (section) {
@@ -123,23 +190,23 @@
   }).join('');
 
   var sidebarHTML = ''
-    + '<aside id="sidebar" style="width:260px;height:100vh;overflow:hidden;background:#060712;border-right:1px solid rgba(0,229,255,0.10);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;">'
-    +   '<div style="padding:24px 20px;border-bottom:1px solid rgba(0,229,255,0.08);display:flex;align-items:center;gap:12px;">'
-    +     '<div style="width:40px;height:40px;background:linear-gradient(135deg,rgba(0,229,255,0.2),rgba(99,102,241,0.2));border:1px solid rgba(0,229,255,0.5);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(0,229,255,0.2),inset 0 0 10px rgba(0,229,255,0.05);">'
-    +       '<i data-lucide="shield-alert" style="width:20px;height:20px;color:#00e5ff;"></i>'
+    + '<aside id="sidebar" style="width:260px;height:100vh;overflow:hidden;display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;">'
+    +   '<div style="padding:20px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;gap:12px;">'
+    +     '<div id="sidebar-logo-icon">'
+    +       '<i data-lucide="shield-alert" style="width:20px;height:20px;color:var(--accent);"></i>'
     +     '</div>'
     +     '<div>'
-    +       '<div class="glitch-hover" style="font-size:20px;font-weight:700;color:var(--text-primary);letter-spacing:1px;font-family:\'Fira Code\',monospace;">Snitch</div>'
-    +       '<div style="font-size:12px;color:#00e5ff;font-weight:500;letter-spacing:2px;text-transform:uppercase;font-family:\'Fira Code\',monospace;">AppSec_Platform</div>'
+    +       '<div id="sidebar-logo-title">Snitch</div>'
+    +       '<div id="sidebar-logo-sub">AppSec Platform</div>'
     +     '</div>'
     +   '</div>'
     +   '<nav style="flex:1;padding:8px 12px;overflow-y:auto;">'
     +     navHTML
     +   '</nav>'
-    +   '<div style="padding:16px 20px;border-top:1px solid rgba(0,229,255,0.08);">'
+    +   '<div style="padding:14px 20px;border-top:1px solid var(--border-color);">'
     +     '<div style="display:flex;align-items:center;gap:8px;">'
-    +       '<div style="width:7px;height:7px;background:#00c853;border-radius:50%;box-shadow:0 0 10px #00c853,0 0 4px #00c853;"></div>'
-    +       '<span style="font-size:13px;color:#00c853;font-family:\'Fira Code\',monospace;font-weight:500;letter-spacing:0.5px;">[SECURE] · All Systems Nominal</span>'
+    +       '<div class="sidebar-status-dot"></div>'
+    +       '<span class="sidebar-status-text">All Systems Operational</span>'
     +     '</div>'
     +   '</div>'
     + '</aside>';
