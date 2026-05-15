@@ -676,8 +676,8 @@ function renderTitleCards(overview, stats, topApps) {
   if (levelEl) { levelEl.textContent = risk.label; levelEl.style.color = risk.color; }
   const arc = document.getElementById('gauge-arc');
   if (arc) { const fill = 127.2*(avg/100); arc.style.strokeDasharray=`${fill} 169.6`; arc.style.stroke=risk.color; }
-  document.getElementById('tc-risk-rows').innerHTML = buildRows(getRiskBreakdownRows());
-  animateBars('tc-risk-rows');
+  const riskRowsEl = document.getElementById('tc-risk-rows');
+  if (riskRowsEl) { riskRowsEl.innerHTML = buildRows(getRiskBreakdownRows()); animateBars('tc-risk-rows'); }
 
   // Card 2: Open Findings
   animateCounter(document.getElementById('tc-findings-count'), stats.open||0);
