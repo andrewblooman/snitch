@@ -31,11 +31,13 @@ class LeaderboardEntry(BaseModel):
 
 class TrendDataPoint(BaseModel):
     date: date
-    critical: int
-    high: int
-    medium: int
-    low: int
-    total: int
+    critical: int = 0
+    high: int = 0
+    medium: int = 0
+    low: int = 0
+    total: int = 0
+    open: int = 0
+    closed: int = 0
 
 
 class VulnerabilityTrend(BaseModel):

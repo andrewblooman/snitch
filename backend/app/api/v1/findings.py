@@ -17,11 +17,14 @@ router = APIRouter(prefix="/findings", tags=["findings"])
 @router.get("/stats", response_model=FindingStats)
 async def get_finding_stats(
     application_id: Optional[uuid.UUID] = Query(None),
+    status: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
     q = select(Finding)
     if application_id:
         q = q.where(Finding.application_id == application_id)
+    if status:
+        q = q.where(Finding.status == status)
 
     result = await db.execute(q)
     findings = result.scalars().all()

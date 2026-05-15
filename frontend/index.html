@@ -292,16 +292,16 @@
         <h1 style="font-size:22px;font-weight:700;color:var(--text-primary,#f1f5f9);letter-spacing:-0.3px;">Security Overview</h1>
       </div>
 
-      <!-- ── Title Cards Row ── -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;">
+      <!-- ── Row 1: Risk Score + Trend ── -->
+      <div style="display:grid;grid-template-columns:1fr 3fr;gap:16px;margin-bottom:20px;">
 
-        <!-- Card 1: Risk Score -->
+        <!-- Risk Score -->
         <div class="card title-card" id="tc-risk" style="animation-delay:0.05s;">
           <div class="tc-header">
             <span class="tc-title">Risk Score</span>
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;flex:1;justify-content:center;padding:8px 0 12px;">
-            <div class="gauge-wrap" style="width:100%;height:auto;max-width:300px;aspect-ratio:1;flex-shrink:0;">
+            <div class="gauge-wrap" style="width:100%;height:auto;max-width:200px;aspect-ratio:1;flex-shrink:0;">
               <svg width="100%" height="100%" viewBox="0 0 72 72">
                 <circle id="gauge-track" cx="36" cy="36" r="27" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="6" stroke-linecap="round"
                   stroke-dasharray="127.2 169.6" transform="rotate(135 36 36)"/>
@@ -317,26 +317,52 @@
           </div>
         </div>
 
-        <!-- Card 2: Open Findings -->
+        <!-- 7-day Trend Chart -->
+        <div class="card" style="padding:22px;animation:fadeInUp 0.4s ease 0.08s both;">
+          <div class="card-head">
+            <div class="card-title">
+              <i data-lucide="trending-up" style="width:16px;height:16px;color:#00e5ff;"></i>
+              Open vs Closed — Last 7 Days
+            </div>
+            <div style="display:flex;gap:16px;align-items:center;">
+              <div style="display:flex;gap:10px;font-size:12px;color:var(--text-tertiary);">
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:#ef4444;display:inline-block;border-radius:2px;"></span>Open</span>
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:#10b981;display:inline-block;border-radius:2px;"></span>Closed</span>
+              </div>
+            </div>
+          </div>
+          <div style="position:relative;height:200px;">
+            <canvas id="trendChart"></canvas>
+          </div>
+          <div id="trend-summary" style="display:flex;gap:20px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.05);"></div>
+        </div>
+
+      </div>
+
+      <!-- ── Row 2: Metric Cards ── -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;">
+
+        <!-- Open Findings (pie chart) -->
         <div class="card title-card" id="tc-findings" style="animation-delay:0.10s;">
           <div class="tc-header">
             <span class="tc-title">Open Findings</span>
-            <div class="tc-toggle">
-              <button class="tc-toggle-btn active" data-view="severity" onclick="switchCardView('findings','severity',this)">Severity</button>
-              <button class="tc-toggle-btn" data-view="type" onclick="switchCardView('findings','type',this)">Type</button>
-            </div>
           </div>
           <div class="tc-primary" id="tc-findings-count">—</div>
           <div class="tc-sub">open findings</div>
-          <div class="tc-rows" id="tc-findings-rows">
-            <div class="tc-skel"></div><div class="tc-skel" style="width:90%;"></div><div class="tc-skel" style="width:78%;"></div><div class="tc-skel" style="width:60%;"></div>
+          <div style="position:relative;width:120px;height:120px;margin:8px auto 0;">
+            <canvas id="findings-pie-chart"></canvas>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
+              <div class="mono" id="findings-pie-center" style="font-size:20px;font-weight:700;color:var(--text-primary);line-height:1;">—</div>
+              <div style="font-size:10px;color:var(--text-tertiary);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">open</div>
+            </div>
           </div>
+          <div id="findings-pie-legend" style="display:flex;flex-direction:column;gap:6px;margin-top:10px;"></div>
           <div class="tc-footer">
             <a href="/findings.html?status=open">View all findings <i data-lucide="arrow-right" style="width:12px;height:12px;"></i></a>
           </div>
         </div>
 
-        <!-- Card 3: Applications -->
+        <!-- Applications -->
         <div class="card title-card" id="tc-apps" style="animation-delay:0.15s;">
           <div class="tc-header">
             <span class="tc-title">Applications</span>
@@ -355,7 +381,7 @@
           </div>
         </div>
 
-        <!-- Card 4: Security Scanners -->
+        <!-- Security Scanners -->
         <div class="card title-card" id="tc-scanners" style="animation-delay:0.20s;">
           <div class="tc-header">
             <span class="tc-title">Security Scanners</span>
@@ -370,54 +396,27 @@
           </div>
         </div>
 
-      </div>
-
-      <!-- ── Trend + Donut Row ── -->
-      <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px;">
-
-        <!-- 7-day Trend Chart -->
-        <div class="card" style="padding:22px;animation:fadeInUp 0.4s ease 0.15s both;">
-          <div class="card-head">
-            <div class="card-title">
-              <i data-lucide="trending-up" style="width:16px;height:16px;color:#00e5ff;"></i>
-              Vulnerability Trend — Last 7 Days
-            </div>
-            <div style="display:flex;gap:16px;align-items:center;">
-              <div style="display:flex;gap:10px;font-size:12px;color:var(--text-tertiary);">
-                <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:#ff3333;display:inline-block;border-radius:2px;"></span>Critical</span>
-                <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:#ff9f43;display:inline-block;border-radius:2px;"></span>High</span>
-                <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:#ff6b35;display:inline-block;border-radius:2px;"></span>Medium</span>
-              </div>
+        <!-- Recent Code Scans (placeholder) -->
+        <div class="card title-card" id="tc-recent-scans" style="animation-delay:0.25s;">
+          <div class="tc-header">
+            <span class="tc-title">Recent Code Scans</span>
+          </div>
+          <div class="tc-primary" style="font-size:28px;">—</div>
+          <div class="tc-sub">scans this week</div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+            <div style="text-align:center;color:var(--text-tertiary);font-size:13px;opacity:0.6;">
+              <i data-lucide="code-2" style="width:28px;height:28px;display:block;margin:0 auto 8px;opacity:0.4;"></i>
+              Coming soon
             </div>
           </div>
-          <div style="position:relative;height:200px;">
-            <canvas id="trendChart"></canvas>
+          <div class="tc-footer">
+            <a href="/findings.html?finding_type=sast">View SAST findings <i data-lucide="arrow-right" style="width:12px;height:12px;"></i></a>
           </div>
-          <div id="trend-summary" style="display:flex;gap:20px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.05);"></div>
-        </div>
-
-        <!-- Severity Donut -->
-        <div class="card" style="padding:22px;animation:fadeInUp 0.4s ease 0.2s both;">
-          <div class="card-head">
-            <div class="card-title">
-              <i data-lucide="pie-chart" style="width:16px;height:16px;color:#00e5ff;"></i>
-              Distribution
-            </div>
-            <a href="/findings.html" class="card-link">View all →</a>
-          </div>
-          <div style="position:relative;width:150px;height:150px;margin:0 auto 16px;">
-            <canvas id="severityChart"></canvas>
-            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
-              <div class="mono" id="total-findings-center" style="font-size:26px;font-weight:700;color:var(--text-primary);line-height:1;">—</div>
-              <div style="font-size:11px;color:var(--text-tertiary);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">Total</div>
-            </div>
-          </div>
-          <div id="severity-legend" style="display:flex;flex-direction:column;gap:8px;"></div>
         </div>
 
       </div>
 
-      <!-- ── Bottom Row ── -->
+      <!-- ── Row 3: Bottom Cards ── -->
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
 
         <!-- Apps at Risk -->
@@ -676,7 +675,6 @@ function switchCardView(cardId, view, btnEl) {
   const rowsId = 'tc-'+cardId+'-rows';
   let items = [];
   if      (cardId==='risk')     items = view==='by_risk'     ? getRiskBreakdownRows() : getTopAppsRows();
-  else if (cardId==='findings') items = view==='severity'    ? getSeverityRows()      : getTypeRows();
   else if (cardId==='apps')     items = view==='by_risk'     ? getRiskBreakdownRows() : getTopAppsRows();
   else if (cardId==='scanners') items = view==='by_scanner'  ? getScannerRows()       : getTypeRows();
   document.getElementById(rowsId).innerHTML = buildRows(items);
@@ -684,7 +682,7 @@ function switchCardView(cardId, view, btnEl) {
 }
 
 // ── Title Cards Renderer ───────────────────────────────────────────────────────
-function renderTitleCards(overview, stats, topApps) {
+function renderTitleCards(overview, stats, topApps, openStats) {
   CARD_DATA.apps_by_risk   = overview.apps_by_risk_level || {};
   CARD_DATA.top_apps       = topApps || [];
   CARD_DATA.finding_stats  = stats || {};
@@ -694,7 +692,7 @@ function renderTitleCards(overview, stats, topApps) {
   const avg  = Math.round(overview.avg_risk_score || 0);
   const risk = getRiskLevel(avg);
 
-  // Card 1: Risk Score gauge
+  // Risk Score gauge
   animateCounter(document.getElementById('m-risk'), avg);
   const riskEl = document.getElementById('m-risk');
   if (riskEl) riskEl.style.color = risk.color;
@@ -702,20 +700,18 @@ function renderTitleCards(overview, stats, topApps) {
   if (levelEl) { levelEl.textContent = risk.label; levelEl.style.color = risk.color; }
   const arc = document.getElementById('gauge-arc');
   if (arc) { const fill = 127.2*(avg/100); arc.style.strokeDasharray=`${fill} 169.6`; arc.style.stroke=risk.color; }
-  const riskRowsEl = document.getElementById('tc-risk-rows');
-  if (riskRowsEl) { riskRowsEl.innerHTML = buildRows(getRiskBreakdownRows()); animateBars('tc-risk-rows'); }
 
-  // Card 2: Open Findings
-  animateCounter(document.getElementById('tc-findings-count'), stats.open||0);
-  document.getElementById('tc-findings-rows').innerHTML = buildRows(getSeverityRows());
-  animateBars('tc-findings-rows');
+  // Open Findings with pie chart (open-only counts)
+  const os = openStats || {};
+  animateCounter(document.getElementById('tc-findings-count'), os.open||0);
+  renderFindingsPieChart(os);
 
-  // Card 3: Applications
+  // Applications
   animateCounter(document.getElementById('tc-apps-count'), overview.total_apps||0);
   document.getElementById('tc-apps-rows').innerHTML = buildRows(getRiskBreakdownRows());
   animateBars('tc-apps-rows');
 
-  // Card 4: Scanners
+  // Scanners
   animateCounter(document.getElementById('tc-scanners-count'), stats.total||0);
   renderScannerChart(stats.by_scanner || {});
 }
@@ -754,9 +750,8 @@ function renderTrendChart(points) {
     data: {
       labels,
       datasets: [
-        mkDataset('Critical', points.map(p => p.critical), '#ff3333'),
-        mkDataset('High',     points.map(p => p.high),     '#ff9f43'),
-        mkDataset('Medium',   points.map(p => p.medium),   '#ff6b35'),
+        mkDataset('Open',   points.map(p => p.open   || 0), '#ef4444'),
+        mkDataset('Closed', points.map(p => p.closed || 0), '#10b981'),
       ]
     },
     options: {
@@ -788,32 +783,35 @@ function renderTrendChart(points) {
     }
   });
 
-  // Summary row — data is non-cumulative (daily counts), so sum all 7 days for the week total
-  const weekTotal = points.reduce((s, p) => s + (p.total || 0), 0);
+  const totalOpen   = points.reduce((s, p) => s + (p.open   || 0), 0);
+  const totalClosed = points.reduce((s, p) => s + (p.closed || 0), 0);
   const last = points[points.length - 1] || {};
-  const first = points[0] || {};
-  const delta = (last.total || 0) - (first.total || 0);
-  const sign = delta >= 0 ? '+' : '';
-  const deltaColor = delta > 0 ? '#ff3333' : '#00c853';
+  const net = totalOpen - totalClosed;
+  const netSign = net >= 0 ? '+' : '';
+  const netColor = net > 0 ? '#ef4444' : '#10b981';
   document.getElementById('trend-summary').innerHTML = [
-    `<div style="font-size:13px;color:var(--text-tertiary);">New this week: <strong style="color:var(--text-primary);font-family:'Fira Code',monospace;">${weekTotal.toLocaleString()}</strong></div>`,
-    `<div style="font-size:13px;color:var(--text-tertiary);">Day 7 vs Day 1: <strong style="color:${deltaColor};font-family:'Fira Code',monospace;">${sign}${delta}</strong></div>`,
-    `<div style="font-size:13px;color:var(--text-tertiary);">Critical today: <strong style="color:#ff3333;font-family:'Fira Code',monospace;">${last.critical||0}</strong></div>`,
+    `<div style="font-size:13px;color:var(--text-tertiary);">Opened this week: <strong style="color:#ef4444;font-family:'Fira Code',monospace;">${totalOpen.toLocaleString()}</strong></div>`,
+    `<div style="font-size:13px;color:var(--text-tertiary);">Closed this week: <strong style="color:#10b981;font-family:'Fira Code',monospace;">${totalClosed.toLocaleString()}</strong></div>`,
+    `<div style="font-size:13px;color:var(--text-tertiary);">Net change: <strong style="color:${netColor};font-family:'Fira Code',monospace;">${netSign}${net}</strong></div>`,
   ].join('');
 }
 
 // ── Severity Donut ────────────────────────────────────────────────────────────
-let severityChartInst;
-function renderSeverityChart(sev) {
-  if (severityChartInst) severityChartInst.destroy();
+// ── Open Findings Pie Chart (open-status only) ────────────────────────────────
+let findingsPieInst;
+function renderFindingsPieChart(openStats) {
+  if (findingsPieInst) findingsPieInst.destroy();
   const labels = ['Critical','High','Medium','Low','Info'];
-  const values = [sev.critical||0, sev.high||0, sev.medium||0, sev.low||0, sev.info||0];
+  const values = [openStats.critical||0, openStats.high||0, openStats.medium||0, openStats.low||0, openStats.info||0];
   const colors = ['#ff3333','#ff9f43','#ff6b35','#54a0ff','#a29bfe'];
   const total  = values.reduce((a,b)=>a+b, 0);
-  document.getElementById('total-findings-center').textContent = total.toLocaleString();
 
-  const ctx = document.getElementById('severityChart').getContext('2d');
-  severityChartInst = new Chart(ctx, {
+  const centerEl = document.getElementById('findings-pie-center');
+  if (centerEl) centerEl.textContent = total.toLocaleString();
+
+  const ctx = document.getElementById('findings-pie-chart');
+  if (!ctx) return;
+  findingsPieInst = new Chart(ctx, {
     type: 'doughnut',
     data: {
       labels,
@@ -826,28 +824,27 @@ function renderSeverityChart(sev) {
       }]
     },
     options: {
-      cutout: '72%',
+      cutout: '70%',
       responsive: true,
       maintainAspectRatio: true,
       plugins: {
         legend: {display:false},
-        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw.toLocaleString()}` } }
+        tooltip: { callbacks: { label: c => ` ${c.label}: ${c.raw.toLocaleString()}` } }
       },
       animation: {animateRotate:true, duration:800}
     }
   });
 
-  const legend = document.getElementById('severity-legend');
-  legend.innerHTML = labels.map((l,i) => {
-    const pct = total > 0 ? Math.round(values[i]/total*100) : 0;
-    return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-      <div style="display:flex;align-items:center;gap:6px;min-width:0;">
-        <div style="width:8px;height:8px;border-radius:2px;background:${colors[i]};flex-shrink:0;"></div>
-        <span style="font-size:13px;color:var(--text-secondary);white-space:nowrap;">${l}</span>
+  const legend = document.getElementById('findings-pie-legend');
+  if (legend) {
+    legend.innerHTML = labels.map((l,i) => values[i] > 0 ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+      <div style="display:flex;align-items:center;gap:5px;">
+        <div style="width:7px;height:7px;border-radius:2px;background:${colors[i]};flex-shrink:0;"></div>
+        <span style="font-size:12px;color:var(--text-secondary);">${l}</span>
       </div>
-      <span style="font-size:13px;font-weight:700;color:var(--text-primary);font-family:'Fira Code',monospace;">${values[i].toLocaleString()}</span>
-    </div>`;
-  }).join('');
+      <span style="font-size:12px;font-weight:700;color:var(--text-primary);font-family:'Fira Code',monospace;">${values[i].toLocaleString()}</span>
+    </div>` : '').join('');
+  }
 }
 
 // ── Apps at Risk ──────────────────────────────────────────────────────────────
@@ -936,24 +933,18 @@ async function renderThreatIntel() {
 // ── Load Dashboard ────────────────────────────────────────────────────────────
 async function loadDashboard() {
   try {
-    const [overviewRes, appsRes, statsRes, findingsRes, trendRes] = await Promise.all([
+    const [overviewRes, appsRes, statsRes, openStatsRes, findingsRes, trendRes] = await Promise.all([
       fetch('/api/v1/reports/overview'),
       fetch('/api/v1/applications?page=1&page_size=10&sort_by=risk_score&sort_order=desc'),
       fetch('/api/v1/findings/stats'),
+      fetch('/api/v1/findings/stats?status=open'),
       fetch('/api/v1/reports/top-vulnerabilities?limit=5'),
-      fetch('/api/v1/reports/trend?days=7&cumulative=false'),
+      fetch('/api/v1/reports/trend?days=7&cumulative=false&mode=status'),
     ]);
 
-    let overview = {}, stats = {}, topApps = [];
+    let overview = {}, stats = {}, openStats = {}, topApps = [];
 
-    if (overviewRes.ok) {
-      overview = await overviewRes.json();
-      const sev = overview.findings_by_severity || {
-        critical: overview.critical_findings||0, high: overview.high_findings||0,
-        medium: overview.medium_findings||0, low: overview.low_findings||0, info: 0
-      };
-      renderSeverityChart(sev);
-    }
+    if (overviewRes.ok) overview = await overviewRes.json();
 
     if (appsRes.ok) {
       const ad = await appsRes.json();
@@ -964,8 +955,9 @@ async function loadDashboard() {
     }
 
     if (statsRes.ok) stats = await statsRes.json();
+    if (openStatsRes.ok) openStats = await openStatsRes.json();
 
-    renderTitleCards(overview, stats, topApps.slice(0, 4));
+    renderTitleCards(overview, stats, topApps.slice(0, 4), openStats);
 
     if (findingsRes.ok) {
       const td = await findingsRes.json();
