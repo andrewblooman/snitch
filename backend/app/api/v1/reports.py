@@ -128,8 +128,9 @@ async def get_trend(
     mode: str = Query("severity", pattern="^(severity|status)$"),
     db: AsyncSession = Depends(get_db),
 ):
-    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
-    today = datetime.now(timezone.utc).date()
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(days=days)
+    today = now.date()
 
     if mode == "status":
         findings_result = await db.execute(
@@ -152,7 +153,8 @@ async def get_trend(
                 d = f.first_seen_at.date()
                 if d in daily_open:
                     daily_open[d] += 1
-            if f.fixed_at and f.status in ("fixed", "accepted", "false_positive"):
+            # Only fixed findings reliably have fixed_at populated
+            if f.fixed_at and f.status == "fixed":
                 d = f.fixed_at.date()
                 if d in daily_closed:
                     daily_closed[d] += 1
@@ -176,7 +178,7 @@ async def get_trend(
 
     daily: dict[date, dict] = {}
     for i in range(days):
-        d = today - timedelta(days=days - 1 - i)
+        d = today - timedelta(days=days - 1 - i)  # today derived from single now() call above
         daily[d] = {"critical": 0, "high": 0, "medium": 0, "low": 0}
 
     for f in findings:
