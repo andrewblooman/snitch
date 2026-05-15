@@ -125,18 +125,60 @@ async def get_leaderboard(db: AsyncSession = Depends(get_db)):
 async def get_trend(
     days: int = Query(90, ge=7, le=365),
     cumulative: bool = Query(True),
+    mode: str = Query("severity", pattern="^(severity|status)$"),
     db: AsyncSession = Depends(get_db),
 ):
-    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(days=days)
+    today = now.date()
+
+    if mode == "status":
+        findings_result = await db.execute(
+            select(Finding).where(
+                (Finding.first_seen_at >= cutoff) |
+                (Finding.fixed_at >= cutoff)
+            )
+        )
+        findings = findings_result.scalars().all()
+
+        daily_open: dict[date, int] = {}
+        daily_closed: dict[date, int] = {}
+        for i in range(days):
+            d = today - timedelta(days=days - 1 - i)
+            daily_open[d] = 0
+            daily_closed[d] = 0
+
+        for f in findings:
+            if f.first_seen_at:
+                d = f.first_seen_at.date()
+                if d in daily_open:
+                    daily_open[d] += 1
+            # Only fixed findings reliably have fixed_at populated
+            if f.fixed_at and f.status == "fixed":
+                d = f.fixed_at.date()
+                if d in daily_closed:
+                    daily_closed[d] += 1
+
+        data_points = []
+        running_open, running_closed = 0, 0
+        for d in sorted(daily_open.keys()):
+            running_open += daily_open[d]
+            running_closed += daily_closed.get(d, 0)
+            if cumulative:
+                data_points.append(TrendDataPoint(date=d, open=running_open, closed=running_closed, total=running_open))
+            else:
+                data_points.append(TrendDataPoint(date=d, open=daily_open[d], closed=daily_closed.get(d, 0), total=daily_open[d]))
+
+        return VulnerabilityTrend(data_points=data_points, period_days=days)
+
     findings_result = await db.execute(
         select(Finding).where(Finding.first_seen_at >= cutoff)
     )
     findings = findings_result.scalars().all()
 
     daily: dict[date, dict] = {}
-    today = datetime.now(timezone.utc).date()
     for i in range(days):
-        d = today - timedelta(days=days - 1 - i)
+        d = today - timedelta(days=days - 1 - i)  # today derived from single now() call above
         daily[d] = {"critical": 0, "high": 0, "medium": 0, "low": 0}
 
     for f in findings:

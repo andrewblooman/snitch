@@ -135,3 +135,42 @@ async def test_finding_stats(client: AsyncClient):
     assert "critical" in data
     assert "by_scanner" in data
     assert "by_type" in data
+
+
+@pytest.mark.asyncio
+async def test_finding_stats_status_filter(client: AsyncClient):
+    resp = await client.get("/api/v1/findings/stats?status=open")
+    assert resp.status_code == 200
+    data = resp.json()
+    # With status filter, severity counts should only reflect findings with that status
+    total_by_severity = data["critical"] + data["high"] + data["medium"] + data["low"] + data["info"]
+    assert total_by_severity == data["total"]
+    # The open count should equal total when filtering by open
+    assert data["open"] == data["total"]
+
+
+@pytest.mark.asyncio
+async def test_trend_status_mode(client: AsyncClient):
+    resp = await client.get("/api/v1/reports/trend?days=7&cumulative=false&mode=status")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["period_days"] == 7
+    assert len(data["data_points"]) == 7
+    for point in data["data_points"]:
+        assert "open" in point
+        assert "closed" in point
+        assert point["open"] >= 0
+        assert point["closed"] >= 0
+
+
+@pytest.mark.asyncio
+async def test_trend_status_mode_cumulative(client: AsyncClient):
+    resp = await client.get("/api/v1/reports/trend?days=7&cumulative=true&mode=status")
+    assert resp.status_code == 200
+    data = resp.json()
+    points = data["data_points"]
+    assert len(points) == 7
+    # Cumulative open should be non-decreasing
+    for i in range(1, len(points)):
+        assert points[i]["open"] >= points[i - 1]["open"]
+        assert points[i]["closed"] >= points[i - 1]["closed"]
