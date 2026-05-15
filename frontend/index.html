@@ -387,12 +387,12 @@
             <span class="tc-title">Security Scanners</span>
           </div>
           <div class="tc-primary" id="tc-scanners-count">—</div>
-          <div class="tc-sub">total findings</div>
+          <div class="tc-sub">open findings</div>
           <div style="position:relative;flex:1;min-height:0;margin-top:8px;">
             <canvas id="scanner-chart"></canvas>
           </div>
           <div class="tc-footer">
-            <a href="/findings.html">View findings <i data-lucide="arrow-right" style="width:12px;height:12px;"></i></a>
+            <a href="/findings.html?status=open">View findings <i data-lucide="arrow-right" style="width:12px;height:12px;"></i></a>
           </div>
         </div>
 
@@ -685,9 +685,9 @@ function switchCardView(cardId, view, btnEl) {
 function renderTitleCards(overview, stats, topApps, openStats) {
   CARD_DATA.apps_by_risk   = overview.apps_by_risk_level || {};
   CARD_DATA.top_apps       = topApps || [];
-  CARD_DATA.finding_stats  = stats || {};
-  CARD_DATA.by_scanner     = stats.by_scanner || {};
-  CARD_DATA.by_type        = stats.by_type    || {};
+  CARD_DATA.finding_stats  = openStats || {};
+  CARD_DATA.by_scanner     = openStats.by_scanner || {};
+  CARD_DATA.by_type        = openStats.by_type    || {};
 
   const avg  = Math.round(overview.avg_risk_score || 0);
   const risk = getRiskLevel(avg);
@@ -711,9 +711,9 @@ function renderTitleCards(overview, stats, topApps, openStats) {
   document.getElementById('tc-apps-rows').innerHTML = buildRows(getRiskBreakdownRows());
   animateBars('tc-apps-rows');
 
-  // Scanners
-  animateCounter(document.getElementById('tc-scanners-count'), stats.total||0);
-  renderScannerChart(stats.by_scanner || {});
+  // Scanners (open findings only)
+  animateCounter(document.getElementById('tc-scanners-count'), os.open||0);
+  renderScannerChart(os.by_scanner || {});
 }
 
 // ── 7-day Trend Chart ─────────────────────────────────────────────────────────
