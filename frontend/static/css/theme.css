@@ -15,7 +15,7 @@
   --text-tertiary: #64748b;
   /* ── Borders ── */
   --border-color: rgba(255,255,255,0.10);
-  --border-card: rgba(0,229,255,0.12);
+  --border-card: rgba(0,229,255,0.22);
   --border-subtle: rgba(255,255,255,0.05);
   /* ── Accent (sky blue) ── */
   --accent: #0ea5e9;
@@ -54,7 +54,7 @@
   --glow-critical: 0 0 24px rgba(244,63,94,0.35), 0 0 6px rgba(244,63,94,0.2);
   --glow-safe: 0 0 20px rgba(16,185,129,0.25);
   /* ── Card shadow ── */
-  --card-shadow: 0 2px 16px rgba(0,0,0,0.35);
+  --card-shadow: 0 0 0 1px rgba(0,229,255,0.08), 0 4px 32px rgba(0,0,0,0.50), inset 0 1px 0 rgba(0,229,255,0.15);
   /* ── Misc ── */
   --table-row-hover: rgba(255,255,255,0.03);
   --scrollbar-thumb: rgba(255,255,255,0.15);
@@ -193,6 +193,41 @@ body {
 [data-theme="light"] .card-threat-m,
 [data-theme="light"] .card-threat-l {
   box-shadow: none !important;
+}
+
+/* ── Dark mode card edge highlighting ── */
+
+[data-theme="dark"] .card {
+  border-color: rgba(0,229,255,0.22) !important;
+  box-shadow:
+    0 0 0 1px rgba(0,229,255,0.08),
+    0 4px 32px rgba(0,0,0,0.50),
+    inset 0 1px 0 rgba(0,229,255,0.15) !important;
+}
+
+[data-theme="dark"] .card-hover:hover {
+  border-color: rgba(0,229,255,0.40) !important;
+  box-shadow:
+    0 0 0 1px rgba(0,229,255,0.18),
+    0 0 20px rgba(0,229,255,0.14),
+    0 6px 36px rgba(0,0,0,0.60),
+    inset 0 1px 0 rgba(0,229,255,0.28) !important;
+  transform: translateY(-1px);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+[data-theme="dark"] .card-threat-c {
+  box-shadow:
+    var(--glow-critical),
+    inset 0 0 20px rgba(255,51,51,0.05),
+    inset 0 1px 0 rgba(0,229,255,0.10) !important;
+}
+
+[data-theme="dark"] .card-threat-h {
+  box-shadow:
+    0 0 20px rgba(255,159,67,0.20),
+    inset 0 0 20px rgba(255,159,67,0.04),
+    inset 0 1px 0 rgba(0,229,255,0.10) !important;
 }
 
 [data-theme="light"] .terminal-label {
