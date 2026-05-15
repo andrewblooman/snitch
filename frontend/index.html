@@ -258,7 +258,7 @@
     /* Risk score card gauge area */
     .tc-gauge-row { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
     .tc-gauge-row .gauge-wrap { width: 96px !important; height: 96px !important; }
-    .tc-risk-level { font-size: 15px; font-weight: 600; margin-top: 4px; }
+    .tc-risk-level { font-size: 40px; font-weight: 600; margin-top: 4px; }
     .tc-skel { background: rgba(255,255,255,0.06); border-radius: 5px; height: 26px; animation: pulse 1.8s ease-in-out infinite; }
     [data-theme="light"] .tc-skel { background: rgba(0,0,0,0.06); }
     [data-theme="light"] #gauge-track { stroke: rgba(0,0,0,0.10) !important; }
@@ -301,7 +301,7 @@
             <span class="tc-title">Risk Score</span>
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;flex:1;justify-content:center;padding:8px 0 12px;">
-            <div class="gauge-wrap" style="width:100%;height:auto;max-width:180px;aspect-ratio:1;flex-shrink:0;">
+            <div class="gauge-wrap" style="width:100%;height:auto;max-width:300px;aspect-ratio:1;flex-shrink:0;">
               <svg width="100%" height="100%" viewBox="0 0 72 72">
                 <circle id="gauge-track" cx="36" cy="36" r="27" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="6" stroke-linecap="round"
                   stroke-dasharray="127.2 169.6" transform="rotate(135 36 36)"/>
@@ -310,7 +310,7 @@
                   style="transition:stroke-dasharray 1.1s cubic-bezier(0.4,0,0.2,1),stroke 0.5s;"/>
               </svg>
               <div class="gauge-center">
-                <div id="m-risk" style="font-size:26px;font-weight:700;color:var(--text-primary);line-height:1;">—</div>
+                <div id="m-risk" style="font-size:50px;font-weight:700;color:var(--text-primary);line-height:1;">—</div>
               </div>
             </div>
             <div id="risk-level-label" class="tc-risk-level" style="margin-top:12px;">—</div>
