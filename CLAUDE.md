@@ -29,7 +29,7 @@ Snitch is an AppSec platform that aggregates security findings from Semgrep (SAS
 **New features (v1.6+):**
 - **Global Findings Hub** (`/findings.html`) — paginated view of all findings across all apps; filters for Severity, Type, Scanner, Status; default sort by severity; sortable by Severity or Date Discovered; slide-in detail panel with live status editing; deep-linked from dashboard severity cards.
 - **Compliance Posture** (`/compliance.html`) — maps findings to 5 frameworks: OWASP Top 10 2021, PCI-DSS v4.0, CIS Benchmarks, DORA, SOC 2 Type II. Shows per-framework compliance score (% controls with zero violations) as an SVG ring, control drill-down links to filtered findings, and a "Reapply Tags" button.
-- **Threat Intelligence** (`/threat-intel.html`) — aggregates live RSS feeds from 7 threat intel sources (The Hacker News, Bleeping Computer, CISA, Wiz, Krebs, Shadowserver, Dark Reading) with a 3D globe visualisation of active threat locations (powered by globe.gl + Claude AI if API key is set).
+- **Threat Intelligence** (`/threat-intel.html`) — aggregates live RSS feeds from 6 threat intel sources (The Hacker News, Bleeping Computer, CISA, Wiz, Krebs, Dark Reading) with a 3D globe visualisation of active threat locations (powered by globe.gl + Claude AI if API key is set).
 - **EPSS Integration** — after each scan, CVE-bearing findings have their Exploit Prediction Scoring System (EPSS) score and percentile fetched from first.org and stored on the finding. The risk score calculator applies a boost (+15 or +5 pts) for findings with high EPSS percentiles.
 - **SBOM Generation** — `GET /api/v1/applications/{id}/sbom` returns a CycloneDX v1.4 JSON SBOM of all SCA/container findings for an application.
 
