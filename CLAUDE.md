@@ -66,7 +66,7 @@ The `/findings.html` page is the Global Findings Hub — lists all findings plat
 
 The `/compliance.html` page shows compliance posture across 5 frameworks. Each framework card has an SVG score ring (% controls passing), a control breakdown table, and "View findings →" links that navigate to the filtered findings page. The "Reapply Tags" button calls `POST /api/v1/reports/compliance/retag` to re-apply the current rule set to all findings. Tags are stored as JSON arrays on each `Finding` row (e.g. `["OWASP Top 10 2021|A03 — Injection"]`) and applied at scan time by `apply_compliance_tags()` in `services/compliance.py`.
 
-The `/threat-intel.html` page aggregates live RSS from 7 cybersecurity news sources and renders them as cards alongside a 3D globe (globe.gl) showing threat locations. Locations are extracted by the configured LLM provider (`/api/v1/threat-intel/locations`) — works with Anthropic or Ollama; falls back to a keyword matcher if no provider is configured.
+The `/threat-intel.html` page aggregates live RSS from 6 cybersecurity news sources and renders them as cards alongside a 3D globe (globe.gl) showing threat locations. Locations are extracted by the configured LLM provider (`/api/v1/threat-intel/locations`) — works with Anthropic or Ollama; falls back to a keyword matcher if no provider is configured.
 
 ## Commands
 
