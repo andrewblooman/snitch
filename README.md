@@ -28,7 +28,7 @@
 | 🚦 **Policy Engine** | Define pass/fail gates by severity, scan type, and rule — evaluated on every scan |
 | 🔑 **Service Accounts** | Machine identities for CI/CD pipelines — Bearer token auth (`snitch_<32chars>`) for the push endpoint; token shown once, SHA-256 hash stored |
 | 🌐 **REST API** | Full OpenAPI/Swagger docs at `/docs` |
-| 🎨 **Professional UI** | Clean light-mode SaaS design (soft gray background, white cards, sky blue accent) with full dark mode support — shared `sidebar.js` and `header.js` components, CSS variable-based theming, toggle stored in localStorage — designed with the [ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) Claude Code skill |
+| 🎨 **Professional UI** | Clean light-mode SaaS design (soft gray background, white cards, sky blue accent) with full dark mode support — shared `sidebar.js` and `header.js` components, CSS variable-based theming, toggle stored in localStorage — designed with the [ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) Claude Code skill. Dark mode features cyberpunk card edge highlighting: subtle cyan outer ring + inset top-edge glow that lifts cards off the near-black background. |
 | ⚙️ **Settings Page** | Admin configuration page for platform integrations (GitHub, Anthropic), scan defaults, and system status |
 | 🔔 **Slack Notifications** | Automatic Block Kit alerts to Slack on new findings — filter by severity, app, and event type via notification rules |
 | 🎫 **Jira Integration** | Auto-create Jira issues after scans with deduplication (no duplicate tickets per finding); on-demand issue creation per finding |
