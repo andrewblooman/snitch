@@ -47,6 +47,22 @@
     .apt-item:hover { background: rgba(0,229,255,0.02); }
     .apt-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #ef4444; background: rgba(239,68,68,0.1); padding: 4px 8px; border-radius: 4px; }
     .apt-status .dot { width: 6px; height: 6px; background: #ef4444; border-radius: 50%; animation: pulse-glow 2s infinite; }
+
+    [data-theme="light"] .locations-panel {
+      background: rgba(248,250,252,0.96) !important;
+      border-color: rgba(0,0,0,0.10) !important;
+    }
+    [data-theme="light"] .feed-item {
+      background: #f8fafc;
+      border-color: rgba(0,0,0,0.08);
+    }
+    [data-theme="light"] .feed-item:hover {
+      background: #f0f9ff;
+      border-color: rgba(14,165,233,0.25);
+    }
+    [data-theme="light"] .feed-source { color: #0284c7; }
+    [data-theme="light"] .apt-item { border-bottom-color: rgba(0,0,0,0.08); }
+    [data-theme="light"] .apt-item:hover { background: rgba(14,165,233,0.04); }
   </style>
 </head>
 <body>
@@ -76,7 +92,7 @@
             <div style="font-size:14px;color:var(--text-secondary);font-family:'Fira Code',monospace;">Live network attack origins</div>
           </div>
           
-          <div id="locations-panel" style="background:rgba(10,14,26,0.85);backdrop-filter:blur(10px);border:1px solid rgba(0,229,255,0.15);border-radius:12px;padding:16px;width:300px;pointer-events:auto;max-height:330px;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+          <div id="locations-panel" class="locations-panel" style="background:rgba(10,14,26,0.85);backdrop-filter:blur(10px);border:1px solid rgba(0,229,255,0.15);border-radius:12px;padding:16px;width:300px;pointer-events:auto;max-height:330px;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
             <div style="font-size:13px;font-weight:700;color:#00e5ff;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
               <div style="width:6px;height:6px;background:#00e5ff;border-radius:50%;animation:pulse-glow 2s infinite;"></div>
               Live Intel Locations
@@ -231,18 +247,21 @@ let globeObj = null;
 
 function initGlobe() {
   const container = document.getElementById('globeViz');
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
   globeObj = Globe()
     (container)
-    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+    .globeImageUrl(isDark
+      ? '//unpkg.com/three-globe/example/img/earth-night.jpg'
+      : '//unpkg.com/three-globe/example/img/earth-day.jpg')
     .backgroundColor('rgba(0,0,0,0)')
     .arcStroke(0.5)
     .arcDashLength(() => Math.random())
     .arcDashGap(() => Math.random())
     .arcDashAnimateTime(() => Math.random() * 4000 + 1000);
-    
+
   globeObj.controls().autoRotate = true;
   globeObj.controls().autoRotateSpeed = 1.2;
-  globeObj.controls().enableZoom = false;
+  globeObj.controls().enableZoom = true;
 
   window.addEventListener('resize', () => {
     globeObj.width(container.clientWidth);
@@ -322,6 +341,18 @@ async function loadLocations() {
     list.innerHTML = '<div style="color:#ef4444;font-size:14px;">Failed to analyze locations.</div>';
   }
 }
+
+window.applyTheme = function(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+  if (globeObj) {
+    globeObj.globeImageUrl(
+      theme === 'light'
+        ? '//unpkg.com/three-globe/example/img/earth-day.jpg'
+        : '//unpkg.com/three-globe/example/img/earth-night.jpg'
+    );
+  }
+};
 
 document.addEventListener('DOMContentLoaded', () => {
   lucide.createIcons();
