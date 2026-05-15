@@ -15,7 +15,6 @@ FEEDS = [
     {"url": "https://www.bleepingcomputer.com/feed/", "name": "Bleeping Computer"},
     {"url": "https://www.wiz.io/api/feed/cloud-threat-landscape/rss.xml", "name": "Wiz Cloud"},
     {"url": "https://www.cisa.gov/cybersecurity-advisories/all.xml", "name": "CISA Alerts"},
-    {"url": "https://www.shadowserver.org/feed/", "name": "Shadowserver"},
     {"url": "https://krebsonsecurity.com/feed/", "name": "Krebs on Security"},
     {"url": "https://www.darkreading.com/rss.xml", "name": "Dark Reading"}
 ]
