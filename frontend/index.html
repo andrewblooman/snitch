@@ -299,14 +299,10 @@
         <div class="card title-card" id="tc-risk" style="animation-delay:0.05s;">
           <div class="tc-header">
             <span class="tc-title">Risk Score</span>
-            <div class="tc-toggle">
-              <button class="tc-toggle-btn active" data-view="by_risk" onclick="switchCardView('risk','by_risk',this)">By Risk</button>
-              <button class="tc-toggle-btn" data-view="top_apps" onclick="switchCardView('risk','top_apps',this)">Top Apps</button>
-            </div>
           </div>
-          <div class="tc-gauge-row">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:12px 0 20px;">
             <div class="gauge-wrap" style="flex-shrink:0;">
-              <svg width="96" height="96" viewBox="0 0 72 72">
+              <svg width="120" height="120" viewBox="0 0 72 72">
                 <circle id="gauge-track" cx="36" cy="36" r="27" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="6" stroke-linecap="round"
                   stroke-dasharray="127.2 169.6" transform="rotate(135 36 36)"/>
                 <circle cx="36" cy="36" r="27" fill="none" id="gauge-arc" stroke="#00e5ff" stroke-width="6" stroke-linecap="round"
@@ -317,16 +313,7 @@
                 <div id="m-risk" style="font-size:22px;font-weight:700;color:var(--text-primary);line-height:1;">—</div>
               </div>
             </div>
-            <div>
-              <div style="font-size:13px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">Avg Platform Score</div>
-              <div id="risk-level-label" class="tc-risk-level">—</div>
-            </div>
-          </div>
-          <div class="tc-rows" id="tc-risk-rows">
-            <div class="tc-skel"></div><div class="tc-skel" style="width:85%;"></div><div class="tc-skel" style="width:70%;"></div>
-          </div>
-          <div class="tc-footer">
-            <a href="/applications.html">View all applications <i data-lucide="arrow-right" style="width:12px;height:12px;"></i></a>
+            <div id="risk-level-label" class="tc-risk-level" style="margin-top:10px;">—</div>
           </div>
         </div>
 
