@@ -125,19 +125,19 @@
           </div>
         </div>
 
-        <!-- Card 3: Top Vulnerability -->
-        <div class="card" id="mc-top-vuln-card" style="padding:18px 20px;cursor:pointer;transition:border-color 0.15s;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;" onmouseover="this.style.borderColor='rgba(0,229,255,0.35)'" onmouseout="this.style.borderColor=''">
-          <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:14px;">Top Vulnerability</div>
-          <div id="mc-top-vuln" style="color:var(--text-tertiary);font-size:13px;width:100%;">Loading…</div>
+        <!-- Card 3: Top Vulnerabilities -->
+        <div class="card" id="mc-top-vuln-card" style="padding:18px 20px;display:flex;flex-direction:column;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:14px;">Top Vulnerabilities</div>
+          <div id="mc-top-vuln" style="flex:1;display:flex;flex-direction:column;justify-content:space-between;color:var(--text-tertiary);font-size:13px;">Loading…</div>
         </div>
 
         <!-- Card 4: Open Findings Trend (30d) -->
-        <div class="card" style="padding:18px 20px;">
+        <div class="card" style="padding:18px 20px;display:flex;flex-direction:column;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
             <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);">Open Findings (30d)</div>
             <span id="mc-trend-current" style="font-family:'Fira Code',monospace;font-size:18px;font-weight:700;color:var(--text-primary);line-height:1;">—</span>
           </div>
-          <div style="height:78px;position:relative;">
+          <div style="flex:1;position:relative;min-height:60px;">
             <canvas id="mc-trend-chart"></canvas>
           </div>
         </div>
@@ -327,28 +327,24 @@ async function loadTopVuln() {
     const data = await res.json();
     const allItems = data.items || [];
     if (!allItems.length) return;
-    // Restrict to CVEs only
     const items = allItems.filter(item => /^CVE-\d{4}-\d+/i.test(item.identifier));
+    const container = document.getElementById('mc-top-vuln');
+    if (!container) return;
     if (!items.length) {
-      const container = document.getElementById('mc-top-vuln');
-      if (container) container.innerHTML = `<div style="font-size:13px;color:var(--text-tertiary);">No CVEs detected</div>`;
+      container.innerHTML = `<div style="font-size:13px;color:var(--text-tertiary);">No CVEs detected</div>`;
       return;
     }
     items.sort((a, b) => b.total_occurrences - a.total_occurrences);
-    const v = items[0];
-    const isCve = /^CVE-\d{4}-\d+/i.test(v.identifier);
-    const card = document.getElementById('mc-top-vuln-card');
-    const container = document.getElementById('mc-top-vuln');
-    if (!container || !card) return;
-    container.innerHTML = `
-      <div class="cve-headline" style="font-size:22px;line-height:1.2;word-break:break-word;padding:0 4px;" title="${escapeHtml(v.identifier)}">${escapeHtml(v.identifier)}</div>
-      <div style="font-size:12px;color:var(--text-tertiary);margin-top:10px;">${v.total_occurrences} occurrences · ${v.affected_apps} app${v.affected_apps !== 1 ? 's' : ''}</div>
-    `;
-    card.dataset.identifier = v.identifier;
-    card.dataset.title      = v.title || '';
-    card.dataset.severity   = v.severity;
-    card.dataset.isCve      = isCve;
-    if (v.cvss_score != null) card.dataset.cvss = v.cvss_score;
+    const top3 = items.slice(0, 3);
+    container.innerHTML = top3.map((v, i) => {
+      const cvssAttr = v.cvss_score != null ? ` data-cvss="${v.cvss_score}"` : '';
+      const border = i < top3.length - 1 ? 'border-bottom:1px solid rgba(255,255,255,0.06);' : '';
+      return `<div class="top-vuln-row" style="display:flex;align-items:center;gap:10px;padding:${i===0?'0 0 10px':i===top3.length-1?'10px 0 0':'10px 0'};${border}cursor:pointer;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'"
+        data-identifier="${escapeHtml(v.identifier)}" data-title="${escapeHtml(v.title||'')}" data-severity="${escapeHtml(v.severity)}" data-is-cve="true"${cvssAttr}>
+        <span style="font-size:12px;font-weight:700;color:var(--text-tertiary);font-family:'Fira Code',monospace;width:14px;flex-shrink:0;text-align:right;">${i+1}</span>
+        <div class="cve-headline" style="font-size:14px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(v.identifier)}">${escapeHtml(v.identifier)}</div>
+      </div>`;
+    }).join('');
   } catch {}
 }
 
@@ -921,16 +917,14 @@ document.getElementById('grouped-tbody').addEventListener('click', function(e) {
   }
 });
 
-// Top-vuln card click delegation
-document.getElementById('mc-top-vuln-card').addEventListener('click', function() {
-  const ident = this.dataset.identifier;
+// Top-vulns row click delegation
+document.getElementById('mc-top-vuln').addEventListener('click', function(e) {
+  const row = e.target.closest('.top-vuln-row');
+  if (!row) return;
+  const ident = row.dataset.identifier;
   if (!ident) return;
-  if (this.dataset.isCve === 'true') {
-    const cvss = this.dataset.cvss ? parseFloat(this.dataset.cvss) : null;
-    openCvePanel(ident, this.dataset.title || '', this.dataset.severity || 'info', cvss);
-  } else {
-    drillDown(ident);
-  }
+  const cvss = row.dataset.cvss ? parseFloat(row.dataset.cvss) : null;
+  openCvePanel(ident, row.dataset.title || '', row.dataset.severity || 'info', cvss);
 });
 
 // Init
