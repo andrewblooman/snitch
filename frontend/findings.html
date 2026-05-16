@@ -52,6 +52,14 @@
     }
     .pagination-btn:hover:not(:disabled) { background: rgba(0,229,255,0.1); }
     .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; border-color: rgba(255,255,255,0.1); color:var(--text-secondary); }
+
+    .cve-headline { font-family:'Fira Code',monospace; font-size:15px; font-weight:700; color:#00e5ff; letter-spacing:0.5px; transition:color 0.15s; }
+    [data-theme="light"] .cve-headline { color:#0ea5e9; }
+    .table-row:hover .cve-headline { color:#33eeff; }
+    [data-theme="light"] .table-row:hover .cve-headline { color:#0284c7; }
+
+    #cve-panel-aside { transform:translateX(100%); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1); }
+    #cve-panel.open #cve-panel-aside { transform:translateX(0); }
   </style>
 </head>
 <body style="font-family:var(--font-body,'Fira Sans',system-ui,sans-serif);background:var(--bg-page,#0a0e1a);color:var(--text-primary,#f1f5f9);margin:0;padding:0;min-height:100vh;">
@@ -164,7 +172,7 @@
             <i data-lucide="layers" style="width:16px;height:16px;color:#00e5ff;"></i>
             <span id="grouped-count">Loading…</span>
           </div>
-          <div style="font-size:13px;color:var(--text-tertiary);">Click a row to see all occurrences</div>
+          <div style="font-size:13px;color:var(--text-tertiary);">CVE rows open affected repos panel · others show all occurrences</div>
         </div>
         <div style="overflow-x:auto;">
           <table style="width:100%;border-collapse:collapse;">
@@ -286,18 +294,29 @@ async function loadGrouped() {
     tbody.innerHTML = items.map(v => {
       const eh = escapeHtml;
       const rawIdent = v.identifier || '—';
-      const ident = eh(rawIdent);
-      const title = eh((v.title||'Unknown').slice(0,65)) + ((v.title||'').length>65?'…':'');
+      const isCve = /^CVE-\d{4}-\d+/i.test(rawIdent);
+
+      const primaryHtml = isCve
+        ? `<div class="cve-headline" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${eh(rawIdent)}</div>`
+        : `<div style="font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${eh((v.title||'Unknown').slice(0,65))}${(v.title||'').length>65?'…':''}</div>`;
+
+      const secondaryHtml = isCve
+        ? `<div style="font-size:12px;color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">${eh((v.title||'').slice(0,65))}${(v.title||'').length>65?'…':''}</div>`
+        : `<div style="font-size:12px;color:var(--text-tertiary);font-family:'Fira Code',monospace;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${eh(rawIdent)}</div>`;
+
       const fix = v.fix_available
         ? (v.fixed_version
             ? `<span style="background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.25);padding:2px 7px;border-radius:5px;font-size:12px;font-weight:600;" title="${eh(v.fixed_version)}">✓ ${eh(v.fixed_version)}</span>`
             : `<span style="background:rgba(16,185,129,0.08);color:#10b981;border:1px solid rgba(16,185,129,0.18);padding:2px 7px;border-radius:5px;font-size:12px;font-weight:600;">✓ Available</span>`)
         : `<span style="background:rgba(148,163,184,0.08);color:#64748b;border:1px solid rgba(148,163,184,0.15);padding:2px 7px;border-radius:5px;font-size:12px;font-weight:500;">No Fix Yet</span>`;
-      return `<tr class="table-row" style="border-bottom:1px solid rgba(255,255,255,0.04);" onclick="drillDown(${JSON.stringify(rawIdent)})">
+
+      // Use data-* attributes to avoid onclick HTML-escaping issues with quoted strings
+      const cvssAttr = v.cvss_score != null ? ` data-cvss="${v.cvss_score}"` : '';
+      return `<tr class="table-row" style="border-bottom:1px solid rgba(255,255,255,0.04);" data-identifier="${eh(rawIdent)}" data-title="${eh(v.title||'')}" data-severity="${eh(v.severity)}" data-is-cve="${isCve}"${cvssAttr}>
         <td style="padding:12px 20px;">${severityBadge(v.severity)}</td>
         <td style="padding:12px 20px;max-width:380px;">
-          <div style="font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${title}</div>
-          <div style="font-size:12px;color:var(--text-tertiary);font-family:'Fira Code',monospace;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ident}</div>
+          ${primaryHtml}
+          ${secondaryHtml}
         </td>
         <td style="padding:12px 20px;">${typeBadge(v.finding_type)}</td>
         <td style="padding:12px 20px;">${fix}</td>
@@ -355,6 +374,15 @@ function fixBadge(f){
   if(['sca','container'].includes(ft))
     return `<span style="background:rgba(148,163,184,0.08);color:#64748b;border:1px solid rgba(148,163,184,0.15);padding:2px 8px;border-radius:5px;font-size:12px;font-weight:500;">No Fix Yet</span>`;
   return `<span style="background:rgba(16,185,129,0.08);color:#10b981;border:1px solid rgba(16,185,129,0.18);padding:2px 8px;border-radius:5px;font-size:12px;font-weight:600;">✓ Available</span>`;
+}
+
+function findingTitleCell(f) {
+  const eh = escapeHtml;
+  if (f.cve_id) {
+    return `<div class="cve-headline" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${eh(f.cve_id)}">${eh(f.cve_id)}</div>
+            <div style="font-size:12px;color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;" title="${eh(f.title||'')}">${eh((f.title||'').slice(0,60))}${(f.title||'').length>60?'…':''}</div>`;
+  }
+  return `<div style="font-size:15px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${eh(f.title||'')}">${eh((f.title||'Unknown').slice(0,60))}${(f.title||'').length>60?'…':''}</div>`;
 }
 
 function timeAgo(dateStr) {
@@ -434,9 +462,7 @@ async function loadFindings() {
     tbody.innerHTML = data.items.map(f => `
       <tr class="table-row" style="border-bottom:1px solid rgba(255,255,255,0.04);" onclick="openFindingPanel('${escapeHtml(f.id)}')">
         <td style="padding:16px 24px;">${severityBadge(f.severity)}</td>
-        <td style="padding:16px 24px;max-width:350px;">
-          <div style="font-size:15px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(f.title||'')}">${escapeHtml((f.title||'Unknown').slice(0,60))}${(f.title||'').length>60?'…':''}</div>
-        </td>
+        <td style="padding:16px 24px;max-width:350px;">${findingTitleCell(f)}</td>
         <td style="padding:16px 24px;">
           <div style="font-size:14px;color:var(--text-primary);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;" title="${escapeHtml(f.application_name||f.application_id)}">${escapeHtml(f.application_name||f.application_id.split('-')[0]+'...')}</div>
         </td>
@@ -517,6 +543,86 @@ function closeFindingPanel() {
   setTimeout(() => { panel.style.display = 'none'; activeFindingId = null; }, 300);
 }
 
+// ── CVE Affected Apps Panel ──────────────────────────────────────────────────
+function closeCvePanel() {
+  const panel = document.getElementById('cve-panel');
+  panel.classList.remove('open');
+  setTimeout(() => { panel.style.display = 'none'; }, 300);
+}
+
+async function openCvePanel(identifier, title, severity, cvssScore) {
+  const panel      = document.getElementById('cve-panel');
+  const panelBody  = document.getElementById('cve-panel-body');
+  const panelTitle = document.getElementById('cve-panel-title');
+
+  panelTitle.textContent = identifier;
+
+  const cvssHtml = cvssScore != null
+    ? `<span style="font-family:'Fira Code',monospace;font-size:14px;color:var(--text-secondary);">CVSS ${Number(cvssScore).toFixed(1)}</span>`
+    : '';
+
+  panelBody.innerHTML = `
+    <div style="padding:24px;display:flex;flex-direction:column;gap:20px;">
+      <div>
+        <div style="font-size:26px;font-weight:700;font-family:'Fira Code',monospace;color:#00e5ff;letter-spacing:0.5px;word-break:break-all;">${escapeHtml(identifier)}</div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          ${severityBadge(severity)}
+          ${cvssHtml}
+        </div>
+      </div>
+      ${title ? `<div style="font-size:14px;color:var(--text-secondary);line-height:1.5;">${escapeHtml(title)}</div>` : ''}
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Affected Repositories</div>
+        <div id="cve-apps-list">
+          <div style="display:flex;justify-content:center;padding:24px;">
+            <div style="animation:spin 1s linear infinite;width:24px;height:24px;border:3px solid rgba(0,229,255,0.1);border-top-color:#00e5ff;border-radius:50%;"></div>
+          </div>
+        </div>
+      </div>
+      <button onclick="drillDown(${JSON.stringify(identifier)});closeCvePanel();" style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);color:#00e5ff;padding:8px 16px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='rgba(0,229,255,0.16)'" onmouseout="this.style.background='rgba(0,229,255,0.08)'">
+        View all findings →
+      </button>
+    </div>
+  `;
+
+  panel.style.display = 'flex';
+  requestAnimationFrame(() => requestAnimationFrame(() => panel.classList.add('open')));
+  lucide.createIcons();
+
+  try {
+    const res = await fetch(`/api/v1/findings?identifier=${encodeURIComponent(identifier)}&page_size=100`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const items = data.items || [];
+
+    const seen = new Set();
+    const apps = [];
+    for (const f of items) {
+      if (f.application_id && !seen.has(f.application_id)) {
+        seen.add(f.application_id);
+        apps.push({ id: f.application_id, name: f.application_name || f.application_id });
+      }
+    }
+
+    const appsList = document.getElementById('cve-apps-list');
+    if (!appsList) return;
+    if (!apps.length) {
+      appsList.innerHTML = `<div style="font-size:14px;color:var(--text-tertiary);padding:8px 0;">No affected applications found.</div>`;
+    } else {
+      appsList.innerHTML = apps.map(a => `
+        <a href="/app-detail.html?id=${escapeHtml(a.id)}" style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.1);color:var(--text-primary);text-decoration:none;font-size:14px;font-weight:500;margin-bottom:6px;transition:background 0.15s;" onmouseover="this.style.background='rgba(0,229,255,0.1)'" onmouseout="this.style.background='rgba(0,229,255,0.04)'">
+          <i data-lucide="git-fork" style="width:14px;height:14px;color:#00e5ff;flex-shrink:0;"></i>
+          ${escapeHtml(a.name)}
+        </a>
+      `).join('');
+      lucide.createIcons();
+    }
+  } catch {
+    const appsList = document.getElementById('cve-apps-list');
+    if (appsList) appsList.innerHTML = `<div style="font-size:14px;color:#ef4444;">Failed to load affected applications.</div>`;
+  }
+}
+
 function renderPanel(f) {
   const body = document.getElementById('panel-body');
   const eh = escapeHtml;
@@ -526,6 +632,11 @@ function renderPanel(f) {
         ${severityBadge(f.severity)}
         ${typeBadge(f.finding_type||f.scanner)}
       </div>
+      ${f.cve_id ? `
+      <div style="padding:14px 18px;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.2);border-radius:10px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div style="font-size:22px;font-weight:700;font-family:'Fira Code',monospace;color:var(--accent,#00e5ff);letter-spacing:0.5px;">${eh(f.cve_id)}</div>
+        ${f.cvss_score != null ? `<div style="font-size:13px;color:var(--text-secondary);font-family:'Fira Code',monospace;border-left:1px solid rgba(0,229,255,0.2);padding-left:16px;">CVSS ${f.cvss_score.toFixed(1)}</div>` : ''}
+      </div>` : ''}
       <div>
         <div style="font-size:13px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Title</div>
         <div style="font-size:16px;font-weight:600;color:var(--text-primary);line-height:1.4;">${eh(f.title)||'—'}</div>
@@ -549,17 +660,12 @@ function renderPanel(f) {
           <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">File Path</div>
           <div style="font-size:13px;color:var(--text-secondary);font-family:'Fira Code',monospace;word-break:break-all;">${eh(f.file_path)}${f.line_number ? ':'+f.line_number : ''}</div>
         </div>` : ''}
-        ${f.cve_id ? `
-        <div>
-          <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">CVE</div>
-          <div style="font-size:14px;color:var(--text-primary);font-family:'Fira Code',monospace;">${eh(f.cve_id)}</div>
-        </div>` : ''}
         ${f.package_name ? `
         <div>
           <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Package</div>
           <div style="font-size:14px;color:var(--text-primary);font-family:'Fira Code',monospace;">${eh(f.package_name)}${f.package_version?' @ '+eh(f.package_version):''}</div>
         </div>` : ''}
-        ${f.cvss_score != null ? `
+        ${f.cvss_score != null && !f.cve_id ? `
         <div>
           <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">CVSS Score</div>
           <div style="font-size:14px;color:var(--text-primary);font-family:'Fira Code',monospace;">${f.cvss_score.toFixed(1)}</div>
@@ -640,7 +746,21 @@ async function updateFindingStatus(id, status) {
   }
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFindingPanel(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeFindingPanel(); closeCvePanel(); } });
+
+// Grouped table click delegation — avoids inline onclick HTML-escaping issues
+document.getElementById('grouped-tbody').addEventListener('click', function(e) {
+  const row = e.target.closest('tr[data-identifier]');
+  if (!row) return;
+  const ident = row.dataset.identifier;
+  if (!ident || ident === '—') return;
+  if (row.dataset.isCve === 'true') {
+    const cvss = row.dataset.cvss ? parseFloat(row.dataset.cvss) : null;
+    openCvePanel(ident, row.dataset.title || '', row.dataset.severity || 'info', cvss);
+  } else {
+    drillDown(ident);
+  }
+});
 
 // Init
 parseQueryParams();
@@ -672,6 +792,18 @@ if (_initIdentifier) {
     <div id="panel-body" style="flex:1;overflow-y:auto;"></div>
   </aside>
 </div>
+<!-- CVE Affected Apps Panel -->
+<div id="cve-panel" style="display:none;position:fixed;inset:0;z-index:201;justify-content:flex-end;">
+  <div onclick="closeCvePanel()" style="position:absolute;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(2px);"></div>
+  <aside id="cve-panel-aside" style="position:relative;width:440px;max-width:95vw;height:100%;background:linear-gradient(180deg,#0f1b34 0%,#080f1d 100%);border-left:1px solid rgba(0,229,255,0.15);box-shadow:-8px 0 48px rgba(0,0,0,0.7);display:flex;flex-direction:column;">
+    <div style="padding:16px 24px;border-bottom:1px solid rgba(0,229,255,0.1);display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.2);">
+      <div id="cve-panel-title" style="font-size:15px;font-weight:700;color:#00e5ff;font-family:'Fira Code',monospace;">CVE Detail</div>
+      <button onclick="closeCvePanel()" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:4px;border-radius:6px;display:flex;align-items:center;" onmouseover="this.style.color='#f1f5f9'" onmouseout="this.style.color='#94a3b8'"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+    </div>
+    <div id="cve-panel-body" style="flex:1;overflow-y:auto;"></div>
+  </aside>
+</div>
+
 <style>
 #panel-aside { transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); }
 #finding-panel.open #panel-aside { transform: translateX(0); }
