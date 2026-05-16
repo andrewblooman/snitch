@@ -453,8 +453,9 @@ async function loadGrouped() {
         ? `<div class="cve-headline" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${eh(rawIdent)}</div>`
         : `<div style="font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${eh(_htitle.slice(0,65))}${_htitle.length>65?'…':''}</div>`;
 
+      const _hsecondary = humanizeTitle(v.title || '');
       const secondaryHtml = isCve
-        ? `<div style="font-size:12px;color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">${eh(humanizeTitle(v.title||'').slice(0,65))}${(v.title||'').length>65?'…':''}</div>`
+        ? `<div style="font-size:12px;color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">${eh(_hsecondary.slice(0,65))}${_hsecondary.length>65?'…':''}</div>`
         : `<div style="font-size:12px;color:var(--text-tertiary);font-family:'Fira Code',monospace;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${eh(rawIdent)}</div>`;
 
       const fix = v.fix_available
@@ -734,7 +735,7 @@ async function openCvePanel(identifier, title, severity, cvssScore) {
           </div>
         </div>
       </div>
-      <button onclick="drillDown(${JSON.stringify(identifier)});closeCvePanel();" style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);color:#00e5ff;padding:8px 16px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='rgba(0,229,255,0.16)'" onmouseout="this.style.background='rgba(0,229,255,0.08)'">
+      <button id="cve-drilldown-btn" data-identifier="${escapeHtml(identifier)}" style="display:inline-flex;align-items:center;gap:6px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);color:#00e5ff;padding:8px 16px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='rgba(0,229,255,0.16)'" onmouseout="this.style.background='rgba(0,229,255,0.08)'">
         View all findings →
       </button>
     </div>
@@ -915,6 +916,14 @@ document.getElementById('grouped-tbody').addEventListener('click', function(e) {
   } else {
     drillDown(ident);
   }
+});
+
+// CVE panel "View all findings" button delegation — avoids JSON.stringify in onclick=""
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('#cve-drilldown-btn');
+  if (!btn) return;
+  const ident = btn.dataset.identifier;
+  if (ident) { drillDown(ident); closeCvePanel(); }
 });
 
 // Top-vulns row click delegation
