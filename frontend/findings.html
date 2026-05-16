@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/static/css/theme.css">
   <script src="/static/js/lucide.min.js"></script>
   <script src="/static/js/chart.min.js"></script>
+  <script src="/static/js/snitch-utils.js"></script>
   <style>
     * { box-sizing: border-box; }
     @keyframes slideInRight { from{transform:translateX(100px);opacity:0} to{transform:translateX(0);opacity:1} }
@@ -127,7 +128,7 @@
             <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);">Open Findings (30d)</div>
             <span id="mc-trend-current" style="font-family:'Fira Code',monospace;font-size:18px;font-weight:700;color:var(--text-primary);line-height:1;">—</span>
           </div>
-          <div style="height:64px;position:relative;">
+          <div style="height:78px;position:relative;">
             <canvas id="mc-trend-chart"></canvas>
           </div>
         </div>
@@ -296,12 +297,17 @@ async function loadTopApps() {
     if (!container) return;
     if (!apps.length) { container.innerHTML = `<div style="font-size:13px;color:var(--text-tertiary);">No apps found.</div>`; return; }
     const riskColor = s => s >= 75 ? '#ef4444' : s >= 50 ? '#f59e0b' : s >= 25 ? '#f97316' : '#3b82f6';
-    container.innerHTML = apps.map(a => `
-      <a href="/app-detail.html?id=${escapeHtml(a.id)}" style="display:flex;justify-content:space-between;align-items:center;text-decoration:none;gap:8px;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
-        <span style="font-size:13px;color:var(--text-primary);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(a.name)}</span>
-        <span style="font-family:'Fira Code',monospace;font-size:14px;font-weight:700;color:${riskColor(a.risk_score)};flex-shrink:0;">${Math.round(a.risk_score)}</span>
-      </a>
-    `).join('');
+    container.innerHTML = apps.map(a => {
+      const repo = (a.github_org && a.github_repo) ? `${a.github_org}/${a.github_repo}` : '';
+      return `
+      <a href="/app-detail.html?id=${escapeHtml(a.id)}" style="display:flex;flex-direction:column;text-decoration:none;gap:1px;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+          <span style="font-size:13px;color:var(--text-primary);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(a.name)}</span>
+          <span style="font-family:'Fira Code',monospace;font-size:14px;font-weight:700;color:${riskColor(a.risk_score)};flex-shrink:0;">${Math.round(a.risk_score)}</span>
+        </div>
+        ${repo ? `<div style="font-size:11px;color:var(--text-tertiary);font-family:'Fira Code',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(repo)}</div>` : ''}
+      </a>`;
+    }).join('');
   } catch {}
 }
 
@@ -310,8 +316,15 @@ async function loadTopVuln() {
     const res = await fetch('/api/v1/reports/top-vulnerabilities?limit=200');
     if (!res.ok) return;
     const data = await res.json();
-    const items = data.items || [];
-    if (!items.length) return;
+    const allItems = data.items || [];
+    if (!allItems.length) return;
+    // Restrict to CVEs only
+    const items = allItems.filter(item => /^CVE-\d{4}-\d+/i.test(item.identifier));
+    if (!items.length) {
+      const container = document.getElementById('mc-top-vuln');
+      if (container) container.innerHTML = `<div style="font-size:13px;color:var(--text-tertiary);">No CVEs detected</div>`;
+      return;
+    }
     items.sort((a, b) => b.total_occurrences - a.total_occurrences);
     const v = items[0];
     const isCve = /^CVE-\d{4}-\d+/i.test(v.identifier);
@@ -344,16 +357,18 @@ async function loadTrendMiniChart() {
     if (!canvas) return;
     if (window._mcTrendChart) window._mcTrendChart.destroy();
     const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    const tickColor = isDark ? 'rgba(148,163,184,0.55)' : 'rgba(71,85,105,0.65)';
+    const gridColor = isDark ? 'rgba(148,163,184,0.07)' : 'rgba(71,85,105,0.07)';
     window._mcTrendChart = new Chart(canvas.getContext('2d'), {
       type: 'line',
       data: {
         labels: points.map(p => p.date),
         datasets: [{
           data: values,
-          borderColor: isDark ? '#00e5ff' : '#0ea5e9',
+          borderColor: '#10b981',
           borderWidth: 2,
           fill: true,
-          backgroundColor: isDark ? 'rgba(0,229,255,0.08)' : 'rgba(14,165,233,0.08)',
+          backgroundColor: 'rgba(16,185,129,0.08)',
           pointRadius: 0,
           tension: 0.4
         }]
@@ -362,7 +377,31 @@ async function loadTrendMiniChart() {
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { display: false }, tooltip: { enabled: false } },
-        scales: { x: { display: false }, y: { display: false } },
+        scales: {
+          x: {
+            display: true,
+            ticks: {
+              maxTicksLimit: 5,
+              maxRotation: 0,
+              color: tickColor,
+              font: { size: 10 },
+              callback: function(value) {
+                const label = this.getLabelForValue(value);
+                if (!label) return '';
+                const d = new Date(label + 'T00:00:00');
+                return `${d.getMonth()+1}/${d.getDate()}`;
+              }
+            },
+            grid: { display: false },
+            border: { display: false }
+          },
+          y: {
+            display: true,
+            ticks: { maxTicksLimit: 3, color: tickColor, font: { size: 10 } },
+            grid: { color: gridColor },
+            border: { display: false }
+          }
+        },
         animation: { duration: 600 }
       }
     });
@@ -404,12 +443,13 @@ async function loadGrouped() {
       const rawIdent = v.identifier || '—';
       const isCve = /^CVE-\d{4}-\d+/i.test(rawIdent);
 
+      const _htitle = humanizeTitle(v.title || 'Unknown');
       const primaryHtml = isCve
         ? `<div class="cve-headline" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${eh(rawIdent)}</div>`
-        : `<div style="font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${eh((v.title||'Unknown').slice(0,65))}${(v.title||'').length>65?'…':''}</div>`;
+        : `<div style="font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${eh(_htitle.slice(0,65))}${_htitle.length>65?'…':''}</div>`;
 
       const secondaryHtml = isCve
-        ? `<div style="font-size:12px;color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">${eh((v.title||'').slice(0,65))}${(v.title||'').length>65?'…':''}</div>`
+        ? `<div style="font-size:12px;color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">${eh(humanizeTitle(v.title||'').slice(0,65))}${(v.title||'').length>65?'…':''}</div>`
         : `<div style="font-size:12px;color:var(--text-tertiary);font-family:'Fira Code',monospace;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${eh(rawIdent)}</div>`;
 
       const fix = v.fix_available
@@ -486,11 +526,13 @@ function fixBadge(f){
 
 function findingTitleCell(f) {
   const eh = escapeHtml;
+  const ht = humanizeTitle(f.title || '');
   if (f.cve_id) {
     return `<div class="cve-headline" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${eh(f.cve_id)}">${eh(f.cve_id)}</div>
-            <div style="font-size:12px;color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;" title="${eh(f.title||'')}">${eh((f.title||'').slice(0,60))}${(f.title||'').length>60?'…':''}</div>`;
+            <div style="font-size:12px;color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;" title="${eh(ht)}">${eh(ht.slice(0,60))}${ht.length>60?'…':''}</div>`;
   }
-  return `<div style="font-size:15px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${eh(f.title||'')}">${eh((f.title||'Unknown').slice(0,60))}${(f.title||'').length>60?'…':''}</div>`;
+  const htFull = humanizeTitle(f.title || 'Unknown');
+  return `<div style="font-size:15px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${eh(htFull)}">${eh(htFull.slice(0,60))}${htFull.length>60?'…':''}</div>`;
 }
 
 function timeAgo(dateStr) {
@@ -747,7 +789,7 @@ function renderPanel(f) {
       </div>` : ''}
       <div>
         <div style="font-size:13px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Title</div>
-        <div style="font-size:16px;font-weight:600;color:var(--text-primary);line-height:1.4;">${eh(f.title)||'—'}</div>
+        <div style="font-size:16px;font-weight:600;color:var(--text-primary);line-height:1.4;">${eh(humanizeTitle(f.title||''))||'—'}</div>
       </div>
       ${f.description ? `
       <div>

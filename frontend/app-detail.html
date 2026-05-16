@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/static/css/theme.css">
   <script src="/static/js/chart.min.js"></script>
   <script src="/static/js/lucide.min.js"></script>
+  <script src="/static/js/snitch-utils.js"></script>
   <style>
     * { box-sizing: border-box; }
     @keyframes slideInRight { from{transform:translateX(100px);opacity:0} to{transform:translateX(0);opacity:1} }
@@ -554,7 +555,7 @@ function renderFindingsTable(findings){
     <tr class="table-row" style="border-bottom:1px solid rgba(0,229,255,0.06);cursor:pointer;transition:background 0.2s;" id="row-${f.id}" onclick="toggleExpand('${f.id}')">
       <td style="padding:12px;">${severityBadge(f.severity)}</td>
       <td style="padding:12px;max-width:260px;">
-        <div style="font-size:15px;font-weight:500;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escHtml(f.title||'')}">${escHtml(f.title||'—')}</div>
+        <div style="font-size:15px;font-weight:500;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escHtml(humanizeTitle(f.title||''))}">${escHtml(humanizeTitle(f.title||'')||'—')}</div>
         ${f.cve_id?`<div style="font-size:13px;color:var(--text-tertiary);margin-top:2px;">${escHtml(f.cve_id)}</div>`:''}
       </td>
       <td style="padding:12px;font-size:14px;color:var(--text-secondary);">${escHtml(f.finding_type||'—')}</td>
@@ -756,7 +757,7 @@ function openRemediationModal(){
       <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
         <input type="checkbox" value="${f.id}" ${isFixable(f)?'checked':''} onchange="updateRemSelCount()" style="accent-color:#00e5ff;width:16px;height:16px;cursor:pointer;">
         ${severityBadge(f.severity)}
-        <span style="font-size:15px;color:#e2e8f0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(f.title||'Untitled')}</span>
+        <span style="font-size:15px;color:#e2e8f0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(humanizeTitle(f.title||'Untitled'))}</span>
         ${appFixBadge(f)}
       </label>
     `).join('');
@@ -920,7 +921,7 @@ function prStateBadge(pr){
 
 function renderPRFindingRow(f){
   const alertLink=f.github_alert_url?`<a href="${escHtml(f.github_alert_url)}" target="_blank" rel="noopener" title="View on GitHub" style="flex-shrink:0;"><i data-lucide="external-link" style="width:13px;height:13px;"></i></a>`:'';
-  const findingLink=`<a href="/findings.html?identifier=${encodeURIComponent(f.rule_id||f.cve_id||'')}" title="View in Findings Hub">${escHtml(f.title)}</a>`;
+  const findingLink=`<a href="/findings.html?identifier=${encodeURIComponent(f.rule_id||f.cve_id||'')}" title="View in Findings Hub">${escHtml(humanizeTitle(f.title||''))}</a>`;
   return `<div class="finding-row">
     ${severityBadge(f.severity)}
     ${prTypeBadge(f.finding_type)}
@@ -1291,7 +1292,7 @@ function renderGithubTab(findings){
       <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
         ${severityBadge(f.severity)}
         <div style="flex:1;min-width:0;">
-          <div style="font-size:14px;font-weight:500;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(f.title||'—')}</div>
+          <div style="font-size:14px;font-weight:500;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(humanizeTitle(f.title||'')||'—')}</div>
           ${f.file_path?`<div style="font-size:12px;color:var(--text-tertiary);font-family:'Fira Code',monospace;">${escHtml(f.file_path)}${f.line_number?':'+f.line_number:''}</div>`:''}
           ${f.cve_id?`<div style="font-size:12px;color:#f59e0b;font-family:'Fira Code',monospace;">${escHtml(f.cve_id)}</div>`:''}
         </div>

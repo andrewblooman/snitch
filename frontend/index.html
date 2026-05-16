@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/static/css/theme.css">
   <script src="/static/js/chart.min.js"></script>
   <script src="/static/js/lucide.min.js"></script>
+  <script src="/static/js/snitch-utils.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -876,7 +877,8 @@ function renderTopVulns(items) {
     return;
   }
   el.innerHTML = items.map(v => {
-    const title = escapeHtml((v.title||'Unknown').slice(0, 52)) + ((v.title||'').length > 52 ? '…' : '');
+    const _ht = humanizeTitle(v.title||'Unknown');
+    const title = escapeHtml(_ht.slice(0, 52)) + (_ht.length > 52 ? '…' : '');
     const rawIdent = v.identifier || v.cve_id || v.rule_id || '—';
     const ident = escapeHtml(rawIdent);
     const dot = severityDot(v.severity);
