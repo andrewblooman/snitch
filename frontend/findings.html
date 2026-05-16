@@ -90,20 +90,29 @@
       <div id="metric-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
 
         <!-- Card 1: Findings Breakdown -->
-        <div class="card" style="padding:18px 20px;">
-          <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:10px;">Findings Breakdown</div>
-          <div style="display:flex;flex-direction:column;gap:8px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:12px;font-weight:600;color:#ef4444;">Critical</span>
-              <span id="mc-critical" style="font-family:'Fira Code',monospace;font-size:20px;font-weight:700;color:#ef4444;line-height:1;">—</span>
+        <div class="card" style="padding:18px 20px;display:flex;flex-direction:column;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:14px;">Findings Breakdown</div>
+          <div style="display:flex;flex-direction:column;flex:1;justify-content:space-between;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid rgba(239,68,68,0.12);">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:3px;height:18px;background:#ef4444;border-radius:2px;flex-shrink:0;"></div>
+                <span style="font-size:14px;font-weight:600;color:#ef4444;">Critical</span>
+              </div>
+              <span id="mc-critical" style="font-family:'Fira Code',monospace;font-size:28px;font-weight:700;color:#ef4444;line-height:1;">—</span>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:12px;font-weight:600;color:#f59e0b;">High</span>
-              <span id="mc-high" style="font-family:'Fira Code',monospace;font-size:20px;font-weight:700;color:#f59e0b;line-height:1;">—</span>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(245,158,11,0.12);">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:3px;height:18px;background:#f59e0b;border-radius:2px;flex-shrink:0;"></div>
+                <span style="font-size:14px;font-weight:600;color:#f59e0b;">High</span>
+              </div>
+              <span id="mc-high" style="font-family:'Fira Code',monospace;font-size:28px;font-weight:700;color:#f59e0b;line-height:1;">—</span>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:12px;font-weight:600;color:#f97316;">Medium</span>
-              <span id="mc-medium" style="font-family:'Fira Code',monospace;font-size:20px;font-weight:700;color:#f97316;line-height:1;">—</span>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:3px;height:18px;background:#f97316;border-radius:2px;flex-shrink:0;"></div>
+                <span style="font-size:14px;font-weight:600;color:#f97316;">Medium</span>
+              </div>
+              <span id="mc-medium" style="font-family:'Fira Code',monospace;font-size:28px;font-weight:700;color:#f97316;line-height:1;">—</span>
             </div>
           </div>
         </div>
@@ -117,9 +126,9 @@
         </div>
 
         <!-- Card 3: Top Vulnerability -->
-        <div class="card" id="mc-top-vuln-card" style="padding:18px 20px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='rgba(0,229,255,0.35)'" onmouseout="this.style.borderColor=''">
-          <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:10px;">Top Vulnerability</div>
-          <div id="mc-top-vuln" style="color:var(--text-tertiary);font-size:13px;">Loading…</div>
+        <div class="card" id="mc-top-vuln-card" style="padding:18px 20px;cursor:pointer;transition:border-color 0.15s;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;" onmouseover="this.style.borderColor='rgba(0,229,255,0.35)'" onmouseout="this.style.borderColor=''">
+          <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:14px;">Top Vulnerability</div>
+          <div id="mc-top-vuln" style="color:var(--text-tertiary);font-size:13px;width:100%;">Loading…</div>
         </div>
 
         <!-- Card 4: Open Findings Trend (30d) -->
@@ -332,8 +341,8 @@ async function loadTopVuln() {
     const container = document.getElementById('mc-top-vuln');
     if (!container || !card) return;
     container.innerHTML = `
-      <div class="cve-headline" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;" title="${escapeHtml(v.identifier)}">${escapeHtml(v.identifier)}</div>
-      <div style="font-size:12px;color:var(--text-tertiary);margin-top:5px;">${v.total_occurrences} occurrences · ${v.affected_apps} app${v.affected_apps !== 1 ? 's' : ''}</div>
+      <div class="cve-headline" style="font-size:22px;line-height:1.2;word-break:break-word;padding:0 4px;" title="${escapeHtml(v.identifier)}">${escapeHtml(v.identifier)}</div>
+      <div style="font-size:12px;color:var(--text-tertiary);margin-top:10px;">${v.total_occurrences} occurrences · ${v.affected_apps} app${v.affected_apps !== 1 ? 's' : ''}</div>
     `;
     card.dataset.identifier = v.identifier;
     card.dataset.title      = v.title || '';
