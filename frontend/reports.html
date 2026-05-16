@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/static/css/theme.css">
   <script src="/static/js/chart.min.js"></script>
   <script src="/static/js/lucide.min.js"></script>
+  <script src="/static/js/snitch-utils.js"></script>
   <style>
     * { box-sizing: border-box; }
     @keyframes slideInRight { from{transform:translateX(100px);opacity:0} to{transform:translateX(0);opacity:1} }
@@ -470,7 +471,7 @@ function renderTopVulns(items){
     <tr class="table-row" style="border-bottom:1px solid rgba(0,229,255,0.06);cursor:pointer;" onclick="window.location.href='${href}'">
       <td style="padding:12px;text-align:center;font-size:15px;font-weight:600;color:var(--text-tertiary);">${i+1}</td>
       <td style="padding:12px;width:45%;max-width:480px;">
-        <div style="font-size:15px;color:#e2e8f0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(v.title||'')}">${escapeHtml((v.title||'Unknown vulnerability').slice(0,100))}${(v.title||'').length>100?'…':''}</div>
+        <div style="font-size:15px;color:#e2e8f0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(humanizeTitle(v.title||''))}">${escapeHtml(humanizeTitle(v.title||'Unknown vulnerability').slice(0,100))}${humanizeTitle(v.title||'').length>100?'…':''}</div>
         ${v.identifier&&v.identifier!==v.title?`<div style="font-size:12px;color:var(--text-tertiary);font-family:'Fira Code',monospace;margin-top:2px;">${escapeHtml(v.identifier)}</div>`:''}
       </td>
       <td style="padding:12px;">${typeBadge(v.finding_type||v.scanner_type||v.type)}</td>
