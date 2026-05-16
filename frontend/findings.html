@@ -9,6 +9,7 @@
   <style>/* Inter font fallback */ body { font-family: var(--font-body); }</style>
   <link rel="stylesheet" href="/static/css/theme.css">
   <script src="/static/js/lucide.min.js"></script>
+  <script src="/static/js/chart.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     @keyframes slideInRight { from{transform:translateX(100px);opacity:0} to{transform:translateX(0);opacity:1} }
@@ -86,26 +87,51 @@
 
       <!-- ── Metric Cards ── -->
       <div id="metric-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
+
+        <!-- Card 1: Findings Breakdown -->
         <div class="card" style="padding:18px 20px;">
-          <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:6px;">Critical Open</div>
-          <div id="mc-critical" style="font-family:'Fira Code',monospace;font-size:32px;font-weight:700;color:#ef4444;line-height:1;">—</div>
-          <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">findings</div>
+          <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:10px;">Findings Breakdown</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;font-weight:600;color:#ef4444;">Critical</span>
+              <span id="mc-critical" style="font-family:'Fira Code',monospace;font-size:20px;font-weight:700;color:#ef4444;line-height:1;">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;font-weight:600;color:#f59e0b;">High</span>
+              <span id="mc-high" style="font-family:'Fira Code',monospace;font-size:20px;font-weight:700;color:#f59e0b;line-height:1;">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;font-weight:600;color:#f97316;">Medium</span>
+              <span id="mc-medium" style="font-family:'Fira Code',monospace;font-size:20px;font-weight:700;color:#f97316;line-height:1;">—</span>
+            </div>
+          </div>
         </div>
+
+        <!-- Card 2: Top Risky Apps -->
         <div class="card" style="padding:18px 20px;">
-          <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:6px;">High Open</div>
-          <div id="mc-high" style="font-family:'Fira Code',monospace;font-size:32px;font-weight:700;color:#f59e0b;line-height:1;">—</div>
-          <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">findings</div>
+          <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:10px;">Top Risky Apps</div>
+          <div id="mc-top-apps" style="display:flex;flex-direction:column;gap:8px;">
+            <div style="font-size:13px;color:var(--text-tertiary);">Loading…</div>
+          </div>
         </div>
+
+        <!-- Card 3: Top Vulnerability -->
+        <div class="card" id="mc-top-vuln-card" style="padding:18px 20px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='rgba(0,229,255,0.35)'" onmouseout="this.style.borderColor=''">
+          <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:10px;">Top Vulnerability</div>
+          <div id="mc-top-vuln" style="color:var(--text-tertiary);font-size:13px;">Loading…</div>
+        </div>
+
+        <!-- Card 4: Open Findings Trend (30d) -->
         <div class="card" style="padding:18px 20px;">
-          <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:6px;">Total Open</div>
-          <div id="mc-open" style="font-family:'Fira Code',monospace;font-size:32px;font-weight:700;color:var(--text-primary);line-height:1;">—</div>
-          <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">findings</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);">Open Findings (30d)</div>
+            <span id="mc-trend-current" style="font-family:'Fira Code',monospace;font-size:18px;font-weight:700;color:var(--text-primary);line-height:1;">—</span>
+          </div>
+          <div style="height:64px;position:relative;">
+            <canvas id="mc-trend-chart"></canvas>
+          </div>
         </div>
-        <div class="card" style="padding:18px 20px;">
-          <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:6px;">Unique Vulns</div>
-          <div id="mc-unique" style="font-family:'Fira Code',monospace;font-size:32px;font-weight:700;color:#00e5ff;line-height:1;">—</div>
-          <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">distinct identifiers</div>
-        </div>
+
       </div>
 
       <!-- Filters -->
@@ -255,8 +281,91 @@ async function loadMetrics() {
     if (!res.ok) return;
     const d = await res.json();
     document.getElementById('mc-critical').textContent = (d.critical_findings||0).toLocaleString();
-    document.getElementById('mc-high').textContent = (d.high_findings||0).toLocaleString();
-    document.getElementById('mc-open').textContent = (d.open_findings||0).toLocaleString();
+    document.getElementById('mc-high').textContent     = (d.high_findings||0).toLocaleString();
+    document.getElementById('mc-medium').textContent   = (d.medium_findings||0).toLocaleString();
+  } catch {}
+}
+
+async function loadTopApps() {
+  try {
+    const res = await fetch('/api/v1/applications?page_size=3');
+    if (!res.ok) return;
+    const data = await res.json();
+    const apps = data.items || [];
+    const container = document.getElementById('mc-top-apps');
+    if (!container) return;
+    if (!apps.length) { container.innerHTML = `<div style="font-size:13px;color:var(--text-tertiary);">No apps found.</div>`; return; }
+    const riskColor = s => s >= 75 ? '#ef4444' : s >= 50 ? '#f59e0b' : s >= 25 ? '#f97316' : '#3b82f6';
+    container.innerHTML = apps.map(a => `
+      <a href="/app-detail.html?id=${escapeHtml(a.id)}" style="display:flex;justify-content:space-between;align-items:center;text-decoration:none;gap:8px;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+        <span style="font-size:13px;color:var(--text-primary);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(a.name)}</span>
+        <span style="font-family:'Fira Code',monospace;font-size:14px;font-weight:700;color:${riskColor(a.risk_score)};flex-shrink:0;">${Math.round(a.risk_score)}</span>
+      </a>
+    `).join('');
+  } catch {}
+}
+
+async function loadTopVuln() {
+  try {
+    const res = await fetch('/api/v1/reports/top-vulnerabilities?limit=200');
+    if (!res.ok) return;
+    const data = await res.json();
+    const items = data.items || [];
+    if (!items.length) return;
+    items.sort((a, b) => b.total_occurrences - a.total_occurrences);
+    const v = items[0];
+    const isCve = /^CVE-\d{4}-\d+/i.test(v.identifier);
+    const card = document.getElementById('mc-top-vuln-card');
+    const container = document.getElementById('mc-top-vuln');
+    if (!container || !card) return;
+    container.innerHTML = `
+      <div class="cve-headline" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;" title="${escapeHtml(v.identifier)}">${escapeHtml(v.identifier)}</div>
+      <div style="font-size:12px;color:var(--text-tertiary);margin-top:5px;">${v.total_occurrences} occurrences · ${v.affected_apps} app${v.affected_apps !== 1 ? 's' : ''}</div>
+    `;
+    card.dataset.identifier = v.identifier;
+    card.dataset.title      = v.title || '';
+    card.dataset.severity   = v.severity;
+    card.dataset.isCve      = isCve;
+    if (v.cvss_score != null) card.dataset.cvss = v.cvss_score;
+  } catch {}
+}
+
+async function loadTrendMiniChart() {
+  try {
+    const res = await fetch('/api/v1/reports/trend?days=30&cumulative=true&mode=status');
+    if (!res.ok) return;
+    const data = await res.json();
+    const points = data.data_points || [];
+    if (!points.length) return;
+    const values = points.map(p => p.open);
+    const el = document.getElementById('mc-trend-current');
+    if (el) el.textContent = (values[values.length - 1] || 0).toLocaleString();
+    const canvas = document.getElementById('mc-trend-chart');
+    if (!canvas) return;
+    if (window._mcTrendChart) window._mcTrendChart.destroy();
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    window._mcTrendChart = new Chart(canvas.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: points.map(p => p.date),
+        datasets: [{
+          data: values,
+          borderColor: isDark ? '#00e5ff' : '#0ea5e9',
+          borderWidth: 2,
+          fill: true,
+          backgroundColor: isDark ? 'rgba(0,229,255,0.08)' : 'rgba(14,165,233,0.08)',
+          pointRadius: 0,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        scales: { x: { display: false }, y: { display: false } },
+        animation: { duration: 600 }
+      }
+    });
   } catch {}
 }
 
@@ -283,7 +392,6 @@ async function loadGrouped() {
     const items = data.items || [];
 
     document.getElementById('grouped-count').textContent = `${items.length.toLocaleString()} unique vulnerabilities`;
-    document.getElementById('mc-unique').textContent = items.length.toLocaleString();
 
     if (!items.length) {
       tbody.innerHTML = `<tr><td colspan="6" style="padding:48px;text-align:center;color:var(--text-tertiary);"><i data-lucide="shield-check" style="width:36px;height:36px;display:block;margin:0 auto 10px;opacity:0.3;"></i>No vulnerabilities match your criteria.</td></tr>`;
@@ -762,9 +870,24 @@ document.getElementById('grouped-tbody').addEventListener('click', function(e) {
   }
 });
 
+// Top-vuln card click delegation
+document.getElementById('mc-top-vuln-card').addEventListener('click', function() {
+  const ident = this.dataset.identifier;
+  if (!ident) return;
+  if (this.dataset.isCve === 'true') {
+    const cvss = this.dataset.cvss ? parseFloat(this.dataset.cvss) : null;
+    openCvePanel(ident, this.dataset.title || '', this.dataset.severity || 'info', cvss);
+  } else {
+    drillDown(ident);
+  }
+});
+
 // Init
 parseQueryParams();
 loadMetrics();
+loadTopApps();
+loadTopVuln();
+loadTrendMiniChart();
 
 // If URL has an identifier param, jump straight to all-findings view
 const _initIdentifier = new URLSearchParams(window.location.search).get('identifier');
